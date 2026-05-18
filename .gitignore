@@ -1,0 +1,48 @@
+# --- Maven / Java ---
+target/
+*.class
+hs_err_pid*
+replay_pid*
+
+# Local Maven repository (see README: -Dmaven.repo.local=.m2/repository)
+.m2/
+
+# --- Spring Boot / H2 ---
+# jdbc:h2:file:./data/hcbs (application.properties)
+data/
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Vaadin frontend (vaadin-maven-plugin) ---
+node_modules/
+frontend/generated/
+src/main/frontend/generated/
+pnpmfile.js
+.npmrc
+vite.generated.ts
+webpack.generated.js
+
+# Vaadin TestBench (if added later)
+drivers/
+error-screenshots/
+
+# --- IDEs ---
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,389 @@
+:root {
+    --lumo-font-family: Georgia, "Times New Roman", serif;
+    --lumo-primary-color: #c4382f;
+    --lumo-primary-text-color: #ffd08a;
+    --lumo-error-color: #d74638;
+    --lumo-success-color: #39b782;
+    --lumo-base-color: #140f13;
+    --lumo-body-text-color: #f7ead2;
+    --lumo-secondary-text-color: #b9ab96;
+    --lumo-tertiary-text-color: #887967;
+    --lumo-contrast-5pct: rgba(255, 230, 196, 0.06);
+    --lumo-contrast-10pct: rgba(255, 230, 196, 0.10);
+    --lumo-contrast-20pct: rgba(255, 230, 196, 0.18);
+    --lumo-border-radius-m: 8px;
+    --lumo-border-radius-l: 8px;
+}
+
+html {
+    background:
+        linear-gradient(125deg, rgba(196, 56, 47, 0.20), transparent 28%),
+        radial-gradient(circle at 84% 12%, rgba(255, 186, 91, 0.18), transparent 32%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 42px),
+        #140f13;
+}
+
+body {
+    color: var(--lumo-body-text-color);
+}
+
+vaadin-app-layout::part(navbar) {
+    background: rgba(20, 15, 19, 0.92);
+    border-bottom: 1px solid rgba(255, 208, 138, 0.20);
+    backdrop-filter: blur(18px);
+}
+
+vaadin-app-layout::part(drawer) {
+    background:
+        linear-gradient(180deg, rgba(196, 56, 47, 0.16), transparent 38%),
+        #1a1316;
+    border-right: 1px solid rgba(255, 208, 138, 0.16);
+}
+
+.topbar {
+    min-height: 72px;
+    padding: 0 26px;
+}
+
+.brand-lockup {
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: #1a1316;
+    background: linear-gradient(145deg, #ffd08a, #c4382f);
+    border-radius: 8px;
+    font-weight: 900;
+    letter-spacing: 0;
+    box-shadow: 0 14px 38px rgba(196, 56, 47, 0.36);
+}
+
+.brand-text h1 {
+    margin: 0;
+    color: #fff3dd;
+    font-size: 1.32rem;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.brand-subtitle {
+    color: #c7b89e;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.drawer-label {
+    display: block;
+    margin: 24px 22px 10px;
+    color: #8d7f6c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 8px 14px;
+    padding: 13px 14px;
+    color: #f8ead1;
+    text-decoration: none;
+    border: 1px solid rgba(255, 208, 138, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 237, 202, 0.045);
+    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.nav-card:hover {
+    transform: translateX(3px);
+    border-color: rgba(255, 208, 138, 0.38);
+    background: rgba(196, 56, 47, 0.14);
+}
+
+.nav-title {
+    font-weight: 800;
+}
+
+.nav-caption {
+    color: #b7a58b;
+    font-size: 0.78rem;
+}
+
+.page-view {
+    width: 100%;
+    min-height: 100%;
+    padding: 30px;
+    gap: 22px;
+    background:
+        linear-gradient(180deg, rgba(255, 208, 138, 0.05), transparent 280px),
+        transparent;
+}
+
+.page-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 30px;
+    border: 1px solid rgba(255, 208, 138, 0.18);
+    border-radius: 8px;
+    background:
+        linear-gradient(115deg, rgba(196, 56, 47, 0.28), rgba(33, 24, 28, 0.84) 42%),
+        repeating-linear-gradient(90deg, rgba(255, 208, 138, 0.08) 0 1px, transparent 1px 68px);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+}
+
+.page-hero::after {
+    content: "";
+    position: absolute;
+    right: 28px;
+    top: 24px;
+    width: 170px;
+    height: 104px;
+    border: 1px solid rgba(255, 208, 138, 0.20);
+    border-radius: 8px;
+    background:
+        radial-gradient(circle at 16px 16px, rgba(255, 208, 138, 0.48) 0 3px, transparent 4px),
+        linear-gradient(135deg, rgba(255, 208, 138, 0.18), rgba(196, 56, 47, 0.20));
+    background-size: 28px 28px, auto;
+    opacity: 0.55;
+    transform: rotate(-4deg);
+}
+
+.page-hero h2 {
+    position: relative;
+    z-index: 1;
+    margin: 8px 0 8px;
+    color: #fff4dc;
+    font-size: clamp(2rem, 4vw, 4.6rem);
+    line-height: 0.95;
+    letter-spacing: 0;
+}
+
+.page-hero p {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0;
+    color: #d6c3a8;
+    font-size: 1.02rem;
+}
+
+.eyebrow {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    width: fit-content;
+    padding: 5px 10px;
+    color: #ffe1aa;
+    border: 1px solid rgba(255, 208, 138, 0.30);
+    border-radius: 999px;
+    background: rgba(255, 208, 138, 0.08);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.metric-card,
+.surface-panel,
+.grid-panel {
+    border: 1px solid rgba(255, 208, 138, 0.16);
+    border-radius: 8px;
+    background: rgba(30, 23, 27, 0.82);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.20);
+}
+
+.metric-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+}
+
+.metric-label {
+    color: #ad9d83;
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.metric-value {
+    color: #ffd08a;
+    font-size: 1.7rem;
+    font-weight: 900;
+    line-height: 1.05;
+}
+
+.metric-note {
+    color: #c1ad91;
+    font-size: 0.88rem;
+}
+
+.surface-panel {
+    padding: 20px;
+}
+
+.filter-bar {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.grid-panel {
+    flex: 1;
+    overflow: hidden;
+    padding: 4px;
+}
+
+.cinema-grid {
+    height: 100%;
+    min-height: 420px;
+}
+
+.booking-workspace {
+    align-items: stretch;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.booking-workspace > .surface-panel {
+    flex: 1 1 360px;
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.receipt-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.section-title h2 {
+    margin: 0;
+    color: #fff1d4;
+    font-size: 1.45rem;
+    line-height: 1.1;
+}
+
+.section-title p {
+    margin: 6px 0 0;
+    color: #bda98c;
+}
+
+.selection-summary {
+    display: block;
+    padding: 11px 13px;
+    color: #ffe1aa;
+    border: 1px dashed rgba(255, 208, 138, 0.28);
+    border-radius: 8px;
+    background: rgba(255, 208, 138, 0.06);
+}
+
+.ticket-policy,
+.rule-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.policy-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 208, 138, 0.10);
+}
+
+.policy-line:last-child {
+    border-bottom: 0;
+}
+
+.policy-value {
+    color: #f9e9cf;
+    font-weight: 800;
+    text-align: right;
+}
+
+.primary-action,
+.secondary-action,
+.danger-action {
+    min-height: 42px;
+    border-radius: 8px;
+    font-weight: 900;
+}
+
+.primary-action {
+    color: #1a1316;
+    background: linear-gradient(135deg, #ffd08a, #df8a3a);
+    box-shadow: 0 14px 30px rgba(223, 138, 58, 0.24);
+}
+
+.secondary-action {
+    color: #ffe1aa;
+    background: rgba(255, 208, 138, 0.10);
+}
+
+.danger-action {
+    color: #fff0df;
+    background: linear-gradient(135deg, #c4382f, #7d1f24);
+}
+
+.receipt-field {
+    font-family: "Courier New", monospace;
+}
+
+vaadin-text-field,
+vaadin-combo-box,
+vaadin-date-picker,
+vaadin-multi-select-combo-box,
+vaadin-text-area {
+    --vaadin-input-field-background: rgba(255, 237, 202, 0.08);
+    --vaadin-input-field-border-width: 1px;
+    --vaadin-input-field-border-color: rgba(255, 208, 138, 0.18);
+    --vaadin-input-field-label-color: #d8c2a1;
+    --vaadin-input-field-value-color: #fff2dc;
+}
+
+vaadin-grid {
+    --vaadin-grid-cell-background: rgba(30, 23, 27, 0.92);
+    --vaadin-grid-cell-color: #f7ead2;
+    --vaadin-grid-header-cell-background: #23191d;
+    --vaadin-grid-header-cell-color: #ffd08a;
+    --vaadin-grid-border-color: rgba(255, 208, 138, 0.12);
+}
+
+@media (max-width: 800px) {
+    .page-view {
+        padding: 18px;
+    }
+
+    .page-hero {
+        padding: 24px;
+    }
+
+    .page-hero::after {
+        display: none;
+    }
+
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+}
