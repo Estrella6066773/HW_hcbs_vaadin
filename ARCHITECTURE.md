@@ -1,51 +1,52 @@
 # HCBS Architecture
 
-This project uses a layered, feature-oriented layout so four students can work in parallel with clear ownership and low coupling between the web tier and persistence.
+Technical layering for the Horizon Cinemas Booking System. For **group roles, contribution, and presentation**, see [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md).
 
 ## Layer diagram
 
 ```text
-com.hcbs.web          → Vaadin views (Member C)
+com.hcbs.web          → Vaadin views and layout
         ↓ dto only
-com.hcbs.service.*    → Application services (Member B)
+com.hcbs.service.*    → Application services (listing, booking, cancellation)
         ↓ entities
-com.hcbs.repository   → Spring Data JPA (Member A)
+com.hcbs.repository   → Spring Data JPA
         ↓
-com.hcbs.model        → JPA entities (Member A)
+com.hcbs.model        → JPA entities and enums
 
-com.hcbs.dto          → UI-facing records (Member B defines, all layers read)
-com.hcbs.config       → Bootstrap / demo data (Member B + Member A review)
+com.hcbs.dto          → Records exposed to the web layer
+com.hcbs.config       → DataLoader (demo seed data on startup)
 ```
 
-## Feature modules (Member B)
+## Feature services
 
 | Package | Responsibility |
 | --- | --- |
-| `service.listing` | `FilmListingService` — search showings, city/cinema options, `ShowingRow` |
-| `service.booking` | `BookingService` — bookable showings, seats, receipts |
+| `service.listing` | `FilmListingService` — filter showings, city/cinema options, `ShowingRow` |
+| `service.booking` | `BookingService` — bookable showings, seat list, receipts, booking rules |
 | `service.cancellation` | `CancellationService` — lookup, cancel, 50% charge, release seats |
 
-## Web module (Member C)
+## Web layer
 
 | Class | Depends on |
 | --- | --- |
-| `FilmListingView` | `FilmListingService` only |
-| `BookingView` | `BookingService` only |
-| `CancellationView` | `CancellationService` only |
-| `MainLayout` | Route links only |
+| `FilmListingView` | `FilmListingService` |
+| `BookingView` | `BookingService` |
+| `CancellationView` | `CancellationService` |
+| `MainLayout` | Route navigation only |
 
-Views must not import `com.hcbs.repository` or bind JPA entities directly.
+Views must not import `com.hcbs.repository` or bind JPA entities in the UI.
 
-## Persistence module (Member A)
+## Persistence layer
 
-- `model/*` — entities and enums
-- `repository/*` — queries including `ShowingRepository.searchShowings` and active-seat checks on `BookingSeatRepository`
+- `model/*` — entities, enums, relationships
+- `repository/*` — including `ShowingRepository.searchShowings` and active-reservation checks on `BookingSeatRepository`
 
-## Merge / review rules
+## Dependency rules
 
-1. Changes under `model` or `repository` → reviewed by Member A.
-2. Changes under `service.*` or `dto` → reviewed by Member B.
-3. Changes under `web` or `frontend` → reviewed by Member C.
-4. Changes under `src/test` → reviewed by Member D.
+1. `web` → `service.*` and `dto` only (`SeatArea` enum in booking UI is the allowed exception).
+2. `service` → `repository` and `model`; return `dto` to the web layer.
+3. `repository` → `model` only.
 
-See [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) for the full team split.
+## Code review (by package)
+
+When merging changes, the owner for each package reviews PRs touching that area. Owner mapping (Members A–D) is listed in [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) §2.

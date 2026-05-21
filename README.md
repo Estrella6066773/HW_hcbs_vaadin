@@ -4,26 +4,27 @@
 **Institution:** UWE Bristol  
 **Academic year:** 2025–2026  
 
-A group coursework implementation of the *Horizon Cinemas Booking System* case study. The application supports **film listing**, **ticket booking**, and **booking cancellation** through a Vaadin web interface backed by Spring Boot and JPA.
+Horizon Cinemas Booking System is a web application for cinema staff to browse film showings, sell tickets, and process cancellations. It implements the three core functions required by the HCBS case study.
 
 **Languages:** English (this file) · [简体中文](README_CN.md)
+
+> Group membership, contribution split, and presentation notes are documented separately in [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md). This readme describes **what the software does** and **how to run it** only.
 
 ---
 
 ## Table of contents
 
 - [Features](#features)
+- [User flows](#user-flows)
 - [Technology stack](#technology-stack)
 - [Project structure](#project-structure)
-- [Team organisation](#team-organisation)
-- [Presentation (individual)](#presentation-individual)
+- [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [How to run](#how-to-run)
 - [How to test](#how-to-test)
 - [Business rules](#business-rules)
 - [Demo data](#demo-data)
-- [Submission notes](#submission-notes)
-- [Further reading](#further-reading)
+- [Related documents](#related-documents)
 
 ---
 
@@ -31,11 +32,37 @@ A group coursework implementation of the *Horizon Cinemas Booking System* case s
 
 | Function | Route | Description |
 | --- | --- | --- |
-| **Film listing** | `/` | Filter showings by city, cinema, date, and film title; view description, cast, genre, age rating, times, and available seats. |
-| **Booking** | `/booking` | Select a showing and seats (lower hall / upper gallery); receive a receipt with a unique reference. |
-| **Cancellation** | `/cancellation` | Look up a booking by reference; cancel before show day with a 50% charge. |
+| **Film listing** | `/` | Filter showings by city, cinema, date, and film title. The grid shows film title, description, cast, genre, age rating, cinema, screen, date, start/end time, time band, and available seats. |
+| **Booking** | `/booking` | Pick a showing within the allowed booking window, choose seat area (lower hall or upper gallery), select one or more free seats, and confirm. A receipt is printed with a unique booking reference. |
+| **Cancellation** | `/cancellation` | Find a booking by reference, review status and cancellation charge, and cancel if the policy allows. |
 
-Out of scope (by coursework design): Admin/Manager screens, login and role-based access control, payment processing.
+**Not implemented** (out of coursework scope): Admin/Manager screens, login and role-based access control, payment processing.
+
+---
+
+## User flows
+
+### Film listing
+
+1. Open the home page.
+2. Optionally set city, cinema, date, and/or film title filter.
+3. Click **Search** to refresh the grid.
+4. Review sessions and remaining capacity before moving to booking.
+
+### Booking
+
+1. Open **Booking** from the menu.
+2. Select a showing from the dropdown (only dates within the next seven days are listed).
+3. Choose **Seat area** (lower hall or upper gallery).
+4. Select one or more available seats.
+5. Click **Confirm booking** and read the receipt (reference, film, date/time, screen, seats, total, booking timestamp).
+
+### Cancellation
+
+1. Open **Cancellation** from the menu.
+2. Enter the booking reference and click **Find booking**.
+3. Check whether cancellation is allowed and the 50% charge.
+4. Click **Cancel booking** if eligible; the detail panel updates with the new status and charge.
 
 ---
 
@@ -57,53 +84,38 @@ Out of scope (by coursework design): Admin/Manager screens, login and role-based
 ```text
 hcbs-vaadin/
 ├── src/main/java/com/hcbs/
-│   ├── model/              # JPA entities (Member A)
-│   ├── repository/         # Data access (Member A)
-│   ├── dto/                # UI-facing records (Member B)
+│   ├── model/              # JPA entities
+│   ├── repository/         # Spring Data repositories
+│   ├── dto/                # Data passed to the UI layer
 │   ├── service/
 │   │   ├── listing/        # FilmListingService
 │   │   ├── booking/        # BookingService
 │   │   └── cancellation/   # CancellationService
-│   ├── web/                # Vaadin views (Member C)
-│   └── config/             # DataLoader seed data
-├── src/test/java/          # Unit & integration tests (Member D)
-├── frontend/themes/hcbs/   # Application theme (Member C)
+│   ├── web/                # Vaadin views and layout
+│   └── config/             # DataLoader (demo seed data)
+├── src/test/java/          # Automated tests
+├── frontend/themes/hcbs/   # Application theme
 ├── TEST_CASES.md           # Manual test case table
-├── ARCHITECTURE.md         # Layering and dependency rules
-└── CONTRIBUTION_MATRIX.md  # Group contribution breakdown (Members A–D)
+└── ARCHITECTURE.md         # Layering and dependency rules
 ```
 
-**Dependency rule:** `web` → `service` + `dto` only; `service` → `repository` + `model`; views must not call repositories or bind JPA entities directly.
-
 ---
 
-## Team organisation
+## Architecture
 
-Work is split across four members to match the modular packages:
+The application follows a layered layout:
 
-| Member | Role | Primary packages |
-| --- | --- | --- |
-| **A** | Persistence & data design | `model/`, `repository/`, Exercise 1 ERD |
-| **B** | Application services & DTOs | `dto/`, `service/*`, `config/DataLoader` |
-| **C** | Web UI & theme | `web/`, `frontend/themes/hcbs/` |
-| **D** | Testing & delivery | `src/test/`, `TEST_CASES.md`, submission pack |
+```text
+web  →  service.*  →  repository  →  model
+         ↑
+        dto (UI-facing records)
+```
 
-See [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) for percentages and deliverables. See [ARCHITECTURE.md](ARCHITECTURE.md) for review rules before merging.
+- **Web** calls application services only and binds DTOs—not JPA entities or repositories.
+- **Services** enforce business rules (pricing, booking window, cancellation policy).
+- **Repositories** handle persistence queries (e.g. filtered showings, active seat reservations).
 
----
-
-## Presentation (individual)
-
-The demo session (20% of the module) uses **individual presentations**: **each member explains their own part** of the system. There is no single group spokesperson for the whole project.
-
-| Member | Typical focus (3–5 min each) |
-| --- | --- |
-| **A** | ERD, schema, entities, repository queries |
-| **B** | Services, business rules, DTOs, seed data |
-| **C** | Vaadin views, navigation, theme, live UI walkthrough |
-| **D** | Test strategy, `TEST_CASES.md`, automated tests, scope limits |
-
-All members must attend. Tutors may ask questions on **your** module only. Speaking notes are in [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) §5.
+Details: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -133,7 +145,7 @@ http://localhost:8080
 
 **Navigation:** Film Listing (home) · Booking · Cancellation (drawer menu).
 
-After changing Vaadin dependencies or the theme, refresh the frontend once:
+After changing Vaadin dependencies or the theme:
 
 ```powershell
 mvn "-Dmaven.repo.local=.m2/repository" vaadin:prepare-frontend
@@ -157,7 +169,7 @@ mvn "-Dmaven.repo.local=.m2/repository" clean test
 | `DataLoaderTest` | Seed data (cities, cinemas, seats) |
 | `UiThemeTest` | Custom `hcbs` theme |
 
-Manual scenarios are documented in [TEST_CASES.md](TEST_CASES.md) (TC_001–TC_011).
+Manual scenarios: [TEST_CASES.md](TEST_CASES.md) (TC_001–TC_011).
 
 Package the application:
 
@@ -169,16 +181,18 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 
 ## Business rules
 
-| Rule | Implementation |
+| Rule | Behaviour |
 | --- | --- |
-| Unique booking reference | Generated in `BookingService` until unique |
-| Book up to 7 days ahead | `validateBookingDate` |
-| No double booking of the same seat | Active `CONFIRMED` reservations only |
-| Ticket price | City × time band × seat area (`PriceRule`) |
-| Cancel at least one day before show | `CancellationService.canCancel` |
+| Unique booking reference | Generated until unique (`HCBS-` prefix) |
+| Booking window | From today up to 7 days before show date |
+| Past showings | Cannot be booked |
+| Seat availability | A seat cannot be sold twice for the same showing while booking is `CONFIRMED` |
+| Ticket price | Based on city, time band (morning / afternoon / evening), and seat area |
+| Upper gallery | Priced £2 above lower hall for the same city and band |
+| Cancellation timing | Allowed only if today is **before** the show date |
 | Cancellation fee | 50% of total booking cost |
-| No same-day cancellation | Rejected with clear message |
-| Seats after cancellation | `BookingSeat` rows removed; seats available again |
+| Same-day cancellation | Rejected |
+| After cancellation | Booking seats are released; seats can be booked again |
 
 ---
 
@@ -186,50 +200,31 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 
 On first startup, `DataLoader` seeds:
 
-- **Cities:** London, Birmingham, Bristol, Cardiff (≥2 cinemas each)
-- **Screens:** 2 per cinema, 50 seats each (25 lower hall + 25 upper gallery)
-- **Films & actors:** Sample titles with cast links
-- **Showings:** Spread across the next few days
-- **Price rules:** Lower-hall table from the case study; upper gallery +£2
-- **Users:** `staff` (booking), `admin`, `manager` — no login UI; booking uses `BOOKING_STAFF`
+| Data | Content |
+| --- | --- |
+| Cities | London, Birmingham, Bristol, Cardiff (≥2 cinemas each) |
+| Screens | 2 per cinema, 50 seats (25 lower hall + 25 upper gallery) |
+| Films & actors | Sample titles with cast links |
+| Showings | Sessions over the next few days |
+| Price rules | Case-study lower-hall prices; upper gallery +£2 |
+| Users | `staff`, `admin`, `manager` in the database |
+
+There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user automatically.
 
 ---
 
-## Submission notes
+## Related documents
 
-Blackboard typically requires (check the latest brief):
-
-1. **Exercise 1:** ERD, logical schema, short design explanation (PDF).
-2. **Exercise 2:** Full source in `Group_No.zip` plus this README (how to run).
-3. **Exercise 3:** Test evidence — `TEST_CASES.md`, test classes, and optional screenshots.
-4. **Contribution matrix:** [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md); all members present; **each presents their own section** (not one unified talk).
-
-Zip layout suggestion:
-
-```text
-Group_No.zip
-├── src/
-├── pom.xml
-├── README.md
-├── README_CN.md
-├── ARCHITECTURE.md
-├── CONTRIBUTION_MATRIX.md
-├── TEST_CASES.md
-└── (optional) docs/ERD.pdf
-```
+| Document | Purpose |
+| --- | --- |
+| [README_CN.md](README_CN.md) | Chinese version of this readme |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Technical layering and dependencies |
+| [TEST_CASES.md](TEST_CASES.md) | Manual test case table |
+| [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | Group members, contributions, presentation (not covered here) |
+| `.Docs/req/` | Case study and coursework brief |
 
 ---
 
-## Further reading
+## Academic integrity
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — layers, modules, code review ownership  
-- [README_CN.md](README_CN.md) — Chinese readme  
-- [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) — Members A–D contribution breakdown  
-- [TEST_CASES.md](TEST_CASES.md) — coursework test case table  
-- Case study & brief: `.Docs/req/`
-
----
-
-## Licence & academic integrity
-
-Coursework submission for IN3338. All group members are responsible for the submitted work. Do not copy from other groups; cite any external resources used in your report.
+Coursework submission for IN3338. Cite any external resources used in your report. Do not copy from other groups.

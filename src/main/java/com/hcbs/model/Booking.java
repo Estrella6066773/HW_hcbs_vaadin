@@ -1,5 +1,6 @@
 package com.hcbs.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,6 +24,7 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookingId;
 
+    @Column(nullable = false, unique = true, length = 32)
     private String bookingReference;
 
     @ManyToOne(optional = false)

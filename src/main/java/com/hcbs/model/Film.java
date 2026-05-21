@@ -1,5 +1,6 @@
 package com.hcbs.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +18,7 @@ public class Film {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long filmId;
 
+    @Column(nullable = false, unique = true, length = 200)
     private String title;
     private String description;
     private String genre;

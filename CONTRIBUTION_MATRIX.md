@@ -7,7 +7,16 @@
 **Repository:** `hcbs-vaadin`  
 **Submission date:** ___ / ___ / 2026  
 
-本矩阵与代码模块化结构一致，详见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+## 文档分工说明
+
+| 文档 | 内容 |
+| --- | --- |
+| [README.md](README.md) / [README_CN.md](README_CN.md) | **仅**系统功能、运行、测试、业务规则（给用户与评分人看「软件做什么」） |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 技术分层与依赖规则（不含成员姓名） |
+| **本文件** | 成员 A–D 分工、贡献比例、交付清单、分项答辩、签字 |
+| [TEST_CASES.md](TEST_CASES.md) | 测试用例表 |
+
+本矩阵与代码包结构一致；技术架构见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 ---
 
@@ -102,7 +111,7 @@ Exercise 1 / 2 / 3 列为该练习**组内**相对投入，用于说明分工，
 | C3 | 取消页 | `CancellationView`（仅依赖 `CancellationService`） | ☑ |
 | C4 | 布局与导航 | `MainLayout`, `AppShell` | ☑ |
 | C5 | 主题样式 | `frontend/themes/hcbs/styles.css` | ☑ |
-| C6 | 运行说明 | 与 `README.md` 启动步骤一致 | ☑ |
+| C6 | 功能说明文档 | 与 `README` / `README_CN` 中的界面流程描述一致（不负责撰写贡献矩阵） | ☑ |
 | C7 | 协作 | 联调订票/取消流程；按 D 反馈改提示文案 | ☑ |
 
 ---
@@ -151,10 +160,24 @@ Exercise 1 / 2 / 3 列为该练习**组内**相对投入，用于说明分工，
 
 **D** 负责协调答辩顺序与计时，**不代替** A/B/C 讲解其模块。
 
-### 5.4 与 README 的对应
+### 5.4 与功能说明文档的关系
 
-- 英文运行说明：[README.md](README.md)  
-- 中文运行说明：[README_CN.md](README_CN.md)  
+- 答辩时演示操作可对照 [README_CN.md](README_CN.md) 中的使用流程。  
+- 个人答辩内容（ERD、Service、界面、测试）以本节与第 4 节为准，**不必在 README 中重复**。  
+
+### 5.5 建议提交包中的文档
+
+```text
+Group_No.zip
+├── src/
+├── pom.xml
+├── README.md              # 功能说明（英文）
+├── README_CN.md           # 功能说明（中文）
+├── CONTRIBUTION_MATRIX.md # 本文件：成员贡献与答辩
+├── ARCHITECTURE.md
+├── TEST_CASES.md
+└── （可选）docs/ERD.pdf
+```
 
 ---
 
