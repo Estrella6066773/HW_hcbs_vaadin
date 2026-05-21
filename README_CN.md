@@ -196,18 +196,21 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 
 ## 演示数据
 
-首次启动时，`DataLoader` 写入：
+首次启动时，`HcbsTestDataSeeder` 写入完整测试库（详见 [TEST_DATABASE.md](TEST_DATABASE.md)）：
 
 | 数据 | 内容 |
 | --- | --- |
-| 城市 | London、Birmingham、Bristol、Cardiff（每城至少 2 家影院） |
-| 银幕 | 每影院 2 块，每块 50 座（下厅 25 + 上厅 25） |
-| 影片与演员 | 示例片目及演职员关联 |
-| 场次 | 未来数日内的放映 |
-| 票价 | 案例下厅价目；上厅 +£2 |
+| 城市 | London、Birmingham、Bristol、Cardiff（每城 2 家影院） |
+| 银幕 | 旗舰店 4 块（50–120 座）；分店 2×50 座；下厅/上厅各半 |
+| 影片与演员 | 5 部影片、4 名演员及关联 |
+| 场次 | 含今天、明天、+3～+8 天及昨天等边界场次 |
+| 票价 | 四城下厅价目表；上厅 +£2 |
 | 用户 | 库中存在 `staff`、`admin`、`manager` |
+| 预置订单 | 参考号 `HCBS-SEED001`（用于取消功能演示） |
 
 无登录界面；订票自动记在使用角色为 `BOOKING_STAFF` 的用户下。
+
+**重置数据库：** 停止应用后删除 `./data/hcbs.mv.db`，再重新启动即可重新灌入种子数据。
 
 ---
 
@@ -218,6 +221,7 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 | [README.md](README.md) | 英文功能说明（本稿中文对应版） |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 技术分层与依赖 |
 | [TEST_CASES.md](TEST_CASES.md) | 手工测试用例表 |
+| [TEST_DATABASE.md](TEST_DATABASE.md) | 测试数据库设计、种子数据场景与重置方法 |
 | [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 成员贡献与答辩（不在本文档中说明） |
 | `.Docs/req/` | 案例与作业要求 |
 

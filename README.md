@@ -198,7 +198,7 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 
 ## Demo data
 
-On first startup, `DataLoader` seeds:
+On first startup, `HcbsTestDataSeeder` loads a full **test database** aligned with the case study (see [TEST_DATABASE.md](TEST_DATABASE.md)):
 
 | Data | Content |
 | --- | --- |
@@ -211,6 +211,10 @@ On first startup, `DataLoader` seeds:
 
 There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user automatically.
 
+**Pre-seeded booking:** reference `HCBS-SEED001` (for cancellation demos on the Cancellation page).
+
+**Reset data:** stop the app, delete `./data/hcbs.mv.db`, then start again to re-run the seeder.
+
 ---
 
 ## Related documents
@@ -220,6 +224,7 @@ There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user
 | [README_CN.md](README_CN.md) | Chinese version of this readme |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Technical layering and dependencies |
 | [TEST_CASES.md](TEST_CASES.md) | Manual test case table |
+| [TEST_DATABASE.md](TEST_DATABASE.md) | Test database design, seed scenarios, reset steps |
 | [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | Group members, contributions, presentation (not covered here) |
 | `.Docs/req/` | Case study and coursework brief |
 
