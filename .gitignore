@@ -28,6 +28,9 @@ webpack.generated.js
 drivers/
 error-screenshots/
 
+# --- Cursor (local Agent rules, private) ---
+.cursor/
+
 # --- IDEs ---
 .idea/
 *.iml
