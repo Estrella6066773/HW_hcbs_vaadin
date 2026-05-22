@@ -6,9 +6,9 @@
 
 Horizon Cinemas Booking System is a web application for cinema staff to browse film showings, sell tickets, and process cancellations. It implements the three core functions required by the HCBS case study.
 
-**Languages:** English (this file) · [简体中文](README_CN.md)
+**Languages:** English (this file) · [简体中文](.Docs/README_CN.md)
 
-> Group membership, contribution split, and presentation notes are documented separately in [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md). This readme describes **what the software does** and **how to run it** only.
+> Group membership, contribution split, and presentation notes are in [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md). This readme describes **what the software does** and **how to run it** only.
 
 ---
 
@@ -32,7 +32,9 @@ Horizon Cinemas Booking System is a web application for cinema staff to browse f
 
 | Function | Route | Description |
 | --- | --- | --- |
-| **Film listing** | `/` | Filter showings by city, cinema, date, and film title. The grid shows film title, description, cast, genre, age rating, cinema, screen, date, start/end time, time band, and available seats. |
+| **Home** | `/` | Poster grid of all films; search by title, genre, or description; click a card for details. |
+| **Film detail** | `/film/{id}` | Synopsis, cast, rating, and upcoming showtimes for one film. |
+| **Film listing** | `/listings` | Filter showings by city, cinema, date, and film title. The grid shows film title, description, cast, genre, age rating, cinema, screen, date, start/end time, time band, and available seats. |
 | **Booking** | `/booking` | Pick a showing within the allowed booking window, choose seat area (lower hall or upper gallery), select one or more free seats, and confirm. A receipt is printed with a unique booking reference. |
 | **Cancellation** | `/cancellation` | Find a booking by reference, review status and cancellation charge, and cancel if the policy allows. |
 
@@ -95,8 +97,14 @@ hcbs-vaadin/
 │   └── config/             # DataLoader (demo seed data)
 ├── src/test/java/          # Automated tests
 ├── frontend/themes/hcbs/   # Application theme
-├── TEST_CASES.md           # Manual test case table
-└── ARCHITECTURE.md         # Layering and dependency rules
+├── README.md               # Functional overview (this file)
+└── .Docs/                  # All other documentation
+    ├── README_CN.md
+    ├── ARCHITECTURE.md
+    ├── CONTRIBUTION_MATRIX.md
+    ├── TEST_CASES.md
+    ├── TEST_DATABASE.md
+    └── req/                # Case study & coursework briefs
 ```
 
 ---
@@ -115,7 +123,7 @@ web  →  service.*  →  repository  →  model
 - **Services** enforce business rules (pricing, booking window, cancellation policy).
 - **Repositories** handle persistence queries (e.g. filtered showings, active seat reservations).
 
-Details: [ARCHITECTURE.md](ARCHITECTURE.md).
+Details: [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md).
 
 ---
 
@@ -126,6 +134,8 @@ Details: [ARCHITECTURE.md](ARCHITECTURE.md).
 - A modern browser for `http://localhost:8080`
 
 On Windows, if the project lives under OneDrive, close any running dev server before `mvn test` to avoid file locks under `frontend/generated`.
+
+**Git:** Local runtime data is not committed — see `.gitignore` (`data/`, H2 `*.mv.db`, `target/`, `.m2/`, `frontend/generated/`). After `spring-boot:run`, do not add `./data/` to commits.
 
 ---
 
@@ -169,7 +179,7 @@ mvn "-Dmaven.repo.local=.m2/repository" clean test
 | `DataLoaderTest` | Seed data (cities, cinemas, seats) |
 | `UiThemeTest` | Custom `hcbs` theme |
 
-Manual scenarios: [TEST_CASES.md](TEST_CASES.md) (TC_001–TC_011).
+Manual scenarios: [.Docs/TEST_CASES.md](.Docs/TEST_CASES.md) (TC_001–TC_011).
 
 Package the application:
 
@@ -198,14 +208,14 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 
 ## Demo data
 
-On first startup, `HcbsTestDataSeeder` loads a full **test database** aligned with the case study (see [TEST_DATABASE.md](TEST_DATABASE.md)):
+On first startup, `HcbsTestDataSeeder` loads a full **test database** aligned with the case study (see [.Docs/TEST_DATABASE.md](.Docs/TEST_DATABASE.md)):
 
 | Data | Content |
 | --- | --- |
 | Cities | London, Birmingham, Bristol, Cardiff (≥2 cinemas each) |
-| Screens | 2 per cinema, 50 seats (25 lower hall + 25 upper gallery) |
-| Films & actors | Sample titles with cast links |
-| Showings | Sessions over the next few days |
+| Screens | Flagship 4 screens (50–120 seats); secondary 2×50; lower/upper split per screen |
+| Films & actors | 5 films with cast, posters, and searchable descriptions |
+| Showings | 18 dated sessions across four cities (booking/cancellation edge cases) |
 | Price rules | Case-study lower-hall prices; upper gallery +£2 |
 | Users | `staff`, `admin`, `manager` in the database |
 
@@ -221,12 +231,13 @@ There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user
 
 | Document | Purpose |
 | --- | --- |
-| [README_CN.md](README_CN.md) | Chinese version of this readme |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Technical layering and dependencies |
-| [TEST_CASES.md](TEST_CASES.md) | Manual test case table |
-| [TEST_DATABASE.md](TEST_DATABASE.md) | Test database design, seed scenarios, reset steps |
-| [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | Group members, contributions, presentation (not covered here) |
-| `.Docs/req/` | Case study and coursework brief |
+| [.Docs/README.md](.Docs/README.md) | Index of all project documentation |
+| [.Docs/README_CN.md](.Docs/README_CN.md) | Chinese version of this readme |
+| [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md) | Technical layering and dependencies |
+| [.Docs/TEST_CASES.md](.Docs/TEST_CASES.md) | Manual test case table |
+| [.Docs/TEST_DATABASE.md](.Docs/TEST_DATABASE.md) | Test database design, seed scenarios, reset steps |
+| [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md) | Group members, contributions, presentation |
+| [.Docs/req/](.Docs/req/) | Case study and coursework brief |
 
 ---
 

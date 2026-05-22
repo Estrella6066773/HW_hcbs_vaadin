@@ -1,6 +1,8 @@
 package com.hcbs.config;
 
 import com.hcbs.model.SeatArea;
+import com.hcbs.model.Showing;
+import com.hcbs.model.TimeBand;
 import com.hcbs.repository.BookingRepository;
 import com.hcbs.repository.CinemaRepository;
 import com.hcbs.repository.CityRepository;
@@ -12,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -82,7 +86,17 @@ class DataLoaderTest {
 
     @Test
     void createsShowingsForBookingAndCancellationScenarios() {
-        assertThat(showingRepository.count()).isGreaterThanOrEqualTo(10);
+        assertThat(showingRepository.count()).isGreaterThanOrEqualTo(18);
+    }
+
+    @Test
+    void anchorShowingSupportsAutomatedBookingTests() {
+        Showing anchor = showingRepository.findAll().getFirst();
+        assertThat(anchor.getFilm().getTitle()).isEqualTo("Skyline Run");
+        assertThat(anchor.getScreen().getCinema().getName()).contains("London Central");
+        assertThat(anchor.getScreen().getScreenNumber()).isEqualTo(1);
+        assertThat(anchor.getShowDate()).isEqualTo(LocalDate.now().plusDays(HcbsTestDataSeeder.ANCHOR_SHOWING_DAY_OFFSET));
+        assertThat(anchor.getTimeBand()).isEqualTo(TimeBand.EVENING);
     }
 
     @Test

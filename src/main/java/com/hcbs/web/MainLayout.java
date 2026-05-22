@@ -40,6 +40,7 @@ public class MainLayout extends AppLayout {
         Span drawerLabel = new Span("Operations");
         drawerLabel.addClassName("drawer-label");
         addToDrawer(drawerLabel);
+        addToDrawer(navLink("Home", FilmRecommendView.class, "Browse and search films"));
         addToDrawer(navLink("Film Listing", FilmListingView.class, "Now showing"));
         addToDrawer(navLink("Booking", BookingView.class, "Ticket desk"));
         addToDrawer(navLink("Cancellation", CancellationView.class, "Refund desk"));

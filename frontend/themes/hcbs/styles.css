@@ -1,4 +1,5 @@
 :root {
+    --hcbs-page-gutter: clamp(16px, 2.5vw, 32px);
     --lumo-font-family: Georgia, "Times New Roman", serif;
     --lumo-primary-color: #c4382f;
     --lumo-primary-text-color: #ffd08a;
@@ -16,6 +17,7 @@
 }
 
 html {
+    scrollbar-gutter: stable;
     background:
         linear-gradient(125deg, rgba(196, 56, 47, 0.20), transparent 28%),
         radial-gradient(circle at 84% 12%, rgba(255, 186, 91, 0.18), transparent 32%),
@@ -38,6 +40,11 @@ vaadin-app-layout::part(drawer) {
         linear-gradient(180deg, rgba(196, 56, 47, 0.16), transparent 38%),
         #1a1316;
     border-right: 1px solid rgba(255, 208, 138, 0.16);
+}
+
+vaadin-app-layout.hcbs-shell::part(content) {
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .topbar {
@@ -117,11 +124,15 @@ vaadin-app-layout::part(drawer) {
     font-size: 0.78rem;
 }
 
-.page-view {
+vaadin-vertical-layout.page-view {
     width: 100%;
+    max-width: 100%;
     min-height: 100%;
-    padding: 30px;
+    margin: 0;
+    padding: var(--hcbs-page-gutter);
     gap: 22px;
+    box-sizing: border-box;
+    overflow-x: hidden;
     background:
         linear-gradient(180deg, rgba(255, 208, 138, 0.05), transparent 280px),
         transparent;
@@ -129,6 +140,11 @@ vaadin-app-layout::part(drawer) {
 
 .page-hero {
     position: relative;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
     overflow: hidden;
     padding: 30px;
     border: 1px solid rgba(255, 208, 138, 0.18);
@@ -304,6 +320,26 @@ vaadin-app-layout::part(drawer) {
     gap: 10px;
 }
 
+.walkthrough-panel {
+    margin: 0;
+    padding: 16px 18px;
+    white-space: pre-wrap;
+    font-family: var(--lumo-font-family);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--lumo-secondary-text-color);
+    background: rgba(255, 208, 138, 0.06);
+    border: 1px solid rgba(255, 208, 138, 0.14);
+    border-radius: var(--lumo-border-radius-m);
+}
+
+.scenario-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
 .policy-line {
     display: flex;
     justify-content: space-between;
@@ -370,9 +406,159 @@ vaadin-grid {
     --vaadin-grid-border-color: rgba(255, 208, 138, 0.12);
 }
 
+.demo-guide-panel {
+    padding: 28px 32px;
+    max-width: 720px;
+}
+
+.demo-step {
+    margin-bottom: 8px;
+}
+
+.demo-step h3 {
+    margin: 0 0 8px;
+    color: #ffd08a;
+    font-size: 1.15rem;
+}
+
+.demo-hint {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 208, 138, 0.16);
+    color: var(--lumo-secondary-text-color);
+    font-size: 0.95rem;
+}
+
+.film-poster-grid {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+.film-poster-card {
+    display: flex;
+    flex: 1 1 220px;
+    max-width: 280px;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(255, 230, 196, 0.05);
+    border: 1px solid rgba(255, 208, 138, 0.18);
+    border-radius: var(--lumo-border-radius-l);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.film-poster-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 208, 138, 0.42);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.film-poster-image {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: var(--lumo-border-radius-m);
+    background: #2a1f24;
+}
+
+.film-poster-title {
+    margin: 0;
+    color: #fff3dd;
+    font-size: 1.05rem;
+    line-height: 1.2;
+}
+
+.film-poster-meta {
+    color: var(--lumo-secondary-text-color);
+    font-size: 0.82rem;
+}
+
+.home-result-count {
+    color: #c7b89e;
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+.home-empty-message {
+    width: 100%;
+    margin: 24px 0;
+    padding: 20px;
+    color: #d6c3a8;
+    text-align: center;
+    border: 1px dashed rgba(255, 208, 138, 0.28);
+    border-radius: 8px;
+    background: rgba(255, 208, 138, 0.06);
+}
+
+.film-detail-root {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+}
+
+.film-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.film-detail-header {
+    gap: 28px;
+}
+
+.film-detail-poster {
+    width: 220px;
+    max-width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: var(--lumo-border-radius-l);
+    border: 1px solid rgba(255, 208, 138, 0.22);
+    flex-shrink: 0;
+}
+
+.film-detail-copy h2 {
+    margin: 0 0 10px;
+    color: #fff3dd;
+}
+
+.film-detail-meta {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--lumo-secondary-text-color);
+    font-size: 0.92rem;
+}
+
+.film-detail-copy p {
+    margin: 0 0 10px;
+    max-width: 62ch;
+    color: var(--lumo-body-text-color);
+}
+
+.section-heading {
+    margin: 0 0 12px;
+    color: #ffd08a;
+    font-size: 1.15rem;
+}
+
 @media (max-width: 800px) {
-    .page-view {
-        padding: 18px;
+    :root {
+        --hcbs-page-gutter: 16px;
+    }
+
+    vaadin-vertical-layout.page-view {
+        padding: var(--hcbs-page-gutter);
     }
 
     .page-hero {
@@ -385,5 +571,14 @@ vaadin-grid {
 
     .metric-grid {
         grid-template-columns: 1fr;
+    }
+
+    .film-detail-header {
+        flex-direction: column;
+    }
+
+    .film-poster-card {
+        flex: 1 1 calc(50% - 0.75rem);
+        max-width: none;
     }
 }

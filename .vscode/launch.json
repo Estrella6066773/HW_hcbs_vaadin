@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "HCBS (Spring Boot)",
+      "request": "launch",
+      "mainClass": "com.hcbs.HcbsApplication",
+      "projectName": "hcbs-vaadin",
+      "args": "",
+      "vmArgs": "-Dspring.profiles.active=dev"
+    }
+  ]
+}

@@ -35,6 +35,8 @@ public class BookingView extends VerticalLayout {
     public BookingView(BookingService bookingService) {
         this.bookingService = bookingService;
         setSizeFull();
+        setPadding(false);
+        setMargin(false);
         addClassName("page-view");
 
         showing.setItems(bookingService.listBookableShowings());

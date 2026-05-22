@@ -7,15 +7,22 @@ replay_pid*
 # Local Maven repository (see README: -Dmaven.repo.local=.m2/repository)
 .m2/
 
-# --- Spring Boot / H2 ---
+# --- Spring Boot / H2 (runtime & local test database) ---
 # jdbc:h2:file:./data/hcbs (application.properties)
 data/
+*.mv.db
+*.trace.db
+*.lock.db
+
+# Local overrides (credentials, personal JDBC URLs) — never commit
+application-local.properties
+**/application-local.properties
 
 # --- Logs ---
 *.log
 logs/
 
-# --- Vaadin frontend (vaadin-maven-plugin) ---
+# --- Vaadin frontend (generated locally by vaadin-maven-plugin) ---
 node_modules/
 frontend/generated/
 src/main/frontend/generated/

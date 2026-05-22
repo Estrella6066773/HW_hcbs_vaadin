@@ -26,13 +26,22 @@ public class Film {
     private double rating;
     private int durationMinutes;
 
+    /** Classpath-relative poster URL, e.g. /images/posters/skyline-run.svg */
+    private String posterUrl;
+
     public Film(String title, String description, String genre, String ageRating, double rating, int durationMinutes) {
+        this(title, description, genre, ageRating, rating, durationMinutes, null);
+    }
+
+    public Film(String title, String description, String genre, String ageRating, double rating, int durationMinutes,
+                String posterUrl) {
         this.title = title;
         this.description = description;
         this.genre = genre;
         this.ageRating = ageRating;
         this.rating = rating;
         this.durationMinutes = durationMinutes;
+        this.posterUrl = posterUrl;
     }
 
     @Override

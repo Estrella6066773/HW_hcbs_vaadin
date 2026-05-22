@@ -25,6 +25,8 @@ public class CancellationView extends VerticalLayout {
     public CancellationView(CancellationService cancellationService) {
         this.cancellationService = cancellationService;
         setSizeFull();
+        setPadding(false);
+        setMargin(false);
         addClassName("page-view");
 
         details.setWidthFull();

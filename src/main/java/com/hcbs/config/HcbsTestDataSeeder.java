@@ -41,14 +41,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Seeds an H2 database that matches the HCBS case study and supports manual/automated test scenarios.
- * See TEST_DATABASE.md for scenario mapping.
+ * Seeds an H2 database aligned with the HCBS case study and automated/manual test scenarios.
+ * See .Docs/TEST_DATABASE.md for the scenario catalogue.
  */
 @Component
 public class HcbsTestDataSeeder {
 
     /** Fixed reference for cancellation UI/manual tests (show date = today + 1). */
     public static final String SEED_BOOKING_REFERENCE = "HCBS-SEED001";
+
+    /**
+     * Day offset for the anchor showing — first row in {@code ShowingRepository.findAll()} order.
+     * Used by {@code BookingServiceTest} (London evening lower hall, £12 per seat).
+     */
+    public static final int ANCHOR_SHOWING_DAY_OFFSET = 3;
+
+    private static final int[] FLAGSHIP_SCREEN_CAPACITIES = {50, 80, 100, 120};
+    private static final List<String> FLAGSHIP_CINEMA_KEYS = List.of(
+            "London-Central", "Birmingham-Bullring", "Bristol-Harbour", "Cardiff-Bay");
+    private static final List<String> SECONDARY_CINEMA_KEYS = List.of(
+            "London-East", "Birmingham-NewStreet", "Bristol-Clifton", "Cardiff-Central");
 
     private final CityRepository cityRepository;
     private final CinemaRepository cinemaRepository;
@@ -85,14 +97,15 @@ public class HcbsTestDataSeeder {
 
     @Transactional
     public void seedAll() {
-        Map<String, City> cities = seedCities();
-        Map<String, Cinema> cinemas = seedCinemas(cities);
-        seedScreensAndSeats(cinemas);
-        Map<String, Film> films = seedFilmsAndActors();
-        seedPriceRules(cities);
+        SeedContext ctx = new SeedContext();
+        ctx.cities = seedCities();
+        ctx.cinemas = seedCinemas(ctx.cities);
+        ctx.screens = seedScreensAndSeats(ctx.cinemas);
+        ctx.films = seedFilmsAndActors();
+        seedPriceRules(ctx.cities);
         User staff = seedUsers();
-        List<Showing> showings = seedShowings(cinemas, films);
-        seedSampleBooking(staff, showings);
+        ctx.showings = seedShowings(ctx);
+        seedSampleBookings(staff, ctx);
     }
 
     private Map<String, City> seedCities() {
@@ -118,24 +131,28 @@ public class HcbsTestDataSeeder {
     }
 
     /**
-     * Flagship sites: up to 4 screens, capacities 50–120. Secondary sites: 2×50 (case: ≥2 cinemas per city, ≤6 screens).
+     * Flagship: 4 screens (50–120 seats). Secondary: 2×50 seats. Case: ≥2 cinemas/city, ≤6 screens/cinema.
      */
-    private void seedScreensAndSeats(Map<String, Cinema> cinemas) {
-        int[] flagshipCapacities = {50, 80, 100, 120};
-        for (String key : List.of("London-Central", "Birmingham-Bullring", "Bristol-Harbour", "Cardiff-Bay")) {
-            Cinema cinema = cinemas.get(key);
-            for (int i = 0; i < flagshipCapacities.length; i++) {
-                Screen screen = screenRepository.save(new Screen(cinema, i + 1, flagshipCapacities[i]));
-                createSeats(screen, flagshipCapacities[i]);
+    private Map<String, Screen> seedScreensAndSeats(Map<String, Cinema> cinemas) {
+        Map<String, Screen> screens = new LinkedHashMap<>();
+        for (String cinemaKey : FLAGSHIP_CINEMA_KEYS) {
+            Cinema cinema = cinemas.get(cinemaKey);
+            for (int i = 0; i < FLAGSHIP_SCREEN_CAPACITIES.length; i++) {
+                int capacity = FLAGSHIP_SCREEN_CAPACITIES[i];
+                Screen screen = screenRepository.save(new Screen(cinema, i + 1, capacity));
+                screens.put(screenKey(cinemaKey, i + 1), screen);
+                createSeats(screen, capacity);
             }
         }
-        for (String key : List.of("London-East", "Birmingham-NewStreet", "Bristol-Clifton", "Cardiff-Central")) {
-            Cinema cinema = cinemas.get(key);
+        for (String cinemaKey : SECONDARY_CINEMA_KEYS) {
+            Cinema cinema = cinemas.get(cinemaKey);
             for (int screenNumber = 1; screenNumber <= 2; screenNumber++) {
                 Screen screen = screenRepository.save(new Screen(cinema, screenNumber, 50));
+                screens.put(screenKey(cinemaKey, screenNumber), screen);
                 createSeats(screen, 50);
             }
         }
+        return screens;
     }
 
     private void createSeats(Screen screen, int capacity) {
@@ -152,15 +169,30 @@ public class HcbsTestDataSeeder {
     private Map<String, Film> seedFilmsAndActors() {
         Map<String, Film> films = new LinkedHashMap<>();
         films.put("Skyline", filmRepository.save(new Film(
-                "Skyline Run", "A fast-paced city thriller.", "Action", "12A", 4.4, 118)));
+                "Skyline Run",
+                "A fast-paced city thriller following a courier racing across London before dawn.",
+                "Action", "12A", 4.4, 118,
+                "/images/posters/skyline-run.svg")));
         films.put("Orbit", filmRepository.save(new Film(
-                "Orbit Garden", "A science fiction story set around a lost station.", "Sci-Fi", "PG", 4.6, 132)));
+                "Orbit Garden",
+                "A science fiction story set around a lost orbital station and its last crew.",
+                "Sci-Fi", "PG", 4.6, 132,
+                "/images/posters/orbit-garden.svg")));
         films.put("Harbour", filmRepository.save(new Film(
-                "Harbour Lights", "A warm drama about family and second chances.", "Drama", "PG", 4.1, 105)));
+                "Harbour Lights",
+                "A warm drama about family reconciliation in a seaside town.",
+                "Drama", "PG", 4.1, 105,
+                "/images/posters/harbour-lights.svg")));
         films.put("Coral", filmRepository.save(new Film(
-                "Coral Bay", "A family adventure on the coast.", "Family", "U", 4.0, 95)));
+                "Coral Bay",
+                "A family adventure on the Welsh coast with treasure hunts and summer storms.",
+                "Family", "U", 4.0, 95,
+                "/images/posters/coral-bay.svg")));
         films.put("Archive", filmRepository.save(new Film(
-                "Archive Echo", "A documentary on restored cinema heritage.", "Documentary", "PG", 4.3, 88)));
+                "Archive Echo",
+                "A documentary on restored cinema heritage and touring projectionists.",
+                "Documentary", "PG", 4.3, 88,
+                "/images/posters/archive-echo.svg")));
 
         Actor maya = actorRepository.save(new Actor("Maya Stone", "Lead actor"));
         Actor leo = actorRepository.save(new Actor("Leo Grant", "Supporting actor"));
@@ -178,7 +210,7 @@ public class HcbsTestDataSeeder {
         return films;
     }
 
-    /** Lower-hall prices from the case study; upper gallery = lower + £2. */
+    /** Lower-hall prices from the case study; upper gallery = lower + £2 per city and band. */
     private void seedPriceRules(Map<String, City> cities) {
         seedCityPrices(cities.get("London"), "10.00", "11.00", "12.00");
         seedCityPrices(cities.get("Birmingham"), "5.00", "6.00", "7.00");
@@ -203,109 +235,138 @@ public class HcbsTestDataSeeder {
     }
 
     /**
-     * Inserts showings so automated tests keep a stable first row: London Central, evening, day+3.
-     * Additional rows cover booking-window edges and cancellation policy checks.
+     * Inserts showings in a fixed order so {@code findAll()} row 0 remains the booking-test anchor.
      */
-    private List<Showing> seedShowings(Map<String, Cinema> cinemas, Map<String, Film> films) {
-        List<Showing> created = new ArrayList<>();
+    private List<Showing> seedShowings(SeedContext ctx) {
         LocalDate today = LocalDate.now();
-
-        Screen londonCentralScreen1 = screenRepository.findAll().stream()
-                .filter(s -> s.getCinema().getCinemaId().equals(cinemas.get("London-Central").getCinemaId()))
-                .filter(s -> s.getScreenNumber() == 1)
-                .findFirst()
-                .orElseThrow();
-
-        // First persisted showing — used by BookingServiceTest (London evening £12 lower hall)
-        created.add(showingRepository.save(new Showing(
-                films.get("Skyline"), londonCentralScreen1,
-                today.plusDays(3), LocalTime.of(18, 30), LocalTime.of(20, 30), TimeBand.EVENING)));
-
-        Screen londonCentralScreen2 = screenRepository.findAll().stream()
-                .filter(s -> s.getCinema().getCinemaId().equals(cinemas.get("London-Central").getCinemaId()))
-                .filter(s -> s.getScreenNumber() == 2)
-                .findFirst()
-                .orElseThrow();
-        created.add(showingRepository.save(new Showing(
-                films.get("Orbit"), londonCentralScreen2,
-                today.plusDays(3), LocalTime.of(10, 0), LocalTime.of(12, 15), TimeBand.MORNING)));
-
-        Screen birminghamScreen1 = firstScreen(cinemas.get("Birmingham-Bullring"));
-        created.add(showingRepository.save(new Showing(
-                films.get("Harbour"), birminghamScreen1,
-                today.plusDays(4), LocalTime.of(14, 0), LocalTime.of(15, 45), TimeBand.AFTERNOON)));
-
-        Screen bristolScreen1 = firstScreen(cinemas.get("Bristol-Harbour"));
-        created.add(showingRepository.save(new Showing(
-                films.get("Coral"), bristolScreen1,
-                today.plusDays(5), LocalTime.of(19, 0), LocalTime.of(20, 40), TimeBand.EVENING)));
-
-        Screen cardiffScreen1 = firstScreen(cinemas.get("Cardiff-Bay"));
-        created.add(showingRepository.save(new Showing(
-                films.get("Archive"), cardiffScreen1,
-                today.plusDays(2), LocalTime.of(11, 0), LocalTime.of(12, 30), TimeBand.MORNING)));
-
-        // Booking window: last allowed day (today + 7)
-        created.add(showingRepository.save(new Showing(
-                films.get("Skyline"), londonCentralScreen1,
-                today.plusDays(7), LocalTime.of(20, 0), LocalTime.of(22, 0), TimeBand.EVENING)));
-
-        // Booking window: too far ahead (today + 8) — manual / TC_007 style checks
-        created.add(showingRepository.save(new Showing(
-                films.get("Orbit"), londonCentralScreen2,
-                today.plusDays(8), LocalTime.of(18, 0), LocalTime.of(20, 0), TimeBand.EVENING)));
-
-        // Cancellation: tomorrow (allowed if cancelled today)
-        created.add(showingRepository.save(new Showing(
-                films.get("Harbour"), londonCentralScreen2,
-                today.plusDays(1), LocalTime.of(17, 0), LocalTime.of(19, 0), TimeBand.EVENING)));
-
-        // Cancellation: same day (must reject)
-        created.add(showingRepository.save(new Showing(
-                films.get("Coral"), birminghamScreen1,
-                today, LocalTime.of(19, 30), LocalTime.of(21, 0), TimeBand.EVENING)));
-
-        // Past showing — cannot book
-        created.add(showingRepository.save(new Showing(
-                films.get("Archive"), cardiffScreen1,
-                today.minusDays(1), LocalTime.of(14, 0), LocalTime.of(15, 30), TimeBand.AFTERNOON)));
-
-        // Extra listings for filter demos (city / title)
-        created.add(showingRepository.save(new Showing(
-                films.get("Skyline"), firstScreen(cinemas.get("London-East")),
-                today.plusDays(3), LocalTime.of(14, 30), LocalTime.of(16, 30), TimeBand.AFTERNOON)));
-
+        List<Showing> created = new ArrayList<>();
+        for (ShowingSpec spec : buildShowingSpecs(today)) {
+            created.add(persistShowing(ctx, spec));
+        }
         return created;
     }
 
-    private Screen firstScreen(Cinema cinema) {
-        return screenRepository.findAll().stream()
-                .filter(s -> s.getCinema().getCinemaId().equals(cinema.getCinemaId()))
-                .filter(s -> s.getScreenNumber() == 1)
-                .findFirst()
-                .orElseThrow();
+    private List<ShowingSpec> buildShowingSpecs(LocalDate today) {
+        List<ShowingSpec> specs = new ArrayList<>();
+
+        // --- Anchor (must stay first): London Central Screen 1, evening, day+3, £12 lower hall ---
+        specs.add(new ShowingSpec("Skyline", "London-Central", 1, today.plusDays(ANCHOR_SHOWING_DAY_OFFSET),
+                LocalTime.of(18, 30), LocalTime.of(20, 30), TimeBand.EVENING, "ANCHOR"));
+
+        specs.add(new ShowingSpec("Orbit", "London-Central", 2, today.plusDays(3),
+                LocalTime.of(10, 0), LocalTime.of(12, 15), TimeBand.MORNING, "London morning"));
+        specs.add(new ShowingSpec("Skyline", "London-East", 1, today.plusDays(3),
+                LocalTime.of(14, 30), LocalTime.of(16, 30), TimeBand.AFTERNOON, "London secondary"));
+        specs.add(new ShowingSpec("Archive", "London-Central", 3, today.plusDays(3),
+                LocalTime.of(9, 30), LocalTime.of(11, 0), TimeBand.MORNING, "London documentary"));
+
+        specs.add(new ShowingSpec("Harbour", "Birmingham-Bullring", 1, today.plusDays(4),
+                LocalTime.of(14, 0), LocalTime.of(15, 45), TimeBand.AFTERNOON, "Birmingham flagship"));
+        specs.add(new ShowingSpec("Coral", "Birmingham-NewStreet", 1, today.plusDays(3),
+                LocalTime.of(10, 15), LocalTime.of(11, 50), TimeBand.MORNING, "Birmingham secondary"));
+        specs.add(new ShowingSpec("Skyline", "Birmingham-Bullring", 2, today.plusDays(2),
+                LocalTime.of(17, 30), LocalTime.of(19, 30), TimeBand.EVENING, "Birmingham day+2"));
+
+        specs.add(new ShowingSpec("Coral", "Bristol-Harbour", 1, today.plusDays(5),
+                LocalTime.of(19, 0), LocalTime.of(20, 40), TimeBand.EVENING, "Bristol flagship"));
+        specs.add(new ShowingSpec("Orbit", "Bristol-Clifton", 1, today.plusDays(3),
+                LocalTime.of(11, 30), LocalTime.of(13, 45), TimeBand.MORNING, "Bristol secondary"));
+        specs.add(new ShowingSpec("Harbour", "Bristol-Harbour", 2, today.plusDays(3),
+                LocalTime.of(15, 0), LocalTime.of(16, 50), TimeBand.AFTERNOON, "Bristol filter"));
+
+        specs.add(new ShowingSpec("Archive", "Cardiff-Bay", 1, today.plusDays(2),
+                LocalTime.of(11, 0), LocalTime.of(12, 30), TimeBand.MORNING, "Cardiff day+2"));
+        specs.add(new ShowingSpec("Orbit", "Cardiff-Bay", 2, today.plusDays(4),
+                LocalTime.of(20, 15), LocalTime.of(22, 30), TimeBand.EVENING, "Cardiff flagship"));
+        specs.add(new ShowingSpec("Skyline", "Cardiff-Central", 1, today.plusDays(6),
+                LocalTime.of(18, 0), LocalTime.of(20, 0), TimeBand.EVENING, "Cardiff secondary"));
+
+        // Booking window edges
+        specs.add(new ShowingSpec("Skyline", "London-Central", 1, today.plusDays(7),
+                LocalTime.of(20, 0), LocalTime.of(22, 0), TimeBand.EVENING, "Max advance (allowed)"));
+        specs.add(new ShowingSpec("Orbit", "London-Central", 2, today.plusDays(8),
+                LocalTime.of(18, 0), LocalTime.of(20, 0), TimeBand.EVENING, "Beyond 7 days (reject)"));
+
+        // Cancellation policy
+        specs.add(new ShowingSpec("Harbour", "London-Central", 2, today.plusDays(1),
+                LocalTime.of(17, 0), LocalTime.of(19, 0), TimeBand.EVENING, "Seed booking / cancel OK"));
+        specs.add(new ShowingSpec("Coral", "Birmingham-Bullring", 1, today,
+                LocalTime.of(19, 30), LocalTime.of(21, 0), TimeBand.EVENING, "Same-day cancel (reject)"));
+
+        // Past showing — cannot book
+        specs.add(new ShowingSpec("Archive", "Cardiff-Bay", 1, today.minusDays(1),
+                LocalTime.of(14, 0), LocalTime.of(15, 30), TimeBand.AFTERNOON, "Past showing"));
+
+        return specs;
     }
 
-    /** One confirmed booking on tomorrow's London showing for cancellation demos. */
-    private void seedSampleBooking(User staff, List<Showing> showings) {
-        Showing tomorrowLondon = showings.stream()
+    private Showing persistShowing(SeedContext ctx, ShowingSpec spec) {
+        Screen screen = requireScreen(ctx.screens, spec.cinemaKey(), spec.screenNumber());
+        Film film = ctx.films.get(spec.filmKey());
+        return showingRepository.save(new Showing(
+                film, screen, spec.showDate(), spec.start(), spec.end(), spec.timeBand()));
+    }
+
+    private void seedSampleBookings(User staff, SeedContext ctx) {
+        Showing cancellationDemo = ctx.showings.stream()
                 .filter(s -> s.getShowDate().equals(LocalDate.now().plusDays(1)))
+                .filter(s -> s.getFilm().getTitle().equals("Harbour Lights"))
                 .filter(s -> s.getScreen().getCinema().getName().contains("London Central"))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new IllegalStateException("Seed cancellation showing missing"));
 
-        Seat seat = seatRepository.findByScreenAndSeatArea(tomorrowLondon.getScreen(), SeatArea.LOWER_HALL).get(0);
-        BigDecimal ticketPrice = new BigDecimal("12.00");
+        Seat lowerSeat = seatRepository.findByScreenAndSeatArea(cancellationDemo.getScreen(), SeatArea.LOWER_HALL).get(0);
+        BigDecimal ticketPrice = lookupLowerHallPrice(cancellationDemo);
 
         Booking booking = new Booking();
         booking.setBookingReference(SEED_BOOKING_REFERENCE);
-        booking.setShowing(tomorrowLondon);
+        booking.setShowing(cancellationDemo);
         booking.setUser(staff);
         booking.setBookingDateTime(LocalDateTime.now().minusHours(2));
         booking.setNumberOfTickets(1);
         booking.setTotalCost(ticketPrice);
         booking.setStatus(BookingStatus.CONFIRMED);
         Booking saved = bookingRepository.save(booking);
-        bookingSeatRepository.save(new BookingSeat(saved, seat, tomorrowLondon, ticketPrice));
+        bookingSeatRepository.save(new BookingSeat(saved, lowerSeat, cancellationDemo, ticketPrice));
+    }
+
+    private BigDecimal lookupLowerHallPrice(Showing showing) {
+        PriceRule rule = priceRuleRepository.findByCityAndTimeBandAndSeatArea(
+                        showing.getScreen().getCinema().getCity(),
+                        showing.getTimeBand(),
+                        SeatArea.LOWER_HALL)
+                .orElseThrow(() -> new IllegalStateException("No lower-hall price for seed booking"));
+        return rule.getPrice();
+    }
+
+    private static Screen requireScreen(Map<String, Screen> screens, String cinemaKey, int screenNumber) {
+        Screen screen = screens.get(screenKey(cinemaKey, screenNumber));
+        if (screen == null) {
+            throw new IllegalStateException("Screen not seeded: " + screenKey(cinemaKey, screenNumber));
+        }
+        return screen;
+    }
+
+    private static String screenKey(String cinemaKey, int screenNumber) {
+        return cinemaKey + "#" + screenNumber;
+    }
+
+    private static final class SeedContext {
+        Map<String, City> cities;
+        Map<String, Cinema> cinemas;
+        Map<String, Screen> screens;
+        Map<String, Film> films;
+        List<Showing> showings;
+    }
+
+    private record ShowingSpec(
+            String filmKey,
+            String cinemaKey,
+            int screenNumber,
+            LocalDate showDate,
+            LocalTime start,
+            LocalTime end,
+            TimeBand timeBand,
+            String scenarioNote) {
     }
 }

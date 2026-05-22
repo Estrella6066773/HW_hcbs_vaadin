@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" role="img">
+  <rect width="400" height="600" fill="#2a1f24"/>
+  <rect x="24" y="24" width="352" height="552" fill="none" stroke="#ffd08a" stroke-width="3" opacity="0.5"/>
+  <text x="200" y="300" fill="#ffd08a" font-family="Georgia, serif" font-size="28" text-anchor="middle">HCBS</text>
+</svg>

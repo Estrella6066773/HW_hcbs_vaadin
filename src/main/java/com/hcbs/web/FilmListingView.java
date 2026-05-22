@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
-@Route(value = "", layout = MainLayout.class)
+@Route(value = "listings", layout = MainLayout.class)
 @PageTitle("Film Listing")
 public class FilmListingView extends VerticalLayout {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
@@ -42,6 +42,8 @@ public class FilmListingView extends VerticalLayout {
     public FilmListingView(FilmListingService filmListingService) {
         this.filmListingService = filmListingService;
         setSizeFull();
+        setPadding(false);
+        setMargin(false);
         addClassName("page-view");
 
         city.setItems(filmListingService.listCities());
