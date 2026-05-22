@@ -1,16 +1,14 @@
 package com.hcbs.web;
 
 import com.hcbs.dto.FilmCardDto;
-import com.hcbs.service.catalog.FilmCatalogService;
-import com.vaadin.flow.component.button.Button;
+import com.hcbs.service.search.HcbsSearchService;
+import com.hcbs.web.component.FilmCatalogFilterPanel;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
@@ -18,13 +16,14 @@ import com.vaadin.flow.router.RouterLink;
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Home")
 public class FilmRecommendView extends VerticalLayout {
-    private final FilmCatalogService filmCatalogService;
-    private final TextField searchField = new TextField("Search films");
-    private final Span resultCount = new Span();
+    private final HcbsSearchService searchService;
+    private final FilmCatalogFilterPanel filterPanel;
     private final Div grid = new Div();
 
-    public FilmRecommendView(FilmCatalogService filmCatalogService) {
-        this.filmCatalogService = filmCatalogService;
+    public FilmRecommendView(HcbsSearchService searchService) {
+        this.searchService = searchService;
+        this.filterPanel = new FilmCatalogFilterPanel(this::refresh);
+
         setSizeFull();
         setPadding(false);
         setMargin(false);
@@ -35,32 +34,6 @@ public class FilmRecommendView extends VerticalLayout {
                 "Browse film posters, search by title, genre, or synopsis, and open a card for details and showtimes."
         );
 
-        searchField.setPlaceholder("Title, genre, or synopsis");
-        searchField.setClearButtonVisible(true);
-        searchField.setWidth("320px");
-        searchField.addKeyPressListener(event -> {
-            if ("Enter".equals(event.getKey())) {
-                refresh();
-            }
-        });
-        searchField.addValueChangeListener(event -> {
-            if (event.getValue() == null || event.getValue().isBlank()) {
-                refresh();
-            }
-        });
-
-        Button search = new Button("Search", event -> refresh());
-        search.addClassName("primary-action");
-
-        resultCount.addClassName("home-result-count");
-
-        HorizontalLayout filters = new HorizontalLayout(searchField, search, resultCount);
-        filters.addClassName("filter-bar");
-        filters.setDefaultVerticalComponentAlignment(Alignment.END);
-
-        Div filterPanel = new Div(filters);
-        filterPanel.addClassName("surface-panel");
-
         grid.addClassName("film-poster-grid");
         grid.setWidthFull();
 
@@ -70,16 +43,16 @@ public class FilmRecommendView extends VerticalLayout {
     }
 
     private void refresh() {
-        var films = filmCatalogService.searchFilms(searchField.getValue());
+        var films = searchService.searchFilms(filterPanel.getFilter());
         grid.removeAll();
         if (films.isEmpty()) {
             Paragraph empty = new Paragraph("No films match your search. Try a different keyword.");
             empty.addClassName("home-empty-message");
             grid.add(empty);
-            resultCount.setText("0 films");
+            filterPanel.setResultSummary(0);
         } else {
             films.forEach(film -> grid.add(createCard(film)));
-            resultCount.setText(films.size() + " films");
+            filterPanel.setResultSummary(films.size());
         }
     }
 

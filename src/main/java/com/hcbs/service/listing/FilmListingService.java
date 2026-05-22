@@ -2,6 +2,7 @@ package com.hcbs.service.listing;
 
 import com.hcbs.dto.CinemaOption;
 import com.hcbs.dto.CityOption;
+import com.hcbs.dto.ShowingListingFilter;
 import com.hcbs.dto.ShowingRow;
 import com.hcbs.model.Showing;
 import com.hcbs.repository.BookingSeatRepository;
@@ -49,6 +50,10 @@ public class FilmListingService {
                         .map(cinema -> new CinemaOption(cinema.getCinemaId(), cinema.getName()))
                         .toList())
                 .orElse(List.of());
+    }
+
+    public List<ShowingRow> search(ShowingListingFilter filter) {
+        return searchShowings(filter.cityId(), filter.cinemaId(), filter.date(), filter.filmTitle());
     }
 
     public List<ShowingRow> searchShowings(Long cityId, Long cinemaId, LocalDate date, String filmTitle) {

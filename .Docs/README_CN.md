@@ -129,7 +129,7 @@ web  →  service.*  →  repository  →  model
 
 - **JDK 21**（`java -version`）
 - **Maven 3.9+**（`mvn -version`）
-- 可访问 `http://localhost:8080` 的浏览器
+- 现代浏览器（默认 `http://localhost:8080`；若端口被占用，以控制台启动横幅中的地址为准）
 
 项目位于 OneDrive 时，执行 `mvn test` 前请先关闭正在运行的开发服务，避免 `frontend/generated` 被占用。
 
@@ -145,13 +145,20 @@ web  →  service.*  →  repository  →  model
 mvn "-Dmaven.repo.local=.m2/repository" spring-boot:run
 ```
 
-浏览器访问：
+启动完成后，控制台会打印访问地址横幅，例如：
 
 ```text
-http://localhost:8080
+============================================================
+  HCBS is ready
+  Web UI:     http://localhost:8080/
+  H2 console: http://localhost:8080/h2-console
+  Port:       8080
+============================================================
 ```
 
-**导航：** 影片列表（首页）· 订票 · 取消（侧栏）。
+**端口规则：** 优先使用 **8080**；若已被占用，则在 **8081–8280** 内按「项目标识 + 工作目录」的哈希值选取可用端口（同一台机器、同一目录下结果稳定）。可用 `-Dserver.port=9090` 或环境变量 `SERVER_PORT=9090` 手动指定。
+
+**导航：** 主页 · 影片列表 · 订票 · 取消（侧栏）。
 
 修改 Vaadin 依赖或主题后，需先执行：
 

@@ -131,7 +131,7 @@ Details: [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md).
 
 - **JDK 21** (`java -version`)
 - **Maven 3.9+** (`mvn -version`)
-- A modern browser for `http://localhost:8080`
+- A modern browser (default URL `http://localhost:8080`; see **Access URLs** below if the port changes)
 
 On Windows, if the project lives under OneDrive, close any running dev server before `mvn test` to avoid file locks under `frontend/generated`.
 
@@ -147,13 +147,20 @@ From the project root:
 mvn "-Dmaven.repo.local=.m2/repository" spring-boot:run
 ```
 
-Open:
+When startup completes, the console prints a banner with the actual URLs, for example:
 
 ```text
-http://localhost:8080
+============================================================
+  HCBS is ready
+  Web UI:     http://localhost:8080/
+  H2 console: http://localhost:8080/h2-console
+  Port:       8080
+============================================================
 ```
 
-**Navigation:** Film Listing (home) · Booking · Cancellation (drawer menu).
+**Port selection:** The app prefers **8080**. If that port is already in use, it picks a free port from **8081–8280** using a hash of the project id and working directory (same machine + folder → same fallback port). Override with `-Dserver.port=9090` or `SERVER_PORT=9090`.
+
+**Navigation:** Home · Film Listing · Booking · Cancellation (drawer menu).
 
 After changing Vaadin dependencies or the theme:
 

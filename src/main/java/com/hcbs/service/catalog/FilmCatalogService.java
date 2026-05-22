@@ -1,6 +1,7 @@
 package com.hcbs.service.catalog;
 
 import com.hcbs.dto.FilmCardDto;
+import com.hcbs.dto.FilmCatalogFilter;
 import com.hcbs.dto.FilmDetailDto;
 import com.hcbs.dto.ShowingRow;
 import com.hcbs.model.Film;
@@ -41,17 +42,20 @@ public class FilmCatalogService {
                 .toList();
     }
 
-    public List<FilmCardDto> searchFilms(String query) {
-        String trimmed = query == null ? "" : query.trim();
-        if (trimmed.isEmpty()) {
+    public List<FilmCardDto> search(FilmCatalogFilter filter) {
+        if (filter.isEmpty()) {
             return listRecommendedFilms();
         }
-        String lower = trimmed.toLowerCase(Locale.ROOT);
+        String lower = filter.keyword().toLowerCase(Locale.ROOT);
         return filmRepository.findAll().stream()
                 .filter(film -> matchesSearch(film, lower))
                 .sorted(Comparator.comparing(Film::getRating).reversed())
                 .map(this::toCard)
                 .toList();
+    }
+
+    public List<FilmCardDto> searchFilms(String query) {
+        return search(FilmCatalogFilter.of(query));
     }
 
     private boolean matchesSearch(Film film, String lowerQuery) {
