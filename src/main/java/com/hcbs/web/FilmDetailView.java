@@ -18,11 +18,13 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 @Route(value = "film", layout = MainLayout.class)
+@AnonymousAllowed
 @PageTitle("Film Details")
 public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Long> {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);

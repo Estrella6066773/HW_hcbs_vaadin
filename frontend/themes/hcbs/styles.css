@@ -688,3 +688,65 @@ vaadin-grid {
     }
 
 }
+
+/* --- Auth --- */
+.login-view {
+    background: radial-gradient(circle at top, rgba(255, 196, 77, 0.12), transparent 55%),
+        var(--hcbs-bg, #0f1419);
+}
+
+.login-card {
+    background: var(--hcbs-surface, #1a2332);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.login-hint {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85rem;
+    text-align: center;
+    margin: 0 0 1rem;
+}
+
+.user-badge {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.85rem;
+    margin-right: 0.75rem;
+    white-space: nowrap;
+}
+
+.register-link {
+    color: var(--hcbs-accent, #ffc44d);
+    font-size: 0.9rem;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.register-link:hover {
+    text-decoration: underline;
+}
+
+.demo-accounts-panel {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.demo-accounts-heading {
+    color: var(--hcbs-accent, #ffc44d);
+    font-size: 0.95rem;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.demo-accounts-list {
+    margin: 0 0 0.5rem 1.25rem;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}

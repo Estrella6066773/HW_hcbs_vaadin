@@ -4,13 +4,17 @@ import com.hcbs.dto.BookingSummary;
 import com.hcbs.model.BookingStatus;
 import com.hcbs.model.Seat;
 import com.hcbs.model.Showing;
+import com.hcbs.model.User;
 import com.hcbs.repository.BookingSeatRepository;
 import com.hcbs.repository.SeatRepository;
 import com.hcbs.repository.ShowingRepository;
+import com.hcbs.repository.UserRepository;
 import com.hcbs.service.booking.BookingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.math.BigDecimal;
@@ -42,11 +46,16 @@ class CancellationServiceTest {
     @Autowired
     private BookingSeatRepository bookingSeatRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
+    @WithMockUser(username = "staff", roles = "BOOKING_STAFF")
     void cancelsBookingAndAppliesFiftyPercentCharge() {
+        User customer = userRepository.findByUsername("alice").orElseThrow();
         Showing showing = showingRepository.findAll().get(0);
         Seat seat = seatRepository.findByScreen(showing.getScreen()).get(0);
-        var receipt = bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()));
+        var receipt = bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), customer.getUserId());
 
         BookingSummary cancelled = cancellationService.cancelBooking(receipt.bookingReference());
 
@@ -56,15 +65,31 @@ class CancellationServiceTest {
     }
 
     @Test
+    @WithMockUser(username = "staff", roles = "BOOKING_STAFF")
     void rejectsSameDayCancellation() {
+        User customer = userRepository.findByUsername("alice").orElseThrow();
         Showing showing = showingRepository.findAll().get(0);
         showing.setShowDate(LocalDate.now());
         showingRepository.save(showing);
         Seat seat = seatRepository.findByScreen(showing.getScreen()).get(0);
-        var receipt = bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()));
+        var receipt = bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), customer.getUserId());
 
         assertThatThrownBy(() -> cancellationService.cancelBooking(receipt.bookingReference()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("at least one day before");
+    }
+
+    @Test
+    @WithMockUser(username = "bob", roles = "CUSTOMER")
+    void customerCannotCancelAnotherCustomersBooking() {
+        assertThatThrownBy(() -> cancellationService.cancelBooking("HCBS-SEED001"))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    @WithMockUser(username = "alice", roles = "CUSTOMER")
+    void customerCanCancelOwnSeedBooking() {
+        BookingSummary cancelled = cancellationService.cancelBooking("HCBS-SEED001");
+        assertThat(cancelled.status()).isEqualTo(BookingStatus.CANCELLED);
     }
 }

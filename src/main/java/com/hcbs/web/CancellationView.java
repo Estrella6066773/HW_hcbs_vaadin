@@ -1,6 +1,7 @@
 package com.hcbs.web;
 
 import com.hcbs.dto.BookingSummary;
+import com.hcbs.security.CurrentUserService;
 import com.hcbs.service.cancellation.CancellationService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
@@ -14,16 +15,20 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "cancellation", layout = MainLayout.class)
 @PageTitle("Cancellation")
+@RolesAllowed({"BOOKING_STAFF", "ADMIN", "MANAGER"})
 public class CancellationView extends VerticalLayout {
     private final CancellationService cancellationService;
+    private final CurrentUserService currentUserService;
     private final TextField reference = new TextField("Booking reference");
     private final TextArea details = new TextArea("Booking details");
 
-    public CancellationView(CancellationService cancellationService) {
+    public CancellationView(CancellationService cancellationService, CurrentUserService currentUserService) {
         this.cancellationService = cancellationService;
+        this.currentUserService = currentUserService;
         setSizeFull();
         setPadding(false);
         setMargin(false);
@@ -31,7 +36,7 @@ public class CancellationView extends VerticalLayout {
 
         details.setWidthFull();
         details.setMinHeight("220px");
-        details.setPlaceholder("Search a booking reference to inspect cancellation eligibility.");
+        details.setPlaceholder("Search any booking reference to inspect cancellation eligibility.");
         details.addClassName("receipt-field");
 
         Button find = new Button("Find booking", event -> findBooking());
@@ -43,14 +48,19 @@ public class CancellationView extends VerticalLayout {
         actions.addClassName("filter-bar");
         actions.setDefaultVerticalComponentAlignment(Alignment.END);
 
-        Div lookupPanel = new Div(sectionTitle("Refund Desk", "Find a booking, inspect the rule outcome, and record cancellation charges."), actions, details);
+        Div lookupPanel = new Div(
+                sectionTitle("Refund desk", "Employees can cancel any customer booking that meets policy rules."),
+                actions,
+                details
+        );
         lookupPanel.addClassName("surface-panel");
 
         Div rulePanel = new Div(
-                sectionTitle("Cancellation Rules", "The demo keeps the policy visible for assessment and operator clarity."),
+                sectionTitle("Cancellation rules", "Policy checks apply before seats are released."),
                 ruleLine("Before showing day", "Allowed"),
                 ruleLine("Same day", "Rejected"),
-                ruleLine("Cancellation charge", "50% of total booking cost")
+                ruleLine("Cancellation charge", "50% of total booking cost"),
+                ruleLine("Signed in as", currentUserService.requireCurrentUser().getFullName())
         );
         rulePanel.addClassName("surface-panel");
         rulePanel.addClassName("rule-panel");
@@ -59,7 +69,7 @@ public class CancellationView extends VerticalLayout {
         workspace.addClassName("booking-workspace");
         workspace.setWidthFull();
 
-        add(pageHero("Cancellation", "Handle customer booking changes with visible policy checks and receipt-style output."), workspace);
+        add(pageHero("Cancellation", "Handle refunds for any customer order."), workspace);
     }
 
     private void findBooking() {
@@ -81,7 +91,7 @@ public class CancellationView extends VerticalLayout {
     }
 
     private Div pageHero(String heading, String copy) {
-        Span badge = new Span("Refund Control");
+        Span badge = new Span("Refund control");
         badge.addClassName("eyebrow");
         H2 title = new H2(heading);
         Paragraph description = new Paragraph(copy);

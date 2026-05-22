@@ -14,11 +14,15 @@ public record BookingReceipt(
         int numberOfTickets,
         String seatNumbers,
         BigDecimal totalCost,
-        LocalDateTime bookingDateTime
+        LocalDateTime bookingDateTime,
+        String customerName,
+        String bookedByName
 ) {
     public String toReceiptText() {
         return """
                 Booking reference: %s
+                Customer: %s
+                Booked by: %s
                 Film name: %s
                 Film date: %s
                 Showing time: %s
@@ -29,6 +33,8 @@ public record BookingReceipt(
                 Booking date: %s
                 """.formatted(
                 bookingReference,
+                customerName,
+                bookedByName,
                 filmName,
                 filmDate,
                 showingTime,

@@ -28,6 +28,7 @@ import com.hcbs.repository.ScreenRepository;
 import com.hcbs.repository.SeatRepository;
 import com.hcbs.repository.ShowingRepository;
 import com.hcbs.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,13 +75,15 @@ public class HcbsTestDataSeeder {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public HcbsTestDataSeeder(CityRepository cityRepository, CinemaRepository cinemaRepository,
                               ScreenRepository screenRepository, SeatRepository seatRepository,
                               FilmRepository filmRepository, ActorRepository actorRepository,
                               FilmActorRepository filmActorRepository, ShowingRepository showingRepository,
                               PriceRuleRepository priceRuleRepository, UserRepository userRepository,
-                              BookingRepository bookingRepository, BookingSeatRepository bookingSeatRepository) {
+                              BookingRepository bookingRepository, BookingSeatRepository bookingSeatRepository,
+                              PasswordEncoder passwordEncoder) {
         this.cityRepository = cityRepository;
         this.cinemaRepository = cinemaRepository;
         this.screenRepository = screenRepository;
@@ -93,6 +96,7 @@ public class HcbsTestDataSeeder {
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.bookingSeatRepository = bookingSeatRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -103,9 +107,9 @@ public class HcbsTestDataSeeder {
         ctx.screens = seedScreensAndSeats(ctx.cinemas);
         ctx.films = seedFilmsAndActors();
         seedPriceRules(ctx.cities);
-        User staff = seedUsers();
+        SeedUsers users = seedUsers();
         ctx.showings = seedShowings(ctx);
-        seedSampleBookings(staff, ctx);
+        seedSampleBookings(users, ctx);
     }
 
     private Map<String, City> seedCities() {
@@ -227,11 +231,19 @@ public class HcbsTestDataSeeder {
         priceRuleRepository.save(new PriceRule(city, TimeBand.EVENING, SeatArea.UPPER_GALLERY, new BigDecimal(evening).add(new BigDecimal("2.00"))));
     }
 
-    private User seedUsers() {
-        userRepository.save(new User("staff", "demo", "Booking Staff", UserRole.BOOKING_STAFF));
-        userRepository.save(new User("admin", "demo", "Admin User", UserRole.ADMIN));
-        userRepository.save(new User("manager", "demo", "Manager User", UserRole.MANAGER));
-        return userRepository.findFirstByRole(UserRole.BOOKING_STAFF).orElseThrow();
+    private SeedUsers seedUsers() {
+        String encoded = passwordEncoder.encode(DemoAccountCatalog.DEMO_PASSWORD);
+        for (DemoAccountCatalog.DemoAccount account : DemoAccountCatalog.all()) {
+            userRepository.save(new User(
+                    account.username(),
+                    account.email(),
+                    encoded,
+                    account.fullName(),
+                    account.role()));
+        }
+        User staff = userRepository.findByUsername("staff").orElseThrow();
+        User alice = userRepository.findByUsername("alice").orElseThrow();
+        return new SeedUsers(staff, alice);
     }
 
     /**
@@ -307,7 +319,7 @@ public class HcbsTestDataSeeder {
                 film, screen, spec.showDate(), spec.start(), spec.end(), spec.timeBand()));
     }
 
-    private void seedSampleBookings(User staff, SeedContext ctx) {
+    private void seedSampleBookings(SeedUsers users, SeedContext ctx) {
         Showing cancellationDemo = ctx.showings.stream()
                 .filter(s -> s.getShowDate().equals(LocalDate.now().plusDays(1)))
                 .filter(s -> s.getFilm().getTitle().equals("Harbour Lights"))
@@ -321,7 +333,8 @@ public class HcbsTestDataSeeder {
         Booking booking = new Booking();
         booking.setBookingReference(SEED_BOOKING_REFERENCE);
         booking.setShowing(cancellationDemo);
-        booking.setUser(staff);
+        booking.setCreatedBy(users.staff());
+        booking.setCustomer(users.demoCustomer());
         booking.setBookingDateTime(LocalDateTime.now().minusHours(2));
         booking.setNumberOfTickets(1);
         booking.setTotalCost(ticketPrice);
@@ -357,6 +370,9 @@ public class HcbsTestDataSeeder {
         Map<String, Screen> screens;
         Map<String, Film> films;
         List<Showing> showings;
+    }
+
+    private record SeedUsers(User staff, User demoCustomer) {
     }
 
     private record ShowingSpec(

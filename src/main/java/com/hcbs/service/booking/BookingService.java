@@ -3,6 +3,7 @@ package com.hcbs.service.booking;
 import com.hcbs.dto.BookingReceipt;
 import com.hcbs.dto.SeatOption;
 import com.hcbs.dto.ShowingOption;
+import com.hcbs.dto.UserOption;
 import com.hcbs.model.Booking;
 import com.hcbs.model.BookingSeat;
 import com.hcbs.model.BookingStatus;
@@ -18,6 +19,8 @@ import com.hcbs.repository.PriceRuleRepository;
 import com.hcbs.repository.SeatRepository;
 import com.hcbs.repository.ShowingRepository;
 import com.hcbs.repository.UserRepository;
+import com.hcbs.security.CurrentUserService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,16 +38,19 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public BookingService(ShowingRepository showingRepository, SeatRepository seatRepository,
                           PriceRuleRepository priceRuleRepository, BookingRepository bookingRepository,
-                          BookingSeatRepository bookingSeatRepository, UserRepository userRepository) {
+                          BookingSeatRepository bookingSeatRepository, UserRepository userRepository,
+                          CurrentUserService currentUserService) {
         this.showingRepository = showingRepository;
         this.seatRepository = seatRepository;
         this.priceRuleRepository = priceRuleRepository;
         this.bookingRepository = bookingRepository;
         this.bookingSeatRepository = bookingSeatRepository;
         this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
     public List<ShowingOption> listBookableShowings() {
@@ -61,6 +67,13 @@ public class BookingService {
                 .toList();
     }
 
+    public List<UserOption> listCustomersForDesk() {
+        requireEmployeeActor();
+        return userRepository.findByRoleOrderByFullNameAsc(UserRole.CUSTOMER).stream()
+                .map(user -> new UserOption(user.getUserId(), user.getUsername(), user.getFullName()))
+                .toList();
+    }
+
     public List<SeatOption> listAvailableSeats(Long showingId, SeatArea seatArea) {
         Showing showing = requireShowing(showingId);
         return seatRepository.findByScreenAndSeatArea(showing.getScreen(), seatArea).stream()
@@ -74,10 +87,10 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingReceipt createBooking(Long showingId, List<Long> seatIds) {
+    public BookingReceipt createBooking(Long showingId, List<Long> seatIds, Long customerUserId) {
+        User actor = currentUserService.requireCurrentUser();
+        User customer = resolveCustomer(actor, customerUserId);
         Showing showing = requireShowing(showingId);
-        User staff = userRepository.findFirstByRole(UserRole.BOOKING_STAFF)
-                .orElseThrow(() -> new IllegalStateException("No booking staff user configured"));
         List<Seat> seats = seatIds.stream()
                 .map(seatId -> seatRepository.findById(seatId)
                         .orElseThrow(() -> new IllegalArgumentException("Seat not found: " + seatId)))
@@ -89,7 +102,8 @@ public class BookingService {
         Booking booking = new Booking();
         booking.setBookingReference(generateBookingReference());
         booking.setShowing(showing);
-        booking.setUser(staff);
+        booking.setCreatedBy(actor);
+        booking.setCustomer(customer);
         booking.setBookingDateTime(LocalDateTime.now());
         booking.setNumberOfTickets(seats.size());
         booking.setTotalCost(calculateTotalCost(showing, seats));
@@ -100,7 +114,39 @@ public class BookingService {
             bookingSeatRepository.save(new BookingSeat(saved, seat, showing, calculateTicketPrice(showing, seat)));
         }
 
-        return toReceipt(saved, seats);
+        return toReceipt(saved, seats, customer);
+    }
+
+    private User resolveCustomer(User actor, Long customerUserId) {
+        if (actor.getRole().isCustomer()) {
+            if (customerUserId != null && !customerUserId.equals(actor.getUserId())) {
+                throw new AccessDeniedException("Customers can only book for their own account");
+            }
+            return actor;
+        }
+        requireEmployeeActor(actor);
+        if (customerUserId == null) {
+            throw new IllegalArgumentException("Select a customer when booking on behalf of someone");
+        }
+        User customer = userRepository.findById(customerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerUserId));
+        if (!customer.getRole().isCustomer()) {
+            throw new IllegalArgumentException("Bookings must be assigned to a customer account");
+        }
+        if (customer.getStatus() != com.hcbs.model.UserStatus.ACTIVE) {
+            throw new IllegalStateException("Customer account is not active");
+        }
+        return customer;
+    }
+
+    private void requireEmployeeActor() {
+        requireEmployeeActor(currentUserService.requireCurrentUser());
+    }
+
+    private static void requireEmployeeActor(User actor) {
+        if (!actor.getRole().isEmployee()) {
+            throw new AccessDeniedException("Only employee accounts can book on behalf of customers");
+        }
     }
 
     public BigDecimal calculateTicketPrice(Showing showing, Seat seat) {
@@ -156,7 +202,7 @@ public class BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Showing not found: " + showingId));
     }
 
-    private BookingReceipt toReceipt(Booking booking, List<Seat> seats) {
+    private BookingReceipt toReceipt(Booking booking, List<Seat> seats, User customer) {
         String seatNumbers = seats.stream()
                 .map(Seat::getSeatNumber)
                 .reduce((left, right) -> left + ", " + right)
@@ -170,6 +216,8 @@ public class BookingService {
                 booking.getNumberOfTickets(),
                 seatNumbers,
                 booking.getTotalCost(),
-                booking.getBookingDateTime());
+                booking.getBookingDateTime(),
+                customer.getFullName(),
+                booking.getCreatedBy().getFullName());
     }
 }

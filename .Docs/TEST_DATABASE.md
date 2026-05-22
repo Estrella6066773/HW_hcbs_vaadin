@@ -19,7 +19,8 @@
 | 最多提前 7 天订票 | 含 `today+7` 场次；`today+8` 用于拒绝测试 |
 | 至少提前 1 天取消、50% 手续费 | 种子订单 `HCBS-SEED001`（明天场次，London 下厅 £12） |
 | 放映日当天不可取消 | 含 `today` Birmingham 家庭片晚场 |
-| 三类用户 | `staff` / `admin` / `manager` |
+| 演示账户 | 每类 3 个，共 12 个；密码均为 `demo`（见 `DemoAccountCatalog`） |
+| 客户自助注册 | 通过 `/register` 创建 `CUSTOMER` 账户（邮箱、用户名唯一） |
 
 ---
 
@@ -36,7 +37,7 @@
 | FilmActor | 8 |
 | PriceRule | 24 |
 | Showing | 18（含边界日期与四城覆盖） |
-| User | 3 |
+| User | 12（种子）+ 注册新增 |
 | Booking（种子） | 1（`HCBS-SEED001`） |
 | BookingSeat（种子） | 1 |
 
@@ -135,3 +136,39 @@
 | `DataLoader` | 启动时若库为空则调用 seeder |
 
 修改测试数据时请只改 `HcbsTestDataSeeder`，并同步更新本文件与 `TEST_CASES.md`。
+
+---
+
+## 10. `app_user` 表（账户）
+
+| 列 | 约束 | 说明 |
+| --- | --- | --- |
+| `username` | 唯一、非空 | 登录名，3–32 字符 |
+| `email` | 唯一、非空 | 注册邮箱，保存为小写 |
+| `password_hash` | 非空 | BCrypt 哈希 |
+| `full_name` | 非空 | 显示名称 |
+| `phone` | 可空 | 联系电话 |
+| `role` | 非空 | `CUSTOMER` / `BOOKING_STAFF` / `ADMIN` / `MANAGER` |
+| `status` | 非空 | `ACTIVE` / `DISABLED` |
+| `created_at` / `updated_at` | 非空 / 可空 | 注册与最近更新时间 |
+
+`booking` 表通过 `customer_user_id`、`created_by_user_id` 外键关联客户与操作人，并建有查询索引。
+
+**演示账号一览（密码均为 `demo`）：**
+
+| 类型 | 用户名 | 显示名 |
+| --- | --- | --- |
+| 客户 | `alice` | Alice Chen |
+| 客户 | `bob` | Bob Walker |
+| 客户 | `carol` | Carol Murphy |
+| 订票员 | `staff` | Sam Staff |
+| 订票员 | `desk01` | Emma Desk |
+| 订票员 | `desk02` | Liam Desk |
+| 管理员 | `admin` | Ava Admin |
+| 管理员 | `admin01` | Olivia Admin |
+| 管理员 | `admin02` | Noah Admin |
+| 经理 | `manager` | Mia Manager |
+| 经理 | `mgr01` | Grace Manager |
+| 经理 | `mgr02` | James Manager |
+
+定义见 `com.hcbs.config.DemoAccountCatalog`；登录页 `/login` 会显示相同列表。

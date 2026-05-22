@@ -14,11 +14,15 @@ public record BookingSummary(
         BigDecimal totalCost,
         BookingStatus status,
         boolean canCancel,
-        BigDecimal cancellationCharge
+        BigDecimal cancellationCharge,
+        String customerName,
+        String bookedByName
 ) {
     public String toDetailText() {
         return """
                 Reference: %s
+                Customer: %s
+                Booked by: %s
                 Film: %s
                 Date: %s
                 Time: %s
@@ -28,6 +32,8 @@ public record BookingSummary(
                 Cancellation charge: £%s
                 """.formatted(
                 bookingReference,
+                customerName,
+                bookedByName,
                 filmTitle,
                 showDate,
                 startTime,
