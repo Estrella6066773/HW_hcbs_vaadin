@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class FilmCatalogService {
@@ -56,6 +58,20 @@ public class FilmCatalogService {
 
     public List<FilmCardDto> searchFilms(String query) {
         return search(FilmCatalogFilter.of(query));
+    }
+
+    public List<FilmCardDto> listFilmCards(List<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Film> byId = new LinkedHashMap<>();
+        filmRepository.findAllById(filmIds).forEach(film -> byId.put(film.getFilmId(), film));
+        return filmIds.stream()
+                .map(byId::get)
+                .filter(film -> film != null)
+                .sorted(Comparator.comparing(Film::getRating).reversed())
+                .map(this::toCard)
+                .toList();
     }
 
     private boolean matchesSearch(Film film, String lowerQuery) {

@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -51,6 +52,15 @@ public class BookingService {
         this.bookingSeatRepository = bookingSeatRepository;
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
+    }
+
+    public Optional<ShowingOption> findBookableShowing(Long showingId) {
+        if (showingId == null) {
+            return Optional.empty();
+        }
+        return listBookableShowings().stream()
+                .filter(option -> showingId.equals(option.showingId()))
+                .findFirst();
     }
 
     public List<ShowingOption> listBookableShowings() {

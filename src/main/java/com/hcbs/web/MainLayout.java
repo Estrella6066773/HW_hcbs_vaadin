@@ -105,8 +105,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         Span drawerLabel = new Span("Menu");
         drawerLabel.addClassName("drawer-label");
         drawerContent.add(drawerLabel);
-        drawerContent.add(navLink("Home", FilmRecommendView.class, "Browse and search showtimes"));
-        drawerContent.add(navLink("Book tickets", BookingView.class, "Select seats and confirm booking"));
+        drawerContent.add(navLink("Home", FilmRecommendView.class, "Browse films and find showtimes"));
+        if (currentUserService.isAuthenticated() && currentUserService.requireCurrentUser().getRole().isEmployee()) {
+            drawerContent.add(navLink("Book tickets", BookingView.class, "Desk booking for any showing"));
+        }
 
         if (currentUserService.isAuthenticated()) {
             User user = currentUserService.requireCurrentUser();

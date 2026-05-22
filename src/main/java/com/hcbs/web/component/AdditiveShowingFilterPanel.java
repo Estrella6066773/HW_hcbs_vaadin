@@ -4,6 +4,7 @@ import com.hcbs.dto.CinemaOption;
 import com.hcbs.dto.CityOption;
 import com.hcbs.dto.ShowingListingFilter;
 import com.hcbs.service.search.HcbsSearchService;
+import com.hcbs.web.ShowingFilterQuery;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -99,14 +100,11 @@ public class AdditiveShowingFilterPanel extends Div {
         return ShowingListingFilter.of(cityId, cinemaId, date.getValue(), filmTitle.getValue());
     }
 
-    public void setBrowseSummary(int filmCount) {
+    public void setBrowseSummary(int filmCount, boolean filtered) {
         browseSummary.setVisible(true);
         activeFilters.setVisible(true);
-        browseSummary.setText(filmCount + (filmCount == 1 ? " film" : " films") + " on display");
-    }
-
-    public void hideBrowseSummary() {
-        browseSummary.setVisible(false);
+        String scope = filtered ? " matching your search" : " on display";
+        browseSummary.setText(filmCount + (filmCount == 1 ? " film" : " films") + scope);
     }
 
     public void clearFilters() {
@@ -134,9 +132,40 @@ public class AdditiveShowingFilterPanel extends Div {
             parts.add("Title: \"" + filmTitle.getValue().trim() + "\"");
         }
         if (parts.isEmpty()) {
-            activeFilters.setText("Browse the posters below, or add conditions and click Search to filter showtimes.");
+            activeFilters.setText("Browse all films below, or add conditions and click Search to see which films you can watch.");
         } else {
             activeFilters.setText("Active filters: " + String.join(" · ", parts));
         }
+    }
+
+    public void applyFilter(ShowingListingFilter filter) {
+        if (filter == null) {
+            return;
+        }
+        if (filter.cityId() != null) {
+            city.setValue(searchService.listCities().stream()
+                    .filter(option -> option.cityId().equals(filter.cityId()))
+                    .findFirst()
+                    .orElse(null));
+            cinema.setItems(searchService.listCinemas(filter.cityId()));
+        } else {
+            city.clear();
+            cinema.setItems(searchService.listCinemas(null));
+        }
+        if (filter.cinemaId() != null) {
+            cinema.setValue(searchService.listCinemas(filter.cityId()).stream()
+                    .filter(option -> option.cinemaId().equals(filter.cinemaId()))
+                    .findFirst()
+                    .orElse(null));
+        } else {
+            cinema.clear();
+        }
+        date.setValue(filter.date());
+        filmTitle.setValue(filter.filmTitle() == null ? "" : filter.filmTitle());
+        refreshActiveFilters();
+    }
+
+    public boolean hasActiveCriteria() {
+        return ShowingFilterQuery.hasCriteria(getFilter());
     }
 }

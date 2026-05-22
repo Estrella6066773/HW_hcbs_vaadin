@@ -4,6 +4,7 @@ import com.hcbs.dto.BookingSummary;
 import com.hcbs.security.CurrentUserService;
 import com.hcbs.service.cancellation.CancellationService;
 import com.vaadin.flow.component.button.Button;
+import com.hcbs.web.component.PageHero;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
@@ -69,7 +70,7 @@ public class CancellationView extends VerticalLayout {
         workspace.addClassName("booking-workspace");
         workspace.setWidthFull();
 
-        add(pageHero("Cancellation", "Handle refunds for any customer order."), workspace);
+        add(new PageHero("Refund control", "Cancellation", "Handle refunds for any customer order."), workspace);
     }
 
     private void findBooking() {
@@ -88,17 +89,6 @@ public class CancellationView extends VerticalLayout {
         } catch (RuntimeException ex) {
             Notification.show(ex.getMessage());
         }
-    }
-
-    private Div pageHero(String heading, String copy) {
-        Span badge = new Span("Refund control");
-        badge.addClassName("eyebrow");
-        H2 title = new H2(heading);
-        Paragraph description = new Paragraph(copy);
-
-        Div hero = new Div(badge, title, description);
-        hero.addClassName("page-hero");
-        return hero;
     }
 
     private Div sectionTitle(String title, String caption) {

@@ -2,121 +2,96 @@ package com.hcbs.web;
 
 import com.hcbs.dto.FilmCardDto;
 import com.hcbs.dto.FilmCatalogFilter;
-import com.hcbs.dto.ShowingRow;
+import com.hcbs.dto.ShowingListingFilter;
 import com.hcbs.service.search.HcbsSearchService;
 import com.hcbs.web.component.AdditiveShowingFilterPanel;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
+import com.hcbs.web.component.PageHero;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
+import java.util.List;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Home")
 @AnonymousAllowed
-public class FilmRecommendView extends VerticalLayout {
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+public class FilmRecommendView extends VerticalLayout implements BeforeEnterObserver {
 
     private final HcbsSearchService searchService;
     private final AdditiveShowingFilterPanel filterPanel;
-    private final Div searchHub = new Div();
-    private final Div metricsPanel = new Div();
-    private final Span resultCount = new Span("0 showings");
-    private final Span seatCount = new Span("0 seats open");
     private final Div posterGrid = new Div();
-    private final Div showingResultsPanel = new Div();
-    private final Grid<ShowingRow> showingGrid = new Grid<>(ShowingRow.class, false);
+    private boolean filteredBrowse;
 
     public FilmRecommendView(HcbsSearchService searchService) {
         this.searchService = searchService;
-        this.filterPanel = new AdditiveShowingFilterPanel(searchService, this::runSearch, this::showPosters);
+        this.filterPanel = new AdditiveShowingFilterPanel(searchService, this::runSearch, this::showAllFilms);
 
-        setSizeFull();
+        setWidthFull();
         setPadding(false);
         setMargin(false);
         addClassName("page-view");
 
-        Div hero = pageHero(
+        PageHero hero = new PageHero(
+                "Films",
                 "Home",
-                "Browse film posters below, or search showtimes by city, cinema, date, and title."
+                "Browse films on display, or search by city, cinema, date, and title to see what you can watch."
         );
 
-        Div resultCard = metricCard("Filtered sessions", resultCount, "Matching showings in the current search");
-        Div seatCard = metricCard("Seat inventory", seatCount, "Available seats across those sessions");
-        Div ruleCard = metricCard("Booking window", new Span("7 days"), "Future bookings are limited by policy");
-        metricsPanel.add(resultCard, seatCard, ruleCard);
-        metricsPanel.addClassName("metric-grid");
-        metricsPanel.setVisible(false);
-
-        searchHub.addClassName("home-search-hub");
-        searchHub.add(filterPanel, metricsPanel);
+        filterPanel.setWidthFull();
 
         posterGrid.addClassName("film-poster-grid");
         posterGrid.setWidthFull();
 
-        configureShowingGrid();
-        showingResultsPanel.addClassName("grid-panel");
-        showingResultsPanel.add(showingGrid);
-        showingResultsPanel.setVisible(false);
-
-        add(hero, searchHub, posterGrid, showingResultsPanel);
-        showPosters();
+        add(hero, filterPanel, posterGrid);
     }
 
-    private void configureShowingGrid() {
-        showingGrid.addComponentColumn(row -> {
-            RouterLink link = new RouterLink(row.filmTitle(), FilmDetailView.class, row.filmId());
-            link.addClassName("home-grid-film-link");
-            return link;
-        }).setHeader("Film").setWidth("160px").setFlexGrow(1);
-        showingGrid.addColumn(ShowingRow::description).setHeader("Description").setWidth("220px").setFlexGrow(2);
-        showingGrid.addColumn(ShowingRow::actors).setHeader("Actors").setWidth("200px").setFlexGrow(1);
-        showingGrid.addColumn(ShowingRow::genre).setHeader("Genre").setWidth("100px").setFlexGrow(0);
-        showingGrid.addColumn(ShowingRow::ageRating).setHeader("Age").setWidth("80px").setFlexGrow(0);
-        showingGrid.addColumn(ShowingRow::cinemaName).setHeader("Cinema").setWidth("200px").setFlexGrow(1);
-        showingGrid.addColumn(ShowingRow::screenNumber).setHeader("Screen").setWidth("90px").setFlexGrow(0);
-        showingGrid.addColumn(row -> row.showDate().format(DATE_FORMAT)).setHeader("Date").setWidth("130px").setFlexGrow(0);
-        showingGrid.addColumn(row -> row.startTime().format(TIME_FORMAT)).setHeader("Start").setWidth("90px").setFlexGrow(0);
-        showingGrid.addColumn(row -> row.endTime().format(TIME_FORMAT)).setHeader("End").setWidth("90px").setFlexGrow(0);
-        showingGrid.addColumn(ShowingRow::timeBand).setHeader("Band").setWidth("120px").setFlexGrow(0);
-        showingGrid.addColumn(ShowingRow::availableSeats).setHeader("Available seats").setWidth("140px").setFlexGrow(0);
-        showingGrid.setSizeFull();
-        showingGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
-        showingGrid.addClassName("cinema-grid");
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        ShowingListingFilter fromUrl = ShowingFilterQuery.fromQueryParameters(event.getLocation().getQueryParameters());
+        if (ShowingFilterQuery.hasCriteria(fromUrl)) {
+            filterPanel.applyFilter(fromUrl);
+            filteredBrowse = true;
+            displayFilteredFilms(fromUrl);
+        } else {
+            filteredBrowse = false;
+            displayAllFilms();
+        }
     }
 
     private void runSearch() {
-        posterGrid.setVisible(false);
-        showingResultsPanel.setVisible(true);
-        metricsPanel.setVisible(true);
-        filterPanel.hideBrowseSummary();
-
-        var result = searchService.searchHomeShowings(filterPanel.getFilter());
-        showingGrid.setItems(result.showings());
-        resultCount.setText(result.showings().size() + " showings");
-        seatCount.setText(result.availableSeats() + " seats open");
+        getUI().ifPresent(ui -> ui.navigate(
+                FilmRecommendView.class,
+                ShowingFilterQuery.toQueryParameters(filterPanel.getFilter())));
     }
 
-    private void showPosters() {
-        posterGrid.setVisible(true);
-        showingResultsPanel.setVisible(false);
-        metricsPanel.setVisible(false);
+    private void showAllFilms() {
+        getUI().ifPresent(ui -> ui.navigate(FilmRecommendView.class, QueryParameters.empty()));
+    }
 
-        var films = searchService.searchFilms(FilmCatalogFilter.of(""));
+    private void displayAllFilms() {
+        List<FilmCardDto> films = searchService.searchFilms(FilmCatalogFilter.of(""));
+        renderPosters(films);
+        filterPanel.setBrowseSummary(films.size(), false);
+    }
+
+    private void displayFilteredFilms(ShowingListingFilter filter) {
+        List<FilmCardDto> films = searchService.searchFilmsByShowings(filter);
+        renderPosters(films);
+        filterPanel.setBrowseSummary(films.size(), true);
+    }
+
+    private void renderPosters(List<FilmCardDto> films) {
         posterGrid.removeAll();
         films.forEach(film -> posterGrid.add(createPosterCard(film)));
-        filterPanel.setBrowseSummary(films.size());
     }
 
     private RouterLink createPosterCard(FilmCardDto film) {
@@ -131,30 +106,11 @@ public class FilmRecommendView extends VerticalLayout {
 
         RouterLink link = new RouterLink();
         link.setRoute(FilmDetailView.class, film.filmId());
+        if (filteredBrowse) {
+            link.setQueryParameters(ShowingFilterQuery.toQueryParameters(filterPanel.getFilter()));
+        }
         link.addClassName("film-poster-card");
         link.add(poster, title, meta);
         return link;
-    }
-
-    private Div metricCard(String label, Span value, String note) {
-        Span labelSpan = new Span(label);
-        labelSpan.addClassName("metric-label");
-        value.addClassName("metric-value");
-        Span noteSpan = new Span(note);
-        noteSpan.addClassName("metric-note");
-
-        Div card = new Div(labelSpan, value, noteSpan);
-        card.addClassName("metric-card");
-        return card;
-    }
-
-    private Div pageHero(String heading, String copy) {
-        Span badge = new Span("Browse Mode");
-        badge.addClassName("eyebrow");
-        H2 title = new H2(heading);
-        Paragraph description = new Paragraph(copy);
-        Div hero = new Div(badge, title, description);
-        hero.addClassName("page-hero");
-        return hero;
     }
 }

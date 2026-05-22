@@ -11,4 +11,9 @@ public record ShowingListingFilter(Long cityId, Long cinemaId, LocalDate date, S
         String title = filmTitle == null || filmTitle.isBlank() ? null : filmTitle.trim();
         return new ShowingListingFilter(cityId, cinemaId, date, title);
     }
+
+    public boolean isEmpty() {
+        return cityId == null && cinemaId == null && date == null
+                && (filmTitle == null || filmTitle.isBlank());
+    }
 }

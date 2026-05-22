@@ -7,6 +7,7 @@ import com.hcbs.dto.UserOption;
 import com.hcbs.model.SeatArea;
 import com.hcbs.security.CurrentUserService;
 import com.hcbs.service.booking.BookingService;
+import com.hcbs.web.component.PageHero;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -21,11 +22,15 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Route(value = "booking", layout = MainLayout.class)
 @PageTitle("Booking")
@@ -41,6 +46,9 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
     private final TextArea receipt = new TextArea("Booking receipt");
     private final Span selectionSummary = new Span("Choose a showing and seat area to reveal available seats.");
 
+    private Long presetShowingId;
+    private boolean workspaceBuilt;
+
     public BookingView(BookingService bookingService, CurrentUserService currentUserService) {
         this.bookingService = bookingService;
         this.currentUserService = currentUserService;
@@ -52,13 +60,23 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        presetShowingId = ShowingFilterQuery.showingIdFrom(event.getLocation().getQueryParameters()).orElse(null);
+
         if (!currentUserService.isAuthenticated()) {
-            event.forwardTo(LoginView.class);
+            Map<String, List<String>> params = new HashMap<>();
+            String target = "booking";
+            if (presetShowingId != null) {
+                target += "?showingId=" + presetShowingId;
+            }
+            params.put("redirect", List.of(target));
+            event.forwardTo(LoginView.class, new QueryParameters(params));
             return;
         }
-        if (getComponentCount() == 0) {
+        if (!workspaceBuilt) {
             buildWorkspace();
+            workspaceBuilt = true;
         }
+        applyPresetShowing();
     }
 
     private void buildWorkspace() {
@@ -86,7 +104,9 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
 
         String heroCopy = employeeDesk
                 ? "Select the customer, showing, and seats. The order is recorded under the customer account."
-                : "Book seats for your own account. You can cancel orders from My bookings.";
+                : presetShowingId != null
+                        ? "Complete your booking for the selected showing."
+                        : "Book seats for your own account. You can cancel orders from My bookings.";
 
         Div formPanel = new Div(
                 sectionTitle("Create booking", employeeDesk
@@ -117,7 +137,24 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
         workspace.addClassName("booking-workspace");
         workspace.setWidthFull();
 
-        add(pageHero(employeeDesk ? "Ticket desk" : "Book tickets", heroCopy), workspace);
+        add(new PageHero(
+                employeeDesk ? "Employee desk" : "Self-service",
+                employeeDesk ? "Ticket desk" : "Book tickets",
+                heroCopy), workspace);
+    }
+
+    private void applyPresetShowing() {
+        if (presetShowingId == null) {
+            return;
+        }
+        Optional<ShowingOption> match = bookingService.findBookableShowing(presetShowingId);
+        if (match.isPresent()) {
+            showing.setValue(match.get());
+            showing.setReadOnly(true);
+            updateSelectionSummary();
+        } else {
+            Notification.show("Selected showing is no longer available for booking");
+        }
     }
 
     private void refreshSeats() {
@@ -169,17 +206,6 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
             selectionSummary.setText(selected + " seat(s) selected in " + seatArea.getValue() + ".");
         }
         selectionSummary.addClassName("selection-summary");
-    }
-
-    private Div pageHero(String heading, String copy) {
-        Span badge = new Span(currentUserService.isEmployee() ? "Employee desk" : "Self-service");
-        badge.addClassName("eyebrow");
-        H2 title = new H2(heading);
-        Paragraph description = new Paragraph(copy);
-
-        Div hero = new Div(badge, title, description);
-        hero.addClassName("page-hero");
-        return hero;
     }
 
     private Div sectionTitle(String title, String caption) {

@@ -191,11 +191,12 @@ vaadin-app-layout.hcbs-shell::part(content) {
 vaadin-vertical-layout.page-view {
     width: 100%;
     max-width: 100%;
-    min-height: 100%;
+    min-height: 0;
     margin: 0;
     padding: var(--hcbs-page-gutter);
     gap: 22px;
     box-sizing: border-box;
+    align-items: stretch;
     overflow-x: hidden;
     transition:
         padding var(--hcbs-layout-motion) var(--hcbs-layout-ease),
@@ -207,12 +208,18 @@ vaadin-vertical-layout.page-view {
 
 .page-hero {
     position: relative;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0;
     width: 100%;
     max-width: 100%;
     margin: 0;
+    align-self: stretch;
+    flex: 0 0 auto;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
     padding: 30px;
     transition: width var(--hcbs-layout-motion) var(--hcbs-layout-ease);
     border: 1px solid rgba(255, 208, 138, 0.18);
@@ -240,23 +247,33 @@ vaadin-vertical-layout.page-view {
     transform: rotate(-4deg);
 }
 
+.page-hero-heading,
 .page-hero h2 {
     position: relative;
     z-index: 1;
+    display: block;
+    width: 100%;
     margin: 8px 0 8px;
+    padding: 0;
     color: #fff4dc;
     font-size: clamp(2rem, 4vw, 4.6rem);
-    line-height: 0.95;
+    line-height: 1.05;
     letter-spacing: 0;
+    overflow: visible;
 }
 
+.page-hero-copy,
 .page-hero p {
     position: relative;
     z-index: 1;
+    display: block;
     max-width: 680px;
     margin: 0;
+    padding: 0;
     color: #d6c3a8;
     font-size: 1.02rem;
+    line-height: 1.45;
+    overflow: visible;
 }
 
 .eyebrow {
@@ -466,6 +483,52 @@ vaadin-text-area {
     --vaadin-input-field-border-color: rgba(255, 208, 138, 0.18);
     --vaadin-input-field-label-color: #d8c2a1;
     --vaadin-input-field-value-color: #fff2dc;
+    --vaadin-input-field-icon-color: #ffd08a;
+    --vaadin-input-field-button-text-color: #ffd08a;
+}
+
+vaadin-text-field:hover,
+vaadin-combo-box:hover,
+vaadin-date-picker:hover,
+vaadin-multi-select-combo-box:hover {
+    --vaadin-input-field-icon-color: #ffe9b8;
+}
+
+vaadin-text-field[focused],
+vaadin-combo-box[focused],
+vaadin-date-picker[focused],
+vaadin-multi-select-combo-box[focused] {
+    --vaadin-input-field-icon-color: #fff4dc;
+}
+
+vaadin-text-field::part(clear-button),
+vaadin-combo-box::part(clear-button),
+vaadin-combo-box::part(toggle-button),
+vaadin-date-picker::part(clear-button),
+vaadin-date-picker::part(toggle-button),
+vaadin-multi-select-combo-box::part(clear-button),
+vaadin-multi-select-combo-box::part(toggle-button) {
+    color: #ffd08a;
+}
+
+vaadin-text-field::part(clear-button):hover,
+vaadin-combo-box::part(clear-button):hover,
+vaadin-combo-box::part(toggle-button):hover,
+vaadin-date-picker::part(clear-button):hover,
+vaadin-date-picker::part(toggle-button):hover,
+vaadin-multi-select-combo-box::part(clear-button):hover,
+vaadin-multi-select-combo-box::part(toggle-button):hover {
+    color: #fff4dc;
+}
+
+vaadin-text-field::part(clear-button)::before,
+vaadin-combo-box::part(clear-button)::before,
+vaadin-combo-box::part(toggle-button)::before,
+vaadin-date-picker::part(clear-button)::before,
+vaadin-date-picker::part(toggle-button)::before,
+vaadin-multi-select-combo-box::part(clear-button)::before,
+vaadin-multi-select-combo-box::part(toggle-button)::before {
+    color: #ffd08a;
 }
 
 vaadin-grid {
@@ -506,7 +569,7 @@ vaadin-grid {
     box-sizing: border-box;
     gap: 1.5rem;
     align-items: stretch;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     transition:
         width var(--hcbs-layout-motion) var(--hcbs-layout-ease),
         gap var(--hcbs-layout-motion) var(--hcbs-layout-ease);
@@ -560,35 +623,23 @@ vaadin-grid {
     font-size: 0.82rem;
 }
 
-.home-search-hub {
+.page-view .home-filter-panel,
+.page-view > .metric-grid {
     width: 100%;
-    max-width: 1120px;
-    margin: 0 auto 22px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    transition: width var(--hcbs-layout-motion) var(--hcbs-layout-ease);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
-.home-search-hub .home-filter-panel {
-    width: 100%;
-}
-
-.home-search-hub .home-filter-bar {
-    justify-content: center;
+.page-view .home-filter-bar {
+    justify-content: flex-start;
     flex-wrap: wrap;
-}
-
-.home-search-hub .metric-grid {
-    width: 100%;
 }
 
 .home-active-filters,
 .home-browse-summary {
     display: block;
     width: 100%;
-    text-align: center;
+    text-align: left;
     color: #c7b89e;
     font-size: 0.88rem;
     line-height: 1.45;
@@ -668,6 +719,24 @@ vaadin-grid {
     font-size: 1.15rem;
 }
 
+@media (max-width: 1500px) {
+    .film-poster-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .film-poster-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 960px) {
+    .film-poster-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 800px) {
     :root {
         --hcbs-page-gutter: 16px;
@@ -695,50 +764,136 @@ vaadin-grid {
         grid-template-columns: 1fr;
     }
 
+    .film-poster-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .film-detail-header {
         flex-direction: column;
     }
 
 }
 
-/* --- Auth --- */
-.login-view {
-    background: radial-gradient(circle at top, rgba(255, 196, 77, 0.12), transparent 55%),
-        var(--hcbs-bg, #0f1419);
+/* --- Auth (login / register) --- */
+vaadin-vertical-layout.auth-page {
+    align-items: center;
 }
 
-.login-card {
-    background: var(--hcbs-surface, #1a2332);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+.auth-page-content {
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
 }
 
-.login-hint {
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 0.85rem;
+.auth-page .auth-panel,
+.auth-page .surface-panel {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.auth-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.auth-password-note {
+    margin-top: 8px;
     text-align: center;
-    margin: 0 0 1rem;
+}
+
+.auth-hint {
+    margin: 0;
+    color: #c7b89e;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.auth-link {
+    display: block;
+    margin-top: 4px;
+    color: #ffd08a;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    color: #fff4dc;
+    text-decoration: underline;
+}
+
+.auth-credentials-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 208, 138, 0.16);
+    border-radius: 8px;
+    background: rgba(30, 23, 27, 0.82);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.20);
+}
+
+.auth-login-error {
+    display: block;
+    margin: 0;
+    padding: 10px 12px;
+    color: #ffb4a8;
+    font-size: 0.88rem;
+    border: 1px solid rgba(215, 70, 56, 0.45);
+    border-radius: 8px;
+    background: rgba(196, 56, 47, 0.18);
+}
+
+.auth-page vaadin-text-field,
+.auth-page vaadin-password-field,
+.auth-page vaadin-email-field,
+.auth-credentials-panel vaadin-text-field,
+.auth-credentials-panel vaadin-password-field {
+    --vaadin-input-field-background: rgba(255, 237, 202, 0.08);
+    --vaadin-input-field-border-width: 1px;
+    --vaadin-input-field-border-color: rgba(255, 208, 138, 0.28);
+    --vaadin-input-field-label-color: #d8c2a1;
+    --vaadin-input-field-value-color: #fff2dc;
+    --vaadin-input-field-icon-color: #ffd08a;
+    --vaadin-input-field-focused-label-color: #ffd08a;
+    --vaadin-input-field-hover-highlight: rgba(255, 208, 138, 0.10);
+    --vaadin-input-field-invalid-border-color: #d74638;
+    --vaadin-input-field-invalid-background: rgba(196, 56, 47, 0.12);
+    --vaadin-focus-ring-color: rgba(255, 208, 138, 0.55);
+}
+
+.auth-credentials-panel .primary-action {
+    width: 100%;
+    margin-top: 4px;
+}
+
+.auth-credentials-panel vaadin-password-field::part(reveal-button),
+.auth-page vaadin-password-field::part(reveal-button) {
+    color: #ffd08a;
+}
+
+.auth-credentials-panel vaadin-password-field::part(reveal-button):hover,
+.auth-page vaadin-password-field::part(reveal-button):hover {
+    color: #fff4dc;
+}
+
+.auth-credentials-panel vaadin-password-field::part(reveal-button)::before,
+.auth-page vaadin-password-field::part(reveal-button)::before {
+    color: #ffd08a;
 }
 
 .user-badge {
-    color: rgba(255, 255, 255, 0.85);
+    color: #f7ead2;
     font-size: 0.85rem;
     margin-right: 0.75rem;
     white-space: nowrap;
-}
-
-.register-link {
-    color: var(--hcbs-accent, #ffc44d);
-    font-size: 0.9rem;
-    text-decoration: none;
-    margin-top: 0.5rem;
-    text-align: center;
-}
-
-.register-link:hover {
-    text-decoration: underline;
 }
 
 .account-button {
@@ -767,23 +922,26 @@ vaadin-grid {
 }
 
 .demo-accounts-panel {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
 }
 
 .demo-accounts-heading {
-    color: var(--hcbs-accent, #ffc44d);
+    margin: 10px 0 4px;
+    color: #ffd08a;
     font-size: 0.95rem;
-    margin: 0.5rem 0 0.25rem;
+    font-weight: 800;
 }
 
 .demo-accounts-list {
-    margin: 0 0 0.5rem 1.25rem;
+    margin: 0 0 6px 1.25rem;
     padding: 0;
-    color: rgba(255, 255, 255, 0.8);
+    color: #d6c3a8;
     font-size: 0.85rem;
     line-height: 1.5;
 }

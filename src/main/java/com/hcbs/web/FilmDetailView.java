@@ -1,8 +1,10 @@
 package com.hcbs.web;
 
 import com.hcbs.dto.FilmDetailDto;
+import com.hcbs.dto.ShowingListingFilter;
 import com.hcbs.dto.ShowingRow;
-import com.hcbs.service.catalog.FilmCatalogService;
+import com.hcbs.service.search.HcbsSearchService;
+import com.hcbs.web.component.BackToHomeAction;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -30,11 +32,11 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
-    private final FilmCatalogService filmCatalogService;
+    private final HcbsSearchService searchService;
     private final VerticalLayout content = new VerticalLayout();
 
-    public FilmDetailView(FilmCatalogService filmCatalogService) {
-        this.filmCatalogService = filmCatalogService;
+    public FilmDetailView(HcbsSearchService searchService) {
+        this.searchService = searchService;
         setSizeFull();
         setPadding(false);
         setMargin(false);
@@ -52,15 +54,16 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
             content.add(new Paragraph("No film selected."));
             return;
         }
+        ShowingListingFilter filter = ShowingFilterQuery.fromQueryParameters(event.getLocation().getQueryParameters());
         try {
-            content.add(buildDetail(filmCatalogService.getFilmDetail(filmId)));
+            content.add(buildDetail(searchService.getFilmDetail(filmId, filter), filter));
         } catch (IllegalArgumentException ex) {
             content.add(new Paragraph(ex.getMessage()));
-            content.add(new RouterLink("Back to home", FilmRecommendView.class));
+            content.add(new RouterLink("返回主页", FilmRecommendView.class));
         }
     }
 
-    private Div buildDetail(FilmDetailDto film) {
+    private Div buildDetail(FilmDetailDto film, ShowingListingFilter filter) {
         Image poster = new Image(film.posterUrl(), film.title() + " poster");
         poster.addClassName("film-detail-poster");
 
@@ -79,14 +82,14 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
         header.setWidthFull();
         header.setAlignItems(Alignment.START);
 
-        Button back = new Button("Back to home");
-        back.addClickListener(e -> back.getUI().ifPresent(ui -> ui.navigate(FilmRecommendView.class)));
-        Button book = new Button("Book tickets");
-        book.addClassName("primary-action");
-        book.addClickListener(e -> book.getUI().ifPresent(ui -> ui.navigate(BookingView.class)));
-
-        Div actions = new Div(back, book);
+        Div actions = new Div(new BackToHomeAction(filter));
         actions.addClassName("film-detail-actions");
+
+        if (ShowingFilterQuery.hasCriteria(filter)) {
+            Span filterNote = new Span("Showtimes below match your search filters.");
+            filterNote.addClassName("film-detail-filter-note");
+            actions.add(filterNote);
+        }
 
         Grid<ShowingRow> showings = new Grid<>(ShowingRow.class, false);
         showings.addColumn(ShowingRow::cinemaName).setHeader("Cinema").setFlexGrow(1);
@@ -94,6 +97,14 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
         showings.addColumn(row -> row.showDate().format(DATE_FORMAT)).setHeader("Date").setWidth("130px");
         showings.addColumn(row -> row.startTime().format(TIME_FORMAT)).setHeader("Start").setWidth("90px");
         showings.addColumn(ShowingRow::availableSeats).setHeader("Seats").setWidth("90px");
+        showings.addComponentColumn(row -> {
+            Button book = new Button("Book");
+            book.addClassName("primary-action");
+            book.addClickListener(e -> book.getUI().ifPresent(ui -> ui.navigate(
+                    BookingView.class,
+                    ShowingFilterQuery.withShowingId(filter, row.showingId())));
+            return book;
+        }).setHeader("").setWidth("120px").setFlexGrow(0);
         showings.setItems(film.upcomingShowings());
         showings.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
         showings.setWidthFull();
@@ -105,6 +116,14 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
         Div panel = new Div(showtimesTitle, showings);
         panel.addClassName("surface-panel");
         panel.addClassName("film-detail-showings");
+
+        if (film.upcomingShowings().isEmpty()) {
+            Paragraph empty = new Paragraph(ShowingFilterQuery.hasCriteria(filter)
+                    ? "No upcoming showtimes match your current filters."
+                    : "No upcoming showtimes for this film.");
+            empty.addClassName("empty-state");
+            panel.add(empty);
+        }
 
         Div root = new Div(actions, header, panel);
         root.addClassName("film-detail-root");
