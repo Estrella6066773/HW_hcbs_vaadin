@@ -68,7 +68,6 @@ public class FilmRecommendView extends VerticalLayout {
         showingResultsPanel.add(showingGrid);
         showingResultsPanel.setVisible(false);
 
-        hero.setWidthFull();
         add(hero, searchHub, posterGrid, showingResultsPanel);
         showPosters();
     }
@@ -148,7 +147,7 @@ public class FilmRecommendView extends VerticalLayout {
     }
 
     private Div pageHero(String heading, String copy) {
-        Span badge = new Span("Horizon Cinemas");
+        Span badge = new Span("Browse Mode");
         badge.addClassName("eyebrow");
         H2 title = new H2(heading);
         Paragraph description = new Paragraph(copy);

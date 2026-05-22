@@ -1,4 +1,6 @@
 :root {
+    --hcbs-layout-motion: 380ms;
+    --hcbs-layout-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --hcbs-page-gutter: clamp(16px, 2.5vw, 32px);
     --lumo-font-family: Georgia, "Times New Roman", serif;
     --lumo-primary-color: #c4382f;
@@ -42,9 +44,37 @@ vaadin-app-layout::part(drawer) {
     border-right: 1px solid rgba(255, 208, 138, 0.16);
 }
 
+vaadin-app-layout.hcbs-shell {
+    --vaadin-app-layout-transition: var(--hcbs-layout-motion);
+    --vaadin-app-layout-transition-duration: var(--hcbs-layout-motion);
+}
+
+vaadin-app-layout.hcbs-shell::part(drawer) {
+    transition:
+        border-color var(--hcbs-layout-motion) var(--hcbs-layout-ease),
+        box-shadow var(--hcbs-layout-motion) var(--hcbs-layout-ease);
+}
+
 vaadin-app-layout.hcbs-shell::part(content) {
     padding: 0;
     box-sizing: border-box;
+    transition: padding var(--hcbs-layout-motion) var(--hcbs-layout-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    vaadin-app-layout.hcbs-shell {
+        --vaadin-app-layout-transition: 0ms;
+        --vaadin-app-layout-transition-duration: 0ms;
+    }
+
+    vaadin-app-layout.hcbs-shell::part(drawer),
+    vaadin-app-layout.hcbs-shell::part(content),
+    vaadin-vertical-layout.page-view,
+    .page-hero,
+    .film-poster-grid,
+    .film-poster-card {
+        transition: none !important;
+    }
 }
 
 .topbar {
@@ -55,13 +85,19 @@ vaadin-app-layout.hcbs-shell::part(content) {
 .brand-lockup {
     align-items: center;
     gap: 14px;
+    flex: 0 0 auto;
+    flex-shrink: 0;
 }
 
 .brand-mark {
     display: grid;
+    flex: 0 0 auto;
+    flex-shrink: 0;
     place-items: center;
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     color: #1a1316;
     background: linear-gradient(145deg, #ffd08a, #c4382f);
     border-radius: 8px;
@@ -70,19 +106,35 @@ vaadin-app-layout.hcbs-shell::part(content) {
     box-shadow: 0 14px 38px rgba(196, 56, 47, 0.36);
 }
 
+.brand-text {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+}
+
 .brand-text h1 {
     margin: 0;
     color: #fff3dd;
     font-size: 1.32rem;
-    line-height: 1;
+    line-height: 1.2;
     letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .brand-subtitle {
+    display: block;
     color: #c7b89e;
     font-size: 0.78rem;
+    line-height: 1.2;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .drawer-label {
@@ -133,6 +185,9 @@ vaadin-vertical-layout.page-view {
     gap: 22px;
     box-sizing: border-box;
     overflow-x: hidden;
+    transition:
+        padding var(--hcbs-layout-motion) var(--hcbs-layout-ease),
+        width var(--hcbs-layout-motion) var(--hcbs-layout-ease);
     background:
         linear-gradient(180deg, rgba(255, 208, 138, 0.05), transparent 280px),
         transparent;
@@ -147,6 +202,7 @@ vaadin-vertical-layout.page-view {
     box-sizing: border-box;
     overflow: hidden;
     padding: 30px;
+    transition: width var(--hcbs-layout-motion) var(--hcbs-layout-ease);
     border: 1px solid rgba(255, 208, 138, 0.18);
     border-radius: 8px;
     background:
@@ -195,6 +251,7 @@ vaadin-vertical-layout.page-view {
     position: relative;
     z-index: 1;
     display: inline-flex;
+    align-items: center;
     width: fit-content;
     padding: 5px 10px;
     color: #ffe1aa;
@@ -205,6 +262,7 @@ vaadin-vertical-layout.page-view {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.12em;
+    white-space: nowrap;
 }
 
 .metric-grid {
@@ -436,16 +494,10 @@ vaadin-grid {
     box-sizing: border-box;
     gap: 1.5rem;
     align-items: stretch;
-}
-
-/* Drawer expanded: narrower content → 4 poster columns */
-vaadin-app-layout.hcbs-shell[drawer-opened] .film-poster-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-/* Drawer collapsed: wider content → 5 poster columns */
-vaadin-app-layout.hcbs-shell:not([drawer-opened]) .film-poster-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    transition:
+        width var(--hcbs-layout-motion) var(--hcbs-layout-ease),
+        gap var(--hcbs-layout-motion) var(--hcbs-layout-ease);
 }
 
 .film-poster-card {
@@ -462,7 +514,12 @@ vaadin-app-layout.hcbs-shell:not([drawer-opened]) .film-poster-grid {
     background: rgba(255, 230, 196, 0.05);
     border: 1px solid rgba(255, 208, 138, 0.18);
     border-radius: var(--lumo-border-radius-l);
-    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    transition:
+        width var(--hcbs-layout-motion) var(--hcbs-layout-ease),
+        min-width var(--hcbs-layout-motion) var(--hcbs-layout-ease),
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        border-color 160ms ease;
 }
 
 .film-poster-card:hover {
@@ -499,6 +556,7 @@ vaadin-app-layout.hcbs-shell:not([drawer-opened]) .film-poster-grid {
     flex-direction: column;
     align-items: center;
     gap: 18px;
+    transition: width var(--hcbs-layout-motion) var(--hcbs-layout-ease);
 }
 
 .home-search-hub .home-filter-panel {
@@ -615,6 +673,12 @@ vaadin-app-layout.hcbs-shell:not([drawer-opened]) .film-poster-grid {
         display: none;
     }
 
+    .brand-text {
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
+    }
+
     .metric-grid {
         grid-template-columns: 1fr;
     }
@@ -623,8 +687,4 @@ vaadin-app-layout.hcbs-shell:not([drawer-opened]) .film-poster-grid {
         flex-direction: column;
     }
 
-    vaadin-app-layout.hcbs-shell[drawer-opened] .film-poster-grid,
-    vaadin-app-layout.hcbs-shell:not([drawer-opened]) .film-poster-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 }
