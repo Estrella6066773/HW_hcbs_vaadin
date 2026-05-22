@@ -29,20 +29,20 @@ class RegistrationServiceTest {
     @Test
     void registersActiveCustomerWithNormalizedEmail() {
         User user = registrationService.registerCustomer(new RegistrationRequest(
-                "carol",
-                "Carol@Example.COM",
+                "diana",
+                "Diana@Example.COM",
                 "password1",
                 "password1",
-                "Carol Customer",
+                "Diana Customer",
                 "+44 7700 900123"
         ));
 
         assertThat(user.getUserId()).isNotNull();
         assertThat(user.getRole()).isEqualTo(UserRole.CUSTOMER);
         assertThat(user.getStatus()).isEqualTo(UserStatus.ACTIVE);
-        assertThat(user.getEmail()).isEqualTo("carol@example.com");
+        assertThat(user.getEmail()).isEqualTo("diana@example.com");
         assertThat(user.getCreatedAt()).isNotNull();
-        assertThat(userRepository.findByUsername("carol")).isPresent();
+        assertThat(userRepository.findByUsername("diana")).isPresent();
     }
 
     @Test

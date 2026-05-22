@@ -59,7 +59,7 @@ class BookingServiceTest {
         assertThat(receipt.bookingReference()).startsWith("HCBS-");
         assertThat(receipt.numberOfTickets()).isEqualTo(2);
         assertThat(receipt.totalCost()).isEqualByComparingTo(new BigDecimal("24.00"));
-        assertThat(receipt.customerName()).isEqualTo("Alice Customer");
+        assertThat(receipt.customerName()).isEqualTo("Alice Chen");
         assertThat(bookingSeatRepository.existsActiveReservationForShowingAndSeat(showing, seats.get(0))).isTrue();
     }
 
@@ -98,7 +98,7 @@ class BookingServiceTest {
 
         BookingReceipt receipt = bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), null);
 
-        assertThat(receipt.customerName()).isEqualTo("Alice Customer");
-        assertThat(receipt.bookedByName()).isEqualTo("Alice Customer");
+        assertThat(receipt.customerName()).isEqualTo("Alice Chen");
+        assertThat(receipt.bookedByName()).isEqualTo("Alice Chen");
     }
 }
