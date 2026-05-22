@@ -81,8 +81,11 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
 
         Button back = new Button("Back to home");
         back.addClickListener(e -> back.getUI().ifPresent(ui -> ui.navigate(FilmRecommendView.class)));
+        Button book = new Button("Book tickets");
+        book.addClassName("primary-action");
+        book.addClickListener(e -> book.getUI().ifPresent(ui -> ui.navigate(BookingView.class)));
 
-        Div actions = new Div(back);
+        Div actions = new Div(back, book);
         actions.addClassName("film-detail-actions");
 
         Grid<ShowingRow> showings = new Grid<>(ShowingRow.class, false);

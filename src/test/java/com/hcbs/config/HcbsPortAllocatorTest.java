@@ -28,4 +28,10 @@ class HcbsPortAllocatorTest {
             assertThat(HcbsPortAllocator.resolvePort()).isEqualTo(HcbsPortAllocator.DEFAULT_PORT);
         }
     }
+
+    @Test
+    void sequentialFallbackStartsAt8081() {
+        assertThat(HcbsPortAllocator.SEQUENTIAL_FALLBACK_FIRST).isEqualTo(8081);
+        assertThat(HcbsPortAllocator.SEQUENTIAL_FALLBACK_LAST).isGreaterThanOrEqualTo(8081);
+    }
 }

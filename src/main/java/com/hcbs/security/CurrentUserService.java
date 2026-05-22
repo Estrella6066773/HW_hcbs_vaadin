@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CurrentUserService {
 
@@ -16,21 +18,31 @@ public class CurrentUserService {
         this.userRepository = userRepository;
     }
 
-    public User requireCurrentUser() {
+    public boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new AccessDeniedException("Not signed in");
+        return authentication != null
+                && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal());
+    }
+
+    public Optional<User> findCurrentUser() {
+        if (!isAuthenticated()) {
+            return Optional.empty();
         }
-        return userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new AccessDeniedException("User account not found"));
+        return userRepository.findByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
+    public User requireCurrentUser() {
+        return findCurrentUser()
+                .orElseThrow(() -> new AccessDeniedException("Not signed in"));
     }
 
     public boolean isEmployee() {
-        return requireCurrentUser().getRole().isEmployee();
+        return findCurrentUser().map(user -> user.getRole().isEmployee()).orElse(false);
     }
 
     public boolean isCustomer() {
-        return requireCurrentUser().getRole().isCustomer();
+        return findCurrentUser().map(user -> user.getRole().isCustomer()).orElse(false);
     }
 }

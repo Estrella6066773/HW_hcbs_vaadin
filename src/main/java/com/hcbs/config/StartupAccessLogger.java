@@ -33,12 +33,10 @@ public class StartupAccessLogger implements ApplicationListener<ApplicationReady
         log.info("  {}", h2ConsoleUrl);
         log.info("  H2 JDBC: jdbc:h2:file:./data/hcbs");
         log.info("  H2 user: sa   password: (empty)");
-        if ("hash-fallback".equals(strategy)) {
+        if ("fallback".equals(strategy) || "hash-fallback".equals(strategy)) {
             int requested = env.getProperty("hcbs.server.port.requested", Integer.class, HcbsPortAllocator.DEFAULT_PORT);
-            int hashAttempt = env.getProperty("hcbs.server.port.hash-attempt", Integer.class, -1);
-            int hashCandidate = env.getProperty("hcbs.server.port.hash-candidate", Integer.class, -1);
-            log.info("  Port: {} ({} was in use; hash attempt {}/{}, candidate {})",
-                    port, requested, hashAttempt + 1, HcbsPortAllocator.MAX_HASH_ATTEMPTS, hashCandidate);
+            String fallback = env.getProperty("hcbs.server.port.fallback", "sequential");
+            log.info("  Port: {} ({} was in use; using {} fallback)", port, requested, fallback);
         } else {
             log.info("  Port: {}", port);
         }

@@ -18,17 +18,20 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Route(value = "booking", layout = MainLayout.class)
 @PageTitle("Booking")
-@PermitAll
-public class BookingView extends VerticalLayout {
+@AnonymousAllowed
+public class BookingView extends VerticalLayout implements BeforeEnterObserver {
+
     private final BookingService bookingService;
     private final CurrentUserService currentUserService;
     private final ComboBox<ShowingOption> showing = new ComboBox<>("Showing");
@@ -45,7 +48,20 @@ public class BookingView extends VerticalLayout {
         setPadding(false);
         setMargin(false);
         addClassName("page-view");
+    }
 
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (!currentUserService.isAuthenticated()) {
+            event.forwardTo(LoginView.class);
+            return;
+        }
+        if (getComponentCount() == 0) {
+            buildWorkspace();
+        }
+    }
+
+    private void buildWorkspace() {
         boolean employeeDesk = currentUserService.isEmployee();
         customer.setVisible(employeeDesk);
         if (employeeDesk) {
@@ -56,23 +72,21 @@ public class BookingView extends VerticalLayout {
 
         showing.setItems(bookingService.listBookableShowings());
         seatArea.setItems(SeatArea.values());
-        showing.addValueChangeListener(event -> refreshSeats());
-        seatArea.addValueChangeListener(event -> refreshSeats());
-        seats.addValueChangeListener(event -> updateSelectionSummary());
+        showing.addValueChangeListener(e -> refreshSeats());
+        seatArea.addValueChangeListener(e -> refreshSeats());
+        seats.addValueChangeListener(e -> updateSelectionSummary());
 
         receipt.setWidthFull();
         receipt.setMinHeight("220px");
         receipt.setPlaceholder("Confirmed booking details will appear here.");
         receipt.addClassName("receipt-field");
 
-        Button confirm = new Button("Confirm booking", event -> confirm());
+        Button confirm = new Button("Confirm booking", e -> confirm());
         confirm.addClassName("primary-action");
 
         String heroCopy = employeeDesk
                 ? "Select the customer, showing, and seats. The order is recorded under the customer account."
                 : "Book seats for your own account. You can cancel orders from My bookings.";
-
-        Div hero = pageHero(employeeDesk ? "Ticket desk" : "Book tickets", heroCopy);
 
         Div formPanel = new Div(
                 sectionTitle("Create booking", employeeDesk
@@ -103,7 +117,7 @@ public class BookingView extends VerticalLayout {
         workspace.addClassName("booking-workspace");
         workspace.setWidthFull();
 
-        add(hero, workspace);
+        add(pageHero(employeeDesk ? "Ticket desk" : "Book tickets", heroCopy), workspace);
     }
 
     private void refreshSeats() {
@@ -117,6 +131,10 @@ public class BookingView extends VerticalLayout {
     }
 
     private void confirm() {
+        if (!currentUserService.isAuthenticated()) {
+            getUI().ifPresent(ui -> ui.navigate(LoginView.class));
+            return;
+        }
         try {
             ShowingOption selectedShowing = showing.getValue();
             if (selectedShowing == null || seats.getValue() == null || seats.getValue().isEmpty()) {

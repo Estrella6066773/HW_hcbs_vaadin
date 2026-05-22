@@ -23,7 +23,7 @@ class FilmCatalogServiceTest {
     @Test
     void listsRecommendedFilmsWithPosters() {
         assertThat(filmCatalogService.listRecommendedFilms())
-                .hasSize(5)
+                .hasSize(12)
                 .allSatisfy(card -> {
                     assertThat(card.posterUrl()).startsWith("/images/posters/");
                     assertThat(card.title()).isNotBlank();
@@ -49,8 +49,9 @@ class FilmCatalogServiceTest {
                 .isEqualTo("Skyline Run");
 
         assertThat(filmCatalogService.searchFilms("sci-fi")).isNotEmpty();
-        assertThat(filmCatalogService.searchFilms("")).hasSize(5);
-        assertThat(filmCatalogService.searchFilms("   ")).hasSize(5);
+        assertThat(filmCatalogService.searchFilms("")).hasSize(12);
+        assertThat(filmCatalogService.searchFilms("   ")).hasSize(12);
+        assertThat(filmCatalogService.searchFilms("thriller")).hasSize(2);
         assertThat(filmCatalogService.searchFilms("no-such-film-xyz")).isEmpty();
     }
 

@@ -17,7 +17,8 @@ public class SecurityConfig extends VaadinWebSecurity {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/images/**").permitAll());
-        setLoginView(http, LoginView.class);
+        // Login is only required for protected views (booking, account features, staff tools).
+        setLoginView(http, LoginView.class, "/");
         super.configure(http);
     }
 

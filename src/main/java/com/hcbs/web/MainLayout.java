@@ -1,7 +1,7 @@
 package com.hcbs.web;
 
 import com.hcbs.model.User;
-import com.hcbs.model.UserRole;
+import com.hcbs.security.AuthUiService;
 import com.hcbs.security.CurrentUserService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -13,22 +13,30 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+
 @AnonymousAllowed
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final CurrentUserService currentUserService;
+    private final AuthUiService authUiService;
+    private final Span subtitle = new Span("Cinema booking portal");
 
-    public MainLayout(CurrentUserService currentUserService) {
+    private final HorizontalLayout headerActions = new HorizontalLayout();
+    private final VerticalLayout drawerContent = new VerticalLayout();
+
+    public MainLayout(CurrentUserService currentUserService, AuthUiService authUiService) {
         this.currentUserService = currentUserService;
+        this.authUiService = authUiService;
         addClassName("hcbs-shell");
 
         Div mark = new Div("HC");
         mark.addClassName("brand-mark");
 
         H1 title = new H1("Horizon Cinemas");
-        Span subtitle = new Span(resolveSubtitle());
         subtitle.addClassName("brand-subtitle");
 
         VerticalLayout brandText = new VerticalLayout(title, subtitle);
@@ -39,70 +47,94 @@ public class MainLayout extends AppLayout {
         HorizontalLayout brand = new HorizontalLayout(mark, brandText);
         brand.addClassName("brand-lockup");
 
-        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), brand);
+        headerActions.addClassName("header-actions");
+        headerActions.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        headerActions.setSpacing(true);
+
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), brand, headerActions);
         header.addClassName("topbar");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
         header.expand(brand);
 
-        try {
-            User user = currentUserService.requireCurrentUser();
-            Span userBadge = new Span(user.getFullName() + " · " + formatRole(user.getRole()));
-            userBadge.addClassName("user-badge");
-            Button signOut = new Button("Sign out", event ->
-                    getUI().ifPresent(ui -> ui.getPage().setLocation("logout")));
-            signOut.addClassName("secondary-action");
-            header.add(userBadge, signOut);
-        } catch (RuntimeException ignored) {
-            Button register = new Button("Register", event ->
-                    getUI().ifPresent(ui -> ui.navigate(RegisterView.class)));
-            register.addClassName("secondary-action");
-            Button signIn = new Button("Sign in", event ->
-                    getUI().ifPresent(ui -> ui.navigate(LoginView.class)));
-            signIn.addClassName("secondary-action");
-            header.add(register, signIn);
-        }
-
         addToNavbar(header);
+
+        drawerContent.setPadding(false);
+        drawerContent.setSpacing(false);
+        drawerContent.setWidthFull();
+        addToDrawer(drawerContent);
+
+        refreshChrome();
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        refreshChrome();
+    }
+
+    private void refreshChrome() {
+        refreshHeader();
+        refreshDrawer();
+        subtitle.setText(resolveSubtitle());
+    }
+
+    private void refreshHeader() {
+        headerActions.removeAll();
+        Button account = new Button("个人中心", event -> openAccountCenter());
+        account.addClassName("primary-action");
+        account.addClassName("account-button");
+
+        if (currentUserService.isAuthenticated()) {
+            User user = currentUserService.requireCurrentUser();
+            Span userBadge = new Span(user.getFullName());
+            userBadge.addClassName("user-badge");
+
+            Button signOut = new Button("Sign out", event -> authUiService.signOut());
+            signOut.addClassName("secondary-action");
+            signOut.addClassName("sign-out-button");
+
+            headerActions.add(userBadge, account, signOut);
+        } else {
+            headerActions.add(account);
+        }
+    }
+
+    private void refreshDrawer() {
+        drawerContent.removeAll();
 
         Span drawerLabel = new Span("Menu");
         drawerLabel.addClassName("drawer-label");
-        addToDrawer(drawerLabel);
-        addToDrawer(navLink("Home", FilmRecommendView.class, "Browse and search showtimes"));
+        drawerContent.add(drawerLabel);
+        drawerContent.add(navLink("Home", FilmRecommendView.class, "Browse and search showtimes"));
+        drawerContent.add(navLink("Book tickets", BookingView.class, "Select seats and confirm booking"));
 
-        try {
+        if (currentUserService.isAuthenticated()) {
             User user = currentUserService.requireCurrentUser();
             if (user.getRole().isCustomer()) {
-                addToDrawer(navLink("Book tickets", BookingView.class, "Book seats for yourself"));
-                addToDrawer(navLink("My bookings", MyBookingsView.class, "View and cancel your orders"));
+                drawerContent.add(navLink("My bookings", MyBookingsView.class, "View and cancel your orders"));
             } else {
-                addToDrawer(navLink("Ticket desk", BookingView.class, "Book on behalf of a customer"));
-                addToDrawer(navLink("Cancellation", CancellationView.class, "Refund desk for any booking"));
-                addToDrawer(navLink("Data admin", AdminDataView.class, "Manage films and accounts"));
+                drawerContent.add(navLink("Cancellation", CancellationView.class, "Refund desk for any booking"));
+                drawerContent.add(navLink("Data admin", AdminDataView.class, "Manage films and accounts"));
             }
-        } catch (RuntimeException ignored) {
-            // Signed-out users only see public home in the drawer.
         }
     }
 
     private String resolveSubtitle() {
-        try {
-            User user = currentUserService.requireCurrentUser();
-            return user.getRole().isCustomer()
-                    ? "Customer self-service"
-                    : "Employee control desk";
-        } catch (RuntimeException ex) {
-            return "Cinema booking portal";
-        }
+        return currentUserService.findCurrentUser()
+                .map(user -> user.getRole().isCustomer()
+                        ? "Customer self-service"
+                        : "Employee control desk")
+                .orElse("Cinema booking portal");
     }
 
-    private static String formatRole(UserRole role) {
-        return switch (role) {
-            case CUSTOMER -> "Customer";
-            case BOOKING_STAFF -> "Booking staff";
-            case ADMIN -> "Admin";
-            case MANAGER -> "Manager";
-        };
+    private void openAccountCenter() {
+        getUI().ifPresent(ui -> {
+            if (currentUserService.isAuthenticated()) {
+                ui.navigate(AccountCenterView.class);
+            } else {
+                ui.navigate(LoginView.class);
+            }
+        });
     }
 
     private RouterLink navLink(String title, Class<? extends Component> route, String caption) {

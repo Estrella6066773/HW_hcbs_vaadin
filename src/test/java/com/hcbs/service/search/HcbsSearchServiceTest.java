@@ -24,7 +24,7 @@ class HcbsSearchServiceTest {
     @Test
     void searchesFilmCatalogByFilter() {
         assertThat(searchService.searchFilms(FilmCatalogFilter.of("Skyline"))).hasSize(1);
-        assertThat(searchService.searchFilms(FilmCatalogFilter.of(""))).hasSize(5);
+        assertThat(searchService.searchFilms(FilmCatalogFilter.of(""))).hasSize(12);
     }
 
     @Test

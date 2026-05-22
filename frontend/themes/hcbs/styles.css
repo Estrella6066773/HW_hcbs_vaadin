@@ -82,6 +82,18 @@ vaadin-app-layout.hcbs-shell::part(content) {
     padding: 0 26px;
 }
 
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-left: auto;
+}
+
+.sign-out-button {
+    white-space: nowrap;
+}
+
 .brand-lockup {
     align-items: center;
     gap: 14px;
@@ -727,6 +739,31 @@ vaadin-grid {
 
 .register-link:hover {
     text-decoration: underline;
+}
+
+.account-button {
+    white-space: nowrap;
+}
+
+.account-panel {
+    max-width: 520px;
+    margin: 1rem auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.account-profile {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+}
+
+.account-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
 }
 
 .demo-accounts-panel {

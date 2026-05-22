@@ -51,6 +51,9 @@ public class HcbsTestDataSeeder {
     /** Fixed reference for cancellation UI/manual tests (show date = today + 1). */
     public static final String SEED_BOOKING_REFERENCE = "HCBS-SEED001";
 
+    /** Second demo booking for customer bob (show date = today + 5). */
+    public static final String SEED_BOOKING_REFERENCE_002 = "HCBS-SEED002";
+
     /**
      * Day offset for the anchor showing — first row in {@code ShowingRepository.findAll()} order.
      * Used by {@code BookingServiceTest} (London evening lower hall, £12 per seat).
@@ -172,46 +175,76 @@ public class HcbsTestDataSeeder {
 
     private Map<String, Film> seedFilmsAndActors() {
         Map<String, Film> films = new LinkedHashMap<>();
-        films.put("Skyline", filmRepository.save(new Film(
-                "Skyline Run",
+        films.put("Skyline", saveFilm(new HcbsMediaCatalog.FilmSeed(
+                "Skyline", "Skyline Run",
                 "A fast-paced city thriller following a courier racing across London before dawn.",
-                "Action", "12A", 4.4, 118,
-                "/images/posters/skyline-run.svg")));
-        films.put("Orbit", filmRepository.save(new Film(
-                "Orbit Garden",
+                "Action", "12A", 4.4, 118, "/images/posters/skyline-run.svg")));
+        films.put("Orbit", saveFilm(new HcbsMediaCatalog.FilmSeed(
+                "Orbit", "Orbit Garden",
                 "A science fiction story set around a lost orbital station and its last crew.",
-                "Sci-Fi", "PG", 4.6, 132,
-                "/images/posters/orbit-garden.svg")));
-        films.put("Harbour", filmRepository.save(new Film(
-                "Harbour Lights",
+                "Sci-Fi", "PG", 4.6, 132, "/images/posters/orbit-garden.svg")));
+        films.put("Harbour", saveFilm(new HcbsMediaCatalog.FilmSeed(
+                "Harbour", "Harbour Lights",
                 "A warm drama about family reconciliation in a seaside town.",
-                "Drama", "PG", 4.1, 105,
-                "/images/posters/harbour-lights.svg")));
-        films.put("Coral", filmRepository.save(new Film(
-                "Coral Bay",
+                "Drama", "PG", 4.1, 105, "/images/posters/harbour-lights.svg")));
+        films.put("Coral", saveFilm(new HcbsMediaCatalog.FilmSeed(
+                "Coral", "Coral Bay",
                 "A family adventure on the Welsh coast with treasure hunts and summer storms.",
-                "Family", "U", 4.0, 95,
-                "/images/posters/coral-bay.svg")));
-        films.put("Archive", filmRepository.save(new Film(
-                "Archive Echo",
+                "Family", "U", 4.0, 95, "/images/posters/coral-bay.svg")));
+        films.put("Archive", saveFilm(new HcbsMediaCatalog.FilmSeed(
+                "Archive", "Archive Echo",
                 "A documentary on restored cinema heritage and touring projectionists.",
-                "Documentary", "PG", 4.3, 88,
-                "/images/posters/archive-echo.svg")));
+                "Documentary", "PG", 4.3, 88, "/images/posters/archive-echo.svg")));
+        for (HcbsMediaCatalog.FilmSeed film : HcbsMediaCatalog.extendedFilms()) {
+            films.put(film.key(), saveFilm(film));
+        }
 
-        Actor maya = actorRepository.save(new Actor("Maya Stone", "Lead actor"));
-        Actor leo = actorRepository.save(new Actor("Leo Grant", "Supporting actor"));
-        Actor nina = actorRepository.save(new Actor("Nina Clark", "Lead actor"));
-        Actor sam = actorRepository.save(new Actor("Sam Reed", "Lead actor"));
+        Map<String, Actor> actorsByName = new LinkedHashMap<>();
+        actorsByName.put("Maya Stone", actorRepository.save(new Actor("Maya Stone", "Lead actor")));
+        actorsByName.put("Leo Grant", actorRepository.save(new Actor("Leo Grant", "Supporting actor")));
+        actorsByName.put("Nina Clark", actorRepository.save(new Actor("Nina Clark", "Lead actor")));
+        actorsByName.put("Sam Reed", actorRepository.save(new Actor("Sam Reed", "Lead actor")));
+        for (HcbsMediaCatalog.ActorSeed actor : HcbsMediaCatalog.extendedActors()) {
+            actorsByName.put(actor.fullName(), actorRepository.save(new Actor(actor.fullName(), actor.details())));
+        }
 
-        filmActorRepository.save(new FilmActor(films.get("Skyline"), maya));
-        filmActorRepository.save(new FilmActor(films.get("Skyline"), leo));
-        filmActorRepository.save(new FilmActor(films.get("Orbit"), nina));
-        filmActorRepository.save(new FilmActor(films.get("Orbit"), maya));
-        filmActorRepository.save(new FilmActor(films.get("Harbour"), leo));
-        filmActorRepository.save(new FilmActor(films.get("Harbour"), sam));
-        filmActorRepository.save(new FilmActor(films.get("Coral"), nina));
-        filmActorRepository.save(new FilmActor(films.get("Archive"), sam));
+        linkCast(films, actorsByName, "Skyline", "Maya Stone", "Leo Grant");
+        linkCast(films, actorsByName, "Orbit", "Nina Clark", "Maya Stone");
+        linkCast(films, actorsByName, "Harbour", "Leo Grant", "Sam Reed");
+        linkCast(films, actorsByName, "Coral", "Nina Clark");
+        linkCast(films, actorsByName, "Archive", "Sam Reed");
+        for (HcbsMediaCatalog.CastSeed cast : HcbsMediaCatalog.extendedCast()) {
+            Film film = films.get(cast.filmKey());
+            Actor actor = actorsByName.get(cast.actorFullName());
+            if (film != null && actor != null) {
+                filmActorRepository.save(new FilmActor(film, actor));
+            }
+        }
         return films;
+    }
+
+    private Film saveFilm(HcbsMediaCatalog.FilmSeed seed) {
+        return filmRepository.save(new Film(
+                seed.title(),
+                seed.description(),
+                seed.genre(),
+                seed.ageRating(),
+                seed.rating(),
+                seed.durationMinutes(),
+                seed.posterUrl()));
+    }
+
+    private void linkCast(Map<String, Film> films, Map<String, Actor> actors, String filmKey, String... actorNames) {
+        Film film = films.get(filmKey);
+        if (film == null) {
+            return;
+        }
+        for (String name : actorNames) {
+            Actor actor = actors.get(name);
+            if (actor != null) {
+                filmActorRepository.save(new FilmActor(film, actor));
+            }
+        }
     }
 
     /** Lower-hall prices from the case study; upper gallery = lower + £2 per city and band. */
@@ -243,7 +276,8 @@ public class HcbsTestDataSeeder {
         }
         User staff = userRepository.findByUsername("staff").orElseThrow();
         User alice = userRepository.findByUsername("alice").orElseThrow();
-        return new SeedUsers(staff, alice);
+        User bob = userRepository.findByUsername("bob").orElseThrow();
+        return new SeedUsers(staff, alice, bob);
     }
 
     /**
@@ -259,6 +293,23 @@ public class HcbsTestDataSeeder {
     }
 
     private List<ShowingSpec> buildShowingSpecs(LocalDate today) {
+        List<ShowingSpec> specs = new ArrayList<>(buildCoreShowingSpecs(today));
+        for (HcbsMediaCatalog.ShowingSeed extended : HcbsMediaCatalog.extendedShowings(today)) {
+            specs.add(new ShowingSpec(
+                    extended.filmKey(),
+                    extended.cinemaKey(),
+                    extended.screenNumber(),
+                    extended.showDate(),
+                    extended.start(),
+                    extended.end(),
+                    extended.timeBand(),
+                    extended.scenarioNote()));
+        }
+        return specs;
+    }
+
+    /** Case-study anchor, policy edges, and automated-test fixtures — order must not change. */
+    private List<ShowingSpec> buildCoreShowingSpecs(LocalDate today) {
         List<ShowingSpec> specs = new ArrayList<>();
 
         // --- Anchor (must stay first): London Central Screen 1, evening, day+3, £12 lower hall ---
@@ -341,6 +392,40 @@ public class HcbsTestDataSeeder {
         booking.setStatus(BookingStatus.CONFIRMED);
         Booking saved = bookingRepository.save(booking);
         bookingSeatRepository.save(new BookingSeat(saved, lowerSeat, cancellationDemo, ticketPrice));
+
+        seedSecondSampleBooking(users, ctx);
+    }
+
+    private void seedSecondSampleBooking(SeedUsers users, SeedContext ctx) {
+        Showing bobShowing = ctx.showings.stream()
+                .filter(s -> s.getShowDate().equals(LocalDate.now().plusDays(5)))
+                .filter(s -> s.getFilm().getTitle().equals("Orbit Garden"))
+                .filter(s -> s.getScreen().getCinema().getName().contains("Cardiff Bay"))
+                .findFirst()
+                .orElseGet(() -> ctx.showings.stream()
+                        .filter(s -> s.getFilm().getTitle().equals("Orbit Garden"))
+                        .filter(s -> !s.getShowDate().isBefore(LocalDate.now()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Seed booking #2 showing missing")));
+
+        List<Seat> lowerSeats = seatRepository.findByScreenAndSeatArea(bobShowing.getScreen(), SeatArea.LOWER_HALL);
+        Seat seat1 = lowerSeats.get(0);
+        Seat seat2 = lowerSeats.get(1);
+        BigDecimal price = lookupLowerHallPrice(bobShowing);
+        BigDecimal total = price.multiply(new BigDecimal("2"));
+
+        Booking booking = new Booking();
+        booking.setBookingReference(SEED_BOOKING_REFERENCE_002);
+        booking.setShowing(bobShowing);
+        booking.setCreatedBy(users.bob());
+        booking.setCustomer(users.bob());
+        booking.setBookingDateTime(LocalDateTime.now().minusDays(1));
+        booking.setNumberOfTickets(2);
+        booking.setTotalCost(total);
+        booking.setStatus(BookingStatus.CONFIRMED);
+        Booking saved = bookingRepository.save(booking);
+        bookingSeatRepository.save(new BookingSeat(saved, seat1, bobShowing, price));
+        bookingSeatRepository.save(new BookingSeat(saved, seat2, bobShowing, price));
     }
 
     private BigDecimal lookupLowerHallPrice(Showing showing) {
@@ -372,7 +457,7 @@ public class HcbsTestDataSeeder {
         List<Showing> showings;
     }
 
-    private record SeedUsers(User staff, User demoCustomer) {
+    private record SeedUsers(User staff, User demoCustomer, User bob) {
     }
 
     private record ShowingSpec(

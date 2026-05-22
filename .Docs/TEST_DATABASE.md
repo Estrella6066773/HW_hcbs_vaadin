@@ -32,14 +32,14 @@
 | Cinema | 8 |
 | Screen | 24（4 城 × 旗舰店 4 + 分店 2） |
 | Seat | 1,700（随容量变化） |
-| Film | 5 |
-| Actor | 4 |
-| FilmActor | 8 |
+| Film | 12（5 部核心 + 7 部扩展，见 `HcbsMediaCatalog`） |
+| Actor | 12 |
+| FilmActor | 22+ |
 | PriceRule | 24 |
-| Showing | 18（含边界日期与四城覆盖） |
+| Showing | 42（18 核心测试场次 + 24 扩展场次） |
 | User | 12（种子）+ 注册新增 |
-| Booking（种子） | 1（`HCBS-SEED001`） |
-| BookingSeat（种子） | 1 |
+| Booking（种子） | 2（`HCBS-SEED001`、`HCBS-SEED002`） |
+| BookingSeat（种子） | 3 |
 
 ---
 
@@ -87,11 +87,30 @@
 | --- | --- |
 | 参考号 | `HCBS-SEED001` |
 | 场次 | London Central · Screen 2 · Harbour Lights · **today + 1** · Evening |
+| 客户 | `alice`（`staff` 代订） |
 | 座位 | 下厅 `L1` |
 | 总价 | £12.00（由票价规则自动计算） |
 | 状态 | `CONFIRMED` |
 
-在 **Cancellation** 页输入 `HCBS-SEED001` 可验证查询与取消（今日取消成功，手续费 £6）。
+| 参考号 | `HCBS-SEED002` |
+| 场次 | Cardiff Bay · Orbit Garden · **today + 4～5** · Evening |
+| 客户 | `bob`（自助订票） |
+| 座位 | 下厅 2 张 |
+| 状态 | `CONFIRMED` |
+
+在 **Cancellation** 页输入 `HCBS-SEED001` 可验证查询与取消（今日取消成功，手续费 £6）。客户 `bob` 登录后可在 **My bookings** 看到 `HCBS-SEED002`。
+
+### 扩展影片（`HcbsMediaCatalog`）
+
+| 键 | 片名 | 类型 | 分级 |
+| --- | --- | --- | --- |
+| Midnight | Midnight Courier | Thriller | 15 |
+| Velvet | Velvet Compass | Romance | 12A |
+| Iron | Iron Tempest | Action | 12A |
+| Lantern | Lantern Folk | Animation | U |
+| Quiet | Quiet Room 7 | Horror | 15 |
+| North | Northbound | Adventure | 12A |
+| Paper | Paper Throne | Comedy | 12 |
 
 ---
 
