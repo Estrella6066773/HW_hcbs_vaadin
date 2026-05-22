@@ -31,9 +31,10 @@ public class StartupAccessLogger implements ApplicationListener<ApplicationReady
         log.info("              User: sa  (password empty)");
         if ("hash-fallback".equals(strategy)) {
             int requested = env.getProperty("hcbs.server.port.requested", Integer.class, HcbsPortAllocator.DEFAULT_PORT);
+            int hashAttempt = env.getProperty("hcbs.server.port.hash-attempt", Integer.class, -1);
             int hashCandidate = env.getProperty("hcbs.server.port.hash-candidate", Integer.class, -1);
-            log.info("  Port:       {} ({} was in use; hash candidate was {})",
-                    port, requested, hashCandidate);
+            log.info("  Port:       {} ({} was in use; hash attempt {}/{}, port {})",
+                    port, requested, hashAttempt + 1, HcbsPortAllocator.MAX_HASH_ATTEMPTS, hashCandidate);
         } else {
             log.info("  Port:       {}", port);
         }

@@ -7,15 +7,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HcbsPortAllocatorTest {
 
     @Test
-    void hashPortStaysWithinConfiguredRange() {
-        int port = HcbsPortAllocator.hashPort();
-        assertThat(port).isBetween(HcbsPortAllocator.HASH_PORT_BASE,
+    void hashPortsStayWithinRangeAndVaryByAttempt() {
+        int first = HcbsPortAllocator.hashPort(0);
+        int second = HcbsPortAllocator.hashPort(1);
+        assertThat(first).isBetween(HcbsPortAllocator.HASH_PORT_BASE,
                 HcbsPortAllocator.HASH_PORT_BASE + HcbsPortAllocator.HASH_PORT_SPAN - 1);
+        assertThat(second).isBetween(HcbsPortAllocator.HASH_PORT_BASE,
+                HcbsPortAllocator.HASH_PORT_BASE + HcbsPortAllocator.HASH_PORT_SPAN - 1);
+        assertThat(HcbsPortAllocator.hashPort(0)).isEqualTo(first);
     }
 
     @Test
-    void hashPortIsDeterministicForSameWorkingDirectory() {
-        assertThat(HcbsPortAllocator.hashPort()).isEqualTo(HcbsPortAllocator.hashPort());
+    void exposesTwentyHashAttempts() {
+        assertThat(HcbsPortAllocator.MAX_HASH_ATTEMPTS).isEqualTo(20);
     }
 
     @Test

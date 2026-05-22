@@ -38,9 +38,20 @@ public class HcbsPortEnvironmentPostProcessor implements EnvironmentPostProcesso
         } else {
             properties.put("hcbs.server.port.strategy", "hash-fallback");
             properties.put("hcbs.server.port.requested", HcbsPortAllocator.DEFAULT_PORT);
-            properties.put("hcbs.server.port.hash-candidate", HcbsPortAllocator.hashPort());
+            int attempt = findSuccessfulHashAttempt(resolved);
+            properties.put("hcbs.server.port.hash-attempt", attempt);
+            properties.put("hcbs.server.port.hash-candidate", HcbsPortAllocator.hashPort(attempt));
         }
         environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE, properties));
+    }
+
+    private int findSuccessfulHashAttempt(int resolvedPort) {
+        for (int attempt = 0; attempt < HcbsPortAllocator.MAX_HASH_ATTEMPTS; attempt++) {
+            if (HcbsPortAllocator.hashPort(attempt) == resolvedPort) {
+                return attempt;
+            }
+        }
+        return -1;
     }
 
     private boolean isPortExplicitlyConfigured() {

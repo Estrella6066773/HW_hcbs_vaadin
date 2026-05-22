@@ -158,7 +158,7 @@ When startup completes, the console prints a banner with the actual URLs, for ex
 ============================================================
 ```
 
-**Port selection:** The app prefers **8080**. If that port is already in use, it picks a free port from **8081–8280** using a hash of the project id and working directory (same machine + folder → same fallback port). Override with `-Dserver.port=9090` or `SERVER_PORT=9090`.
+**Port selection:** The app prefers **8080**. If that port is in use, it tries up to **20** hash-derived ports in **8081–8280** (seed + working directory + attempt index). If all 20 are busy, the process **exits**. Override with `-Dserver.port=9090` or `SERVER_PORT=9090`.
 
 **Navigation:** Home · Film Listing · Booking · Cancellation (drawer menu).
 

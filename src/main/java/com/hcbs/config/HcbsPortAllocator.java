@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 /**
- * Resolves the HTTP port: prefers 8080, then a deterministic hash-based port if 8080 is taken.
+ * Resolves the HTTP port: prefers 8080, then up to 20 hash-derived candidates; exits if none are free.
  */
 public final class HcbsPortAllocator {
 
     public static final int DEFAULT_PORT = 8080;
     public static final int HASH_PORT_BASE = 8081;
     public static final int HASH_PORT_SPAN = 200;
+    public static final int MAX_HASH_ATTEMPTS = 20;
 
     private static final String HASH_SEED = "hcbs-vaadin";
 
@@ -21,20 +22,25 @@ public final class HcbsPortAllocator {
         if (isPortAvailable(DEFAULT_PORT)) {
             return DEFAULT_PORT;
         }
-        int start = hashPort();
-        for (int offset = 0; offset < HASH_PORT_SPAN; offset++) {
-            int candidate = HASH_PORT_BASE + Math.floorMod(start - HASH_PORT_BASE + offset, HASH_PORT_SPAN);
+        for (int attempt = 0; attempt < MAX_HASH_ATTEMPTS; attempt++) {
+            int candidate = hashPort(attempt);
             if (isPortAvailable(candidate)) {
                 return candidate;
             }
         }
-        throw new IllegalStateException(
-                "Port " + DEFAULT_PORT + " is in use and no free port found in range "
-                        + HASH_PORT_BASE + "-" + (HASH_PORT_BASE + HASH_PORT_SPAN - 1));
+        System.err.println(
+                "HCBS: Port " + DEFAULT_PORT + " is in use. Tried " + MAX_HASH_ATTEMPTS
+                        + " hash-based ports in range " + HASH_PORT_BASE + "-"
+                        + (HASH_PORT_BASE + HASH_PORT_SPAN - 1) + "; none available. Exiting.");
+        System.exit(1);
+        return -1;
     }
 
-    public static int hashPort() {
-        String seed = HASH_SEED + ":" + System.getProperty("user.dir", "");
+    /**
+     * Deterministic port from seed, working directory, and attempt index (0 .. {@link #MAX_HASH_ATTEMPTS} - 1).
+     */
+    public static int hashPort(int attempt) {
+        String seed = HASH_SEED + ":" + System.getProperty("user.dir", "") + ":" + attempt;
         int hash = seed.hashCode();
         return HASH_PORT_BASE + Math.floorMod(hash, HASH_PORT_SPAN);
     }
