@@ -32,9 +32,8 @@ Horizon Cinemas Booking System is a web application for cinema staff to browse f
 
 | Function | Route | Description |
 | --- | --- | --- |
-| **Home** | `/` | Poster grid of all films; search by title, genre, or description; click a card for details. |
+| **Home** | `/` | Poster browse by default; additive search with metric cards and a full showing grid. |
 | **Film detail** | `/film/{id}` | Synopsis, cast, rating, and upcoming showtimes for one film. |
-| **Film listing** | `/listings` | Filter showings by city, cinema, date, and film title. The grid shows film title, description, cast, genre, age rating, cinema, screen, date, start/end time, time band, and available seats. |
 | **Booking** | `/booking` | Pick a showing within the allowed booking window, choose seat area (lower hall or upper gallery), select one or more free seats, and confirm. A receipt is printed with a unique booking reference. |
 | **Cancellation** | `/cancellation` | Find a booking by reference, review status and cancellation charge, and cancel if the policy allows. |
 
@@ -133,7 +132,9 @@ Details: [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md).
 - **Maven 3.9+** (`mvn -version`)
 - A modern browser (default URL `http://localhost:8080`; see **Access URLs** below if the port changes)
 
-On Windows, if the project lives under OneDrive, close any running dev server before `mvn test` to avoid file locks under `frontend/generated`.
+On Windows, if the project lives under OneDrive, close any running dev server before `mvn test` to avoid file locks under `frontend/generated` and `./data/hcbs.mv.db`.
+
+**If startup fails with `The file is locked: .../hcbs.mv.db`:** another HCBS instance (or a stuck Java process) still holds the H2 file. Stop other `spring-boot:run` / IDE runs first; if needed, delete `./data/hcbs.mv.db` after stopping all instances and restart (test data will be re-seeded).
 
 **Git:** Local runtime data is not committed — see `.gitignore` (`data/`, H2 `*.mv.db`, `target/`, `.m2/`, `frontend/generated/`). After `spring-boot:run`, do not add `./data/` to commits.
 
@@ -160,7 +161,7 @@ When startup completes, the console prints a banner with the actual URLs, for ex
 
 **Port selection:** The app prefers **8080**. If that port is in use, it tries up to **20** hash-derived ports in **8081–8280** (seed + working directory + attempt index). If all 20 are busy, the process **exits**. Override with `-Dserver.port=9090` or `SERVER_PORT=9090`.
 
-**Navigation:** Home · Film Listing · Booking · Cancellation (drawer menu).
+**Navigation:** Home · Booking · Cancellation (drawer menu).
 
 After changing Vaadin dependencies or the theme:
 

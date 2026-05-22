@@ -56,6 +56,20 @@ public class FilmListingService {
         return searchShowings(filter.cityId(), filter.cinemaId(), filter.date(), filter.filmTitle());
     }
 
+    /**
+     * Additive home search: optional date; when omitted, only today and future showings are returned.
+     */
+    public List<ShowingRow> searchUpcoming(ShowingListingFilter filter) {
+        List<ShowingRow> rows = search(filter);
+        if (filter.date() != null) {
+            return rows;
+        }
+        LocalDate today = LocalDate.now();
+        return rows.stream()
+                .filter(row -> !row.showDate().isBefore(today))
+                .toList();
+    }
+
     public List<ShowingRow> searchShowings(Long cityId, Long cinemaId, LocalDate date, String filmTitle) {
         return showingRepository.searchShowings(cityId, cinemaId, date, filmTitle).stream()
                 .map(this::toShowingRow)
@@ -71,6 +85,7 @@ public class FilmListingService {
         long booked = bookingSeatRepository.countActiveReservationsForShowing(showing);
         return new ShowingRow(
                 showing.getShowingId(),
+                showing.getFilm().getFilmId(),
                 showing.getFilm().getTitle(),
                 showing.getFilm().getDescription(),
                 formatActors(showing),

@@ -7,6 +7,7 @@ import java.time.LocalTime;
 
 public record ShowingRow(
         Long showingId,
+        Long filmId,
         String filmTitle,
         String description,
         String actors,

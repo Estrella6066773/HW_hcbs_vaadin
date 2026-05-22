@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Prints application access URLs when the server is ready.
+ * URLs are logged on their own lines so IDEs/terminals support Ctrl+Click.
  */
 @Component
 public class StartupAccessLogger implements ApplicationListener<ApplicationReadyEvent> {
@@ -19,24 +20,27 @@ public class StartupAccessLogger implements ApplicationListener<ApplicationReady
     public void onApplicationEvent(ApplicationReadyEvent event) {
         Environment env = event.getApplicationContext().getEnvironment();
         int port = env.getProperty("server.port", Integer.class, HcbsPortAllocator.DEFAULT_PORT);
-        String host = "localhost";
+        String webUiUrl = "http://localhost:" + port + "/";
+        String h2ConsoleUrl = "http://localhost:" + port + "/h2-console";
         String strategy = env.getProperty("hcbs.server.port.strategy", "default");
 
         log.info("");
         log.info("============================================================");
         log.info("  HCBS is ready");
-        log.info("  Web UI:     http://{}:{}/", host, port);
-        log.info("  H2 console: http://{}:{}/h2-console", host, port);
-        log.info("              JDBC URL: jdbc:h2:file:./data/hcbs");
-        log.info("              User: sa  (password empty)");
+        log.info("  Web UI (Ctrl+Click):");
+        log.info("  {}", webUiUrl);
+        log.info("  H2 console (Ctrl+Click):");
+        log.info("  {}", h2ConsoleUrl);
+        log.info("  H2 JDBC: jdbc:h2:file:./data/hcbs");
+        log.info("  H2 user: sa   password: (empty)");
         if ("hash-fallback".equals(strategy)) {
             int requested = env.getProperty("hcbs.server.port.requested", Integer.class, HcbsPortAllocator.DEFAULT_PORT);
             int hashAttempt = env.getProperty("hcbs.server.port.hash-attempt", Integer.class, -1);
             int hashCandidate = env.getProperty("hcbs.server.port.hash-candidate", Integer.class, -1);
-            log.info("  Port:       {} ({} was in use; hash attempt {}/{}, port {})",
+            log.info("  Port: {} ({} was in use; hash attempt {}/{}, candidate {})",
                     port, requested, hashAttempt + 1, HcbsPortAllocator.MAX_HASH_ATTEMPTS, hashCandidate);
         } else {
-            log.info("  Port:       {}", port);
+            log.info("  Port: {}", port);
         }
         log.info("============================================================");
         log.info("");

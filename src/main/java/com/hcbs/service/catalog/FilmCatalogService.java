@@ -112,6 +112,7 @@ public class FilmCatalogService {
         long booked = bookingSeatRepository.countActiveReservationsForShowing(showing);
         return new ShowingRow(
                 showing.getShowingId(),
+                showing.getFilm().getFilmId(),
                 showing.getFilm().getTitle(),
                 showing.getFilm().getDescription(),
                 formatActors(showing.getFilm()),

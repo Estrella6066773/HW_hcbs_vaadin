@@ -37,6 +37,12 @@ public class HcbsSearchService {
         return new ShowingListingResult(showings, seats);
     }
 
+    public ShowingListingResult searchHomeShowings(ShowingListingFilter filter) {
+        List<ShowingRow> showings = filmListingService.searchUpcoming(filter);
+        long seats = filmListingService.countAvailableSeatsAcross(showings);
+        return new ShowingListingResult(showings, seats);
+    }
+
     public List<CityOption> listCities() {
         return filmListingService.listCities();
     }
