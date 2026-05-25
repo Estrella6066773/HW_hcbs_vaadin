@@ -1,6 +1,7 @@
 package com.hcbs.web;
 
 import com.hcbs.dto.CustomerBookingRow;
+import com.hcbs.model.BookingStatus;
 import com.hcbs.service.cancellation.CancellationService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -38,8 +39,9 @@ public class MyBookingsView extends VerticalLayout {
         grid.addColumn(row -> row.status().name()).setHeader("Status");
         grid.addComponentColumn(row -> {
             Button cancel = new Button("Cancel", event -> cancel(row.bookingReference()));
-            cancel.setEnabled(row.canCancel());
-            cancel.addClassName("danger-action");
+            boolean cancellable = row.status() == BookingStatus.CONFIRMED && row.canCancel();
+            cancel.setEnabled(cancellable);
+            cancel.addClassName(cancellable ? "danger-action" : "inactive-action");
             return cancel;
         }).setHeader("Action");
         grid.setItems(cancellationService.listAccessibleBookings());

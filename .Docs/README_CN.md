@@ -136,7 +136,7 @@ web  →  service.*  →  repository  →  model
 
 项目位于 OneDrive 时，执行 `mvn test` 前请先关闭正在运行的开发服务，避免 `frontend/generated` 与 `./data/hcbs.mv.db` 被占用。
 
-**若启动报错 `The file is locked: .../hcbs.mv.db`：** 说明已有 HCBS 实例占用了数据库文件。先关闭其他 `spring-boot:run` / IDE 运行窗口；仍失败则结束多余 Java 进程，或删除 `./data/hcbs.mv.db` 后重启（会自动重新灌入测试数据）。
+**若启动报错 H2 锁库 / `90020` / `The file is locked`：** 当前为**开发构建**。先关闭其他运行实例，删除 `./data/hcbs.lock.db` 与 `./data/hcbs.mv.db` 后重启；**不要改代码**去兼容本机旧库。详见 [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md)。
 
 **版本库：** 本地运行产生的数据不会上传。`.gitignore` 已忽略 `data/`（H2 文件库）、`*.mv.db`、`target/`、`.m2/`、`frontend/generated/` 等。提交前请用 `git status` 确认未包含上述路径。
 
@@ -232,7 +232,7 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 
 客户自助订票记在自己名下；员工代订须选择客户。`app_user` 表含唯一用户名与邮箱、注册时间等字段。
 
-**重置数据库：** 停止应用后删除 `./data/hcbs.mv.db`，再重新启动即可重新灌入种子数据。
+**重置数据库：** 停止应用后删除 `./data/hcbs.lock.db` 与 `./data/hcbs.mv.db`，再重新启动即可重新灌入种子数据。座位格式或种子变更后，一律删库验证，勿改代码迁就旧数据——见 [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md)。
 
 ---
 
@@ -245,6 +245,7 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 技术分层与依赖 |
 | [TEST_CASES.md](TEST_CASES.md) | 手工测试用例表 |
 | [TEST_DATABASE.md](TEST_DATABASE.md) | 测试数据库设计、种子数据场景与重置方法 |
+| [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md) | 开发环境：格式/锁库异常时删 `./data/`，勿改代码 |
 | [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 成员贡献与答辩（不在本文档中说明） |
 | [req/](req/) | 案例与作业要求 |
 

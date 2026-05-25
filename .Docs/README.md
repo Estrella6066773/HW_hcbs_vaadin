@@ -9,4 +9,5 @@
 | [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 成员 A–D 贡献与分项答辩 |
 | [TEST_CASES.md](TEST_CASES.md) | 手工测试用例表（TC_001–TC_011） |
 | [TEST_DATABASE.md](TEST_DATABASE.md) | 测试数据库设计与种子数据场景 |
+| [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md) | 开发环境异常：删本地库，勿改代码迁就旧数据 |
 | [req/](req/) | 案例说明与课程作业原文（`.docx` / 提取文本） |

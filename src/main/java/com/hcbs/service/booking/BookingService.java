@@ -1,8 +1,11 @@
 package com.hcbs.service.booking;
 
 import com.hcbs.dto.BookingReceipt;
+import com.hcbs.dto.BookingShowingContext;
+import com.hcbs.dto.SeatMapSeat;
 import com.hcbs.dto.SeatOption;
 import com.hcbs.dto.ShowingOption;
+import com.hcbs.dto.ShowingTimeSlot;
 import com.hcbs.dto.UserOption;
 import com.hcbs.model.Booking;
 import com.hcbs.model.BookingSeat;
@@ -28,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -84,6 +88,10 @@ public class BookingService {
                 .toList();
     }
 
+    public List<SeatOption> listAvailableSeats(Long showingId) {
+        return listAvailableSeats(showingId, SeatArea.STANDARD);
+    }
+
     public List<SeatOption> listAvailableSeats(Long showingId, SeatArea seatArea) {
         Showing showing = requireShowing(showingId);
         return seatRepository.findByScreenAndSeatArea(showing.getScreen(), seatArea).stream()
@@ -94,6 +102,55 @@ public class BookingService {
                         seat.getSeatArea(),
                         calculateTicketPrice(showing, seat)))
                 .toList();
+    }
+
+    public Optional<BookingShowingContext> findBookingContext(Long showingId) {
+        if (showingId == null) {
+            return Optional.empty();
+        }
+        return findBookableShowing(showingId).flatMap(option -> showingRepository.findById(option.showingId())
+                .filter(this::isBookableShowing)
+                .map(showing -> new BookingShowingContext(
+                        showing.getShowingId(),
+                        showing.getFilm().getTitle(),
+                        showing.getScreen().getCinema().getName(),
+                        "Screen " + showing.getScreen().getScreenNumber(),
+                        showing.getShowDate(),
+                        showing.getStartTime(),
+                        listSameDayShowtimes(showing))));
+    }
+
+    public List<SeatMapSeat> listSeatMap(Long showingId) {
+        Showing showing = requireShowing(showingId);
+        if (!isBookableShowing(showing)) {
+            throw new IllegalStateException("Showing is not available for booking");
+        }
+        return seatRepository.findByScreenAndSeatArea(showing.getScreen(), SeatArea.STANDARD).stream()
+                .sorted((a, b) -> com.hcbs.config.SeatGridFormat.compareSeatNumbers(
+                        a.getSeatNumber(), b.getSeatNumber()))
+                .map(seat -> new SeatMapSeat(
+                        seat.getSeatId(),
+                        seat.getSeatNumber(),
+                        seat.getSeatArea(),
+                        calculateTicketPrice(showing, seat),
+                        !bookingSeatRepository.existsActiveReservationForShowingAndSeat(showing, seat)))
+                .toList();
+    }
+
+    private List<ShowingTimeSlot> listSameDayShowtimes(Showing anchor) {
+        Long cinemaId = anchor.getScreen().getCinema().getCinemaId();
+        return showingRepository.findByFilmAndShowDate(anchor.getFilm(), anchor.getShowDate()).stream()
+                .filter(s -> s.getScreen().getCinema().getCinemaId().equals(cinemaId))
+                .filter(this::isBookableShowing)
+                .sorted((a, b) -> a.getStartTime().compareTo(b.getStartTime()))
+                .map(s -> new ShowingTimeSlot(s.getShowingId(), s.getStartTime()))
+                .toList();
+    }
+
+    private boolean isBookableShowing(Showing showing) {
+        LocalDate today = LocalDate.now();
+        LocalDate latest = today.plusDays(7);
+        return !showing.getShowDate().isBefore(today) && !showing.getShowDate().isAfter(latest);
     }
 
     @Transactional

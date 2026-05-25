@@ -44,6 +44,9 @@ import java.util.Map;
 /**
  * Seeds an H2 database aligned with the HCBS case study and automated/manual test scenarios.
  * See .Docs/TEST_DATABASE.md for the scenario catalogue.
+ * <p>
+ * Dev note (non-production): after changing seat layout or seed shape, delete ./data/hcbs.*
+ * and restart — do not alter business code to keep an old local file DB. See .Docs/DEV_TROUBLESHOOTING.md.
  */
 @Component
 public class HcbsTestDataSeeder {
@@ -56,11 +59,14 @@ public class HcbsTestDataSeeder {
 
     /**
      * Day offset for the anchor showing — first row in {@code ShowingRepository.findAll()} order.
-     * Used by {@code BookingServiceTest} (London evening lower hall, £12 per seat).
+     * Used by {@code BookingServiceTest} (London evening standard seats, £12 per seat).
      */
     public static final int ANCHOR_SHOWING_DAY_OFFSET = 3;
 
-    private static final int[] FLAGSHIP_SCREEN_CAPACITIES = {50, 80, 100, 120};
+    /** Every screen uses a 10×10 grid (3 + aisle + 4 + aisle + 3). */
+    public static final int SCREEN_CAPACITY = SeatGridFormat.SEATS_PER_SCREEN;
+
+    private static final int[] FLAGSHIP_SCREEN_NUMBERS = {1, 2, 3, 4};
     private static final List<String> FLAGSHIP_CINEMA_KEYS = List.of(
             "London-Central", "Birmingham-Bullring", "Bristol-Harbour", "Cardiff-Bay");
     private static final List<String> SECONDARY_CINEMA_KEYS = List.of(
@@ -138,38 +144,34 @@ public class HcbsTestDataSeeder {
     }
 
     /**
-     * Flagship: 4 screens (50–120 seats). Secondary: 2×50 seats. Case: ≥2 cinemas/city, ≤6 screens/cinema.
+     * Flagship: 4 screens × 100 seats. Secondary: 2×100 seats. Case: ≥2 cinemas/city, ≤6 screens/cinema.
      */
     private Map<String, Screen> seedScreensAndSeats(Map<String, Cinema> cinemas) {
         Map<String, Screen> screens = new LinkedHashMap<>();
         for (String cinemaKey : FLAGSHIP_CINEMA_KEYS) {
             Cinema cinema = cinemas.get(cinemaKey);
-            for (int i = 0; i < FLAGSHIP_SCREEN_CAPACITIES.length; i++) {
-                int capacity = FLAGSHIP_SCREEN_CAPACITIES[i];
-                Screen screen = screenRepository.save(new Screen(cinema, i + 1, capacity));
-                screens.put(screenKey(cinemaKey, i + 1), screen);
-                createSeats(screen, capacity);
+            for (int screenNumber : FLAGSHIP_SCREEN_NUMBERS) {
+                Screen screen = screenRepository.save(new Screen(cinema, screenNumber, SCREEN_CAPACITY));
+                screens.put(screenKey(cinemaKey, screenNumber), screen);
+                createSeats(screen);
             }
         }
         for (String cinemaKey : SECONDARY_CINEMA_KEYS) {
             Cinema cinema = cinemas.get(cinemaKey);
             for (int screenNumber = 1; screenNumber <= 2; screenNumber++) {
-                Screen screen = screenRepository.save(new Screen(cinema, screenNumber, 50));
+                Screen screen = screenRepository.save(new Screen(cinema, screenNumber, SCREEN_CAPACITY));
                 screens.put(screenKey(cinemaKey, screenNumber), screen);
-                createSeats(screen, 50);
+                createSeats(screen);
             }
         }
         return screens;
     }
 
-    private void createSeats(Screen screen, int capacity) {
-        int lowerCount = capacity / 2;
-        int upperCount = capacity - lowerCount;
-        for (int i = 1; i <= lowerCount; i++) {
-            seatRepository.save(new Seat(screen, "L" + i, SeatArea.LOWER_HALL));
-        }
-        for (int i = 1; i <= upperCount; i++) {
-            seatRepository.save(new Seat(screen, "U" + i, SeatArea.UPPER_GALLERY));
+    private void createSeats(Screen screen) {
+        for (int row = 1; row <= SeatGridFormat.ROWS; row++) {
+            for (int col = 1; col <= SeatGridFormat.COLS; col++) {
+                seatRepository.save(new Seat(screen, SeatGridFormat.seatNumber(row, col), SeatArea.STANDARD));
+            }
         }
     }
 
@@ -247,7 +249,7 @@ public class HcbsTestDataSeeder {
         }
     }
 
-    /** Lower-hall prices from the case study; upper gallery = lower + £2 per city and band. */
+    /** Standard-seat prices from the case study (former lower-hall rates). */
     private void seedPriceRules(Map<String, City> cities) {
         seedCityPrices(cities.get("London"), "10.00", "11.00", "12.00");
         seedCityPrices(cities.get("Birmingham"), "5.00", "6.00", "7.00");
@@ -256,12 +258,9 @@ public class HcbsTestDataSeeder {
     }
 
     private void seedCityPrices(City city, String morning, String afternoon, String evening) {
-        priceRuleRepository.save(new PriceRule(city, TimeBand.MORNING, SeatArea.LOWER_HALL, new BigDecimal(morning)));
-        priceRuleRepository.save(new PriceRule(city, TimeBand.AFTERNOON, SeatArea.LOWER_HALL, new BigDecimal(afternoon)));
-        priceRuleRepository.save(new PriceRule(city, TimeBand.EVENING, SeatArea.LOWER_HALL, new BigDecimal(evening)));
-        priceRuleRepository.save(new PriceRule(city, TimeBand.MORNING, SeatArea.UPPER_GALLERY, new BigDecimal(morning).add(new BigDecimal("2.00"))));
-        priceRuleRepository.save(new PriceRule(city, TimeBand.AFTERNOON, SeatArea.UPPER_GALLERY, new BigDecimal(afternoon).add(new BigDecimal("2.00"))));
-        priceRuleRepository.save(new PriceRule(city, TimeBand.EVENING, SeatArea.UPPER_GALLERY, new BigDecimal(evening).add(new BigDecimal("2.00"))));
+        priceRuleRepository.save(new PriceRule(city, TimeBand.MORNING, SeatArea.STANDARD, new BigDecimal(morning)));
+        priceRuleRepository.save(new PriceRule(city, TimeBand.AFTERNOON, SeatArea.STANDARD, new BigDecimal(afternoon)));
+        priceRuleRepository.save(new PriceRule(city, TimeBand.EVENING, SeatArea.STANDARD, new BigDecimal(evening)));
     }
 
     private SeedUsers seedUsers() {
@@ -312,7 +311,7 @@ public class HcbsTestDataSeeder {
     private List<ShowingSpec> buildCoreShowingSpecs(LocalDate today) {
         List<ShowingSpec> specs = new ArrayList<>();
 
-        // --- Anchor (must stay first): London Central Screen 1, evening, day+3, £12 lower hall ---
+        // --- Anchor (must stay first): London Central Screen 1, evening, day+3, £12 standard seat ---
         specs.add(new ShowingSpec("Skyline", "London-Central", 1, today.plusDays(ANCHOR_SHOWING_DAY_OFFSET),
                 LocalTime.of(18, 30), LocalTime.of(20, 30), TimeBand.EVENING, "ANCHOR"));
 
@@ -378,8 +377,8 @@ public class HcbsTestDataSeeder {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Seed cancellation showing missing"));
 
-        Seat lowerSeat = seatRepository.findByScreenAndSeatArea(cancellationDemo.getScreen(), SeatArea.LOWER_HALL).get(0);
-        BigDecimal ticketPrice = lookupLowerHallPrice(cancellationDemo);
+        Seat demoSeat = requireSeat(cancellationDemo.getScreen(), 5, 5);
+        BigDecimal ticketPrice = lookupStandardPrice(cancellationDemo);
 
         Booking booking = new Booking();
         booking.setBookingReference(SEED_BOOKING_REFERENCE);
@@ -391,7 +390,7 @@ public class HcbsTestDataSeeder {
         booking.setTotalCost(ticketPrice);
         booking.setStatus(BookingStatus.CONFIRMED);
         Booking saved = bookingRepository.save(booking);
-        bookingSeatRepository.save(new BookingSeat(saved, lowerSeat, cancellationDemo, ticketPrice));
+        bookingSeatRepository.save(new BookingSeat(saved, demoSeat, cancellationDemo, ticketPrice));
 
         seedSecondSampleBooking(users, ctx);
     }
@@ -408,10 +407,9 @@ public class HcbsTestDataSeeder {
                         .findFirst()
                         .orElseThrow(() -> new IllegalStateException("Seed booking #2 showing missing")));
 
-        List<Seat> lowerSeats = seatRepository.findByScreenAndSeatArea(bobShowing.getScreen(), SeatArea.LOWER_HALL);
-        Seat seat1 = lowerSeats.get(0);
-        Seat seat2 = lowerSeats.get(1);
-        BigDecimal price = lookupLowerHallPrice(bobShowing);
+        Seat seat1 = requireSeat(bobShowing.getScreen(), 3, 2);
+        Seat seat2 = requireSeat(bobShowing.getScreen(), 3, 3);
+        BigDecimal price = lookupStandardPrice(bobShowing);
         BigDecimal total = price.multiply(new BigDecimal("2"));
 
         Booking booking = new Booking();
@@ -428,12 +426,20 @@ public class HcbsTestDataSeeder {
         bookingSeatRepository.save(new BookingSeat(saved, seat2, bobShowing, price));
     }
 
-    private BigDecimal lookupLowerHallPrice(Showing showing) {
+    private Seat requireSeat(Screen screen, int row, int column) {
+        String seatNumber = SeatGridFormat.seatNumber(row, column);
+        return seatRepository.findByScreenAndSeatArea(screen, SeatArea.STANDARD).stream()
+                .filter(seat -> seatNumber.equals(seat.getSeatNumber()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Seat not seeded: " + seatNumber));
+    }
+
+    private BigDecimal lookupStandardPrice(Showing showing) {
         PriceRule rule = priceRuleRepository.findByCityAndTimeBandAndSeatArea(
                         showing.getScreen().getCinema().getCity(),
                         showing.getTimeBand(),
-                        SeatArea.LOWER_HALL)
-                .orElseThrow(() -> new IllegalStateException("No lower-hall price for seed booking"));
+                        SeatArea.STANDARD)
+                .orElseThrow(() -> new IllegalStateException("No standard price for seed booking"));
         return rule.getPrice();
     }
 

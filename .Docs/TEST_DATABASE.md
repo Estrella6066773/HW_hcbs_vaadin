@@ -13,9 +13,9 @@
 | Birmingham、Bristol、Cardiff、London 四城 | 4 条 `City` |
 | 每城至少 2 家影院 | 每城 2 条 `Cinema`，共 8 家 |
 | 每家影院最多 6 块银幕 | 旗舰店 4 块 + 分店 2 块（主店 ≤6） |
-| 银幕容量 50–120 | 旗舰店容量 50 / 80 / 100 / 120；分店各 2×50 |
-| 下厅与上厅 | 每块银幕座位对半：`L*` 下厅、`U*` 上厅 |
-| 下厅票价表（城×时段） | 24 条 `PriceRule`（4 城 × 3 时段 × 2 区域）；上厅 = 下厅 + £2 |
+| 银幕容量 | 每块银幕 **100** 座（10×10 网格，列布局 3+过道+4+过道+3） |
+| 座位编号 | `R01C01` … `R10C10`（行 1 靠近银幕），区域 `STANDARD`（无上下层） |
+| 票价表（城×时段） | 12 条 `PriceRule`（4 城 × 3 时段 × 1 区域） |
 | 最多提前 7 天订票 | 含 `today+7` 场次；`today+8` 用于拒绝测试 |
 | 至少提前 1 天取消、50% 手续费 | 种子订单 `HCBS-SEED001`（明天场次，London 下厅 £12） |
 | 放映日当天不可取消 | 含 `today` Birmingham 家庭片晚场 |
@@ -31,11 +31,11 @@
 | City | 4 |
 | Cinema | 8 |
 | Screen | 24（4 城 × 旗舰店 4 + 分店 2） |
-| Seat | 1,700（随容量变化） |
+| Seat | 2,400（24 银幕 × 100 座） |
 | Film | 12（5 部核心 + 7 部扩展，见 `HcbsMediaCatalog`） |
 | Actor | 12 |
 | FilmActor | 22+ |
-| PriceRule | 24 |
+| PriceRule | 12 |
 | Showing | 42（18 核心测试场次 + 24 扩展场次） |
 | User | 12（种子）+ 注册新增 |
 | Booking（种子） | 2（`HCBS-SEED001`、`HCBS-SEED002`） |
@@ -43,7 +43,7 @@
 
 ---
 
-## 3. 票价（下厅 / £）
+## 3. 票价（标准座 / £）
 
 | 城市 | 早场 Morning | 午场 Afternoon | 晚场 Evening |
 | --- | ---: | ---: | ---: |
@@ -52,7 +52,13 @@
 | Cardiff | 5 | 6 | 7 |
 | London | 10 | 11 | 12 |
 
-上厅各档 +£2（如 London 晚场上厅 £14）。
+---
+
+## 3b. 座位网格
+
+- 每块银幕 10 行 × 10 列，编号 `R{行}C{列}`（如 `R05C08`）。
+- 列 1–3、过道、列 4–7、过道、列 8–10（订票页按此排版）。
+- 种子订单：`HCBS-SEED001` 使用 `R05C05`；`HCBS-SEED002` 使用 `R03C02`、`R03C03`。
 
 ---
 
@@ -60,7 +66,7 @@
 
 | # | 偏移 | 城市 / 影院 | 影片 | 时段 | 测试用途 |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | **+3** | London Central · Screen 1 | Skyline Run | Evening | **锚点场次**：`findAll()[0]`，下厅 £12，`BookingServiceTest` |
+| 1 | **+3** | London Central · Screen 1 | Skyline Run | Evening | **锚点场次**：`findAll()[0]`，标准座 £12，`BookingServiceTest` |
 | 2 | +3 | London Central · Screen 2 | Orbit Garden | Morning | 同城多场次 |
 | 3 | +3 | London East | Skyline Run | Afternoon | 二级影院筛选 |
 | 4 | +3 | London Central · Screen 3 | Archive Echo | Morning | 纪录片早场 |
@@ -118,8 +124,8 @@
 
 | 类型 | 影院键 | 银幕数 | 容量 |
 | --- | --- | ---: | --- |
-| 旗舰店 | London-Central, Birmingham-Bullring, Bristol-Harbour, Cardiff-Bay | 4 | 50, 80, 100, 120 |
-| 分店 | London-East, Birmingham-NewStreet, Bristol-Clifton, Cardiff-Central | 2 | 50, 50 |
+| 旗舰店 | London-Central, Birmingham-Bullring, Bristol-Harbour, Cardiff-Bay | 4 | 各 100 座 |
+| 分店 | London-East, Birmingham-NewStreet, Bristol-Clifton, Cardiff-Central | 2 | 各 100 座 |
 
 ---
 
@@ -131,11 +137,13 @@
 
 ## 8. 重置与访问 H2
 
+> **开发备忘（非正式版）：** 若因座位格式、枚举、种子或 OneDrive 同步导致 H2 锁库、90020、旧数据结构与当前代码不一致等异常，**先删 `./data/` 下库文件再启动，不要改代码去迁就旧库。** 详见 [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md)。
+
 **清空并重建（推荐开发时）：**
 
-1. 停止应用  
-2. 删除 `./data/hcbs.mv.db`（及同目录 `.trace.db` 如有）  
-3. 重新 `spring-boot:run`（`ddl-auto=create` 会建表，`DataLoader` 会灌数）
+1. 停止应用（并确认无多余 `java` 进程）  
+2. 删除 `./data/hcbs.lock.db`、`./data/hcbs.mv.db`（及 `.trace.db` 如有）；或直接删除整个 `./data/`  
+3. 重新 `spring-boot:run`（`ddl-auto=create` 会建表，`HcbsTestDataSeeder` 会按当前代码灌数）
 
 **H2 控制台：** `http://localhost:8080/h2-console`  
 - JDBC URL: `jdbc:h2:file:./data/hcbs`  

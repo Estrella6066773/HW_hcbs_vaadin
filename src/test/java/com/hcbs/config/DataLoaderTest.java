@@ -56,7 +56,7 @@ class DataLoaderTest {
     }
 
     @Test
-    void createsFlagshipScreensWithCapacityBetweenFiftyAndOneTwenty() {
+    void createsFlagshipScreensWithHundredSeatCapacity() {
         long flagshipScreens = screenRepository.findAll().stream()
                 .filter(screen -> screen.getCinema().getName().contains("Central")
                         || screen.getCinema().getName().contains("Bullring")
@@ -65,23 +65,22 @@ class DataLoaderTest {
                 .count();
         assertThat(flagshipScreens).isGreaterThanOrEqualTo(16);
         assertThat(screenRepository.findAll().stream().mapToInt(s -> s.getCapacity()).max().orElse(0))
-                .isEqualTo(120);
+                .isEqualTo(HcbsTestDataSeeder.SCREEN_CAPACITY);
     }
 
     @Test
-    void createsFiftySeatsSplitAcrossLowerHallAndUpperGallery() {
-        screenRepository.findAll().stream()
-                .filter(screen -> screen.getCapacity() == 50)
-                .forEach(screen -> {
-                    assertThat(seatRepository.findByScreen(screen)).hasSize(50);
-                    assertThat(seatRepository.findByScreenAndSeatArea(screen, SeatArea.LOWER_HALL)).hasSize(25);
-                    assertThat(seatRepository.findByScreenAndSeatArea(screen, SeatArea.UPPER_GALLERY)).hasSize(25);
-                });
+    void createsTenByTenStandardSeatsPerScreen() {
+        screenRepository.findAll().forEach(screen -> {
+            assertThat(seatRepository.findByScreen(screen)).hasSize(HcbsTestDataSeeder.SCREEN_CAPACITY);
+            assertThat(seatRepository.findByScreenAndSeatArea(screen, SeatArea.STANDARD))
+                    .hasSize(HcbsTestDataSeeder.SCREEN_CAPACITY);
+            assertThat(seatRepository.findByScreen(screen).getFirst().getSeatNumber()).isEqualTo("R01C01");
+        });
     }
 
     @Test
-    void createsTwentyFourPriceRulesAcrossFourCities() {
-        assertThat(priceRuleRepository.count()).isEqualTo(24);
+    void createsTwelvePriceRulesAcrossFourCities() {
+        assertThat(priceRuleRepository.count()).isEqualTo(12);
     }
 
     @Test

@@ -134,7 +134,7 @@ Details: [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md).
 
 On Windows, if the project lives under OneDrive, close any running dev server before `mvn test` to avoid file locks under `frontend/generated` and `./data/hcbs.mv.db`.
 
-**If startup fails with `The file is locked: .../hcbs.mv.db`:** another HCBS instance (or a stuck Java process) still holds the H2 file. Stop other `spring-boot:run` / IDE runs first; if needed, delete `./data/hcbs.mv.db` after stopping all instances and restart (test data will be re-seeded).
+**If startup fails with H2 lock / `90020` / `The file is locked`:** this is a **development** build. Stop other runs, delete `./data/hcbs.lock.db` and `./data/hcbs.mv.db`, then restart—**do not change code** to work around stale local data. See [.Docs/DEV_TROUBLESHOOTING.md](.Docs/DEV_TROUBLESHOOTING.md).
 
 **Git:** Local runtime data is not committed — see `.gitignore` (`data/`, H2 `*.mv.db`, `target/`, `.m2/`, `frontend/generated/`). After `spring-boot:run`, do not add `./data/` to commits.
 
@@ -231,7 +231,7 @@ There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user
 
 **Pre-seeded booking:** reference `HCBS-SEED001` (for cancellation demos on the Cancellation page).
 
-**Reset data:** stop the app, delete `./data/hcbs.mv.db`, then start again to re-run the seeder.
+**Reset data:** stop the app, delete `./data/hcbs.lock.db` and `./data/hcbs.mv.db`, then start again to re-run the seeder. After seat-format or seed changes, always reset data instead of patching code—see [.Docs/DEV_TROUBLESHOOTING.md](.Docs/DEV_TROUBLESHOOTING.md).
 
 ---
 
@@ -244,6 +244,7 @@ There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user
 | [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md) | Technical layering and dependencies |
 | [.Docs/TEST_CASES.md](.Docs/TEST_CASES.md) | Manual test case table |
 | [.Docs/TEST_DATABASE.md](.Docs/TEST_DATABASE.md) | Test database design, seed scenarios, reset steps |
+| [.Docs/DEV_TROUBLESHOOTING.md](.Docs/DEV_TROUBLESHOOTING.md) | Dev-only: delete `./data/` on format/lock errors—do not change code |
 | [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md) | Group members, contributions, presentation |
 | [.Docs/req/](.Docs/req/) | Case study and coursework brief |
 

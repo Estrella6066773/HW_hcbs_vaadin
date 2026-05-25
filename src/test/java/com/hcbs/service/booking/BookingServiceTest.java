@@ -48,7 +48,7 @@ class BookingServiceTest {
     void createsBookingWithReceiptValuesAndReservesSeats() {
         User customer = userRepository.findByUsername("alice").orElseThrow();
         Showing showing = showingRepository.findAll().get(0);
-        List<Seat> seats = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.LOWER_HALL)
+        List<Seat> seats = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.STANDARD)
                 .stream()
                 .limit(2)
                 .toList();
@@ -68,7 +68,7 @@ class BookingServiceTest {
     void rejectsDuplicateSeatForSameShowing() {
         User customer = userRepository.findByUsername("alice").orElseThrow();
         Showing showing = showingRepository.findAll().get(0);
-        Seat seat = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.LOWER_HALL).get(0);
+        Seat seat = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.STANDARD).get(0);
         bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), customer.getUserId());
 
         assertThatThrownBy(() -> bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), customer.getUserId()))
@@ -83,7 +83,7 @@ class BookingServiceTest {
         Showing showing = showingRepository.findAll().get(0);
         showing.setShowDate(LocalDate.now().plusDays(10));
         showingRepository.save(showing);
-        Seat seat = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.LOWER_HALL).get(0);
+        Seat seat = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.STANDARD).get(0);
 
         assertThatThrownBy(() -> bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), customer.getUserId()))
                 .isInstanceOf(IllegalStateException.class)
@@ -94,7 +94,7 @@ class BookingServiceTest {
     @WithMockUser(username = "alice", roles = "CUSTOMER")
     void customerBooksForSelfWithoutCustomerPicker() {
         Showing showing = showingRepository.findAll().get(0);
-        Seat seat = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.LOWER_HALL).get(1);
+        Seat seat = seatRepository.findByScreenAndSeatArea(showing.getScreen(), com.hcbs.model.SeatArea.STANDARD).get(1);
 
         BookingReceipt receipt = bookingService.createBooking(showing.getShowingId(), List.of(seat.getSeatId()), null);
 

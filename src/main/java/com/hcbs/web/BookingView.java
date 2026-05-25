@@ -1,16 +1,16 @@
 package com.hcbs.web;
 
 import com.hcbs.dto.BookingReceipt;
-import com.hcbs.dto.SeatOption;
+import com.hcbs.dto.BookingShowingContext;
+import com.hcbs.dto.SeatMapSeat;
 import com.hcbs.dto.ShowingOption;
 import com.hcbs.dto.UserOption;
-import com.hcbs.model.SeatArea;
 import com.hcbs.security.CurrentUserService;
 import com.hcbs.service.booking.BookingService;
 import com.hcbs.web.component.PageHero;
+import com.hcbs.web.component.SeatMapPicker;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Route(value = "booking", layout = MainLayout.class)
 @PageTitle("Booking")
@@ -39,14 +40,16 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
 
     private final BookingService bookingService;
     private final CurrentUserService currentUserService;
+
     private final ComboBox<ShowingOption> showing = new ComboBox<>("Showing");
     private final ComboBox<UserOption> customer = new ComboBox<>("Customer");
-    private final ComboBox<SeatArea> seatArea = new ComboBox<>("Seat area");
-    private final MultiSelectComboBox<SeatOption> seats = new MultiSelectComboBox<>("Seats");
+    private final SeatMapPicker seatPicker = new SeatMapPicker();
     private final TextArea receipt = new TextArea("Booking receipt");
-    private final Span selectionSummary = new Span("Choose a showing and seat area to reveal available seats.");
+    private final Span filmTitle = new Span();
+    private final Span sessionMeta = new Span();
+    private final Div pickerHost = new Div();
 
-    private Long presetShowingId;
+    private Long activeShowingId;
     private boolean workspaceBuilt;
 
     public BookingView(BookingService bookingService, CurrentUserService currentUserService) {
@@ -60,13 +63,13 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        presetShowingId = ShowingFilterQuery.showingIdFrom(event.getLocation().getQueryParameters()).orElse(null);
+        Long preset = ShowingFilterQuery.showingIdFrom(event.getLocation().getQueryParameters()).orElse(null);
 
         if (!currentUserService.isAuthenticated()) {
             Map<String, List<String>> params = new HashMap<>();
             String target = "booking";
-            if (presetShowingId != null) {
-                target += "?showingId=" + presetShowingId;
+            if (preset != null) {
+                target += "?showingId=" + preset;
             }
             params.put("redirect", List.of(target));
             event.forwardTo(LoginView.class, new QueryParameters(params));
@@ -76,7 +79,7 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
             buildWorkspace();
             workspaceBuilt = true;
         }
-        applyPresetShowing();
+        loadShowing(preset);
     }
 
     private void buildWorkspace() {
@@ -89,40 +92,43 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
         }
 
         showing.setItems(bookingService.listBookableShowings());
-        seatArea.setItems(SeatArea.values());
-        showing.addValueChangeListener(e -> refreshSeats());
-        seatArea.addValueChangeListener(e -> refreshSeats());
-        seats.addValueChangeListener(e -> updateSelectionSummary());
+        showing.setVisible(false);
+        showing.addValueChangeListener(e -> {
+            ShowingOption value = e.getValue();
+            if (value != null) {
+                switchShowing(value.showingId());
+            }
+        });
 
         receipt.setWidthFull();
         receipt.setMinHeight("220px");
         receipt.setPlaceholder("Confirmed booking details will appear here.");
         receipt.addClassName("receipt-field");
 
+        filmTitle.addClassName("booking-session-title");
+        sessionMeta.addClassName("booking-session-meta");
+
+        pickerHost.addClassName("booking-picker-host");
+        pickerHost.setWidthFull();
+        pickerHost.add(filmTitle, sessionMeta, seatPicker);
+
         Button confirm = new Button("Confirm booking", e -> confirm());
         confirm.addClassName("primary-action");
 
-        String heroCopy = employeeDesk
-                ? "Select the customer, showing, and seats. The order is recorded under the customer account."
-                : presetShowingId != null
-                        ? "Complete your booking for the selected showing."
-                        : "Book seats for your own account. You can cancel orders from My bookings.";
-
         Div formPanel = new Div(
-                sectionTitle("Create booking", employeeDesk
-                        ? "On-behalf booking links the order to the selected customer."
-                        : "Self-service booking for the signed-in customer."),
+                sectionTitle("Select seats", employeeDesk
+                        ? "10×10 grid (3 + aisle + 4 + aisle + 3). Confirm for the selected customer."
+                        : "10×10 grid (3 + aisle + 4 + aisle + 3). Click seats to select."),
                 customer,
                 showing,
-                seatArea,
-                seats,
-                selectionSummary,
+                pickerHost,
                 confirm
         );
         formPanel.addClassName("surface-panel");
         formPanel.addClassName("booking-form");
 
         Div policyCard = new Div(
+                metricLine("Layout", "100 seats per screen · rows 1–10"),
                 metricLine("Policy", "Bookings up to 7 days ahead"),
                 metricLine("Seat lock", "A seat cannot be sold twice"),
                 metricLine("Ownership", employeeDesk ? "Order belongs to selected customer" : "Order belongs to you")
@@ -140,31 +146,52 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
         add(new PageHero(
                 employeeDesk ? "Employee desk" : "Self-service",
                 employeeDesk ? "Ticket desk" : "Book tickets",
-                heroCopy), workspace);
+                "Pick a showtime, then choose seats on the grid."), workspace);
     }
 
-    private void applyPresetShowing() {
-        if (presetShowingId == null) {
+    private void loadShowing(Long showingId) {
+        if (showingId == null) {
+            showing.setVisible(true);
+            activeShowingId = null;
+            pickerHost.setVisible(false);
+            filmTitle.setText("Choose a showing to load the seat map.");
+            sessionMeta.setText("");
             return;
         }
-        Optional<ShowingOption> match = bookingService.findBookableShowing(presetShowingId);
-        if (match.isPresent()) {
-            showing.setValue(match.get());
-            showing.setReadOnly(true);
-            updateSelectionSummary();
-        } else {
+        Optional<BookingShowingContext> context = bookingService.findBookingContext(showingId);
+        if (context.isEmpty()) {
             Notification.show("Selected showing is no longer available for booking");
+            showing.setVisible(true);
+            pickerHost.setVisible(false);
+            return;
         }
+        applyContext(context.get());
     }
 
-    private void refreshSeats() {
-        ShowingOption selectedShowing = showing.getValue();
-        if (selectedShowing != null && seatArea.getValue() != null) {
-            seats.setItems(bookingService.listAvailableSeats(selectedShowing.showingId(), seatArea.getValue()));
-        } else {
-            seats.setItems(List.of());
+    private void applyContext(BookingShowingContext context) {
+        activeShowingId = context.showingId();
+        showing.setVisible(false);
+        pickerHost.setVisible(true);
+
+        filmTitle.setText(context.filmTitle());
+        sessionMeta.setText(context.cinemaName() + " · " + context.screenLabel() + " · " + context.showDate());
+
+        List<SeatMapPicker.ShowtimeOption> chips = context.showtimes().stream()
+                .map(slot -> new SeatMapPicker.ShowtimeOption(slot.showingId(), slot.startTime()))
+                .toList();
+        seatPicker.setShowtimes(chips, context.showingId(), this::switchShowing);
+        seatPicker.setSeats(bookingService.listSeatMap(context.showingId()));
+    }
+
+    private void switchShowing(Long showingId) {
+        if (showingId == null || showingId.equals(activeShowingId)) {
+            return;
         }
-        updateSelectionSummary();
+        bookingService.findBookingContext(showingId).ifPresentOrElse(ctx -> {
+            applyContext(ctx);
+            getUI().ifPresent(ui -> ui.getPage().getHistory().replaceState(
+                    null, "booking?showingId=" + showingId));
+        }, () -> Notification.show("Showing is no longer available"));
     }
 
     private void confirm() {
@@ -172,12 +199,16 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
             getUI().ifPresent(ui -> ui.navigate(LoginView.class));
             return;
         }
+        if (activeShowingId == null) {
+            Notification.show("Please choose a showing first");
+            return;
+        }
+        Set<SeatMapSeat> selected = seatPicker.getSelectedSeats();
+        if (selected.isEmpty()) {
+            Notification.show("Please select at least one seat on the map");
+            return;
+        }
         try {
-            ShowingOption selectedShowing = showing.getValue();
-            if (selectedShowing == null || seats.getValue() == null || seats.getValue().isEmpty()) {
-                Notification.show("Please choose a showing and at least one seat");
-                return;
-            }
             Long customerId = customer.isVisible() && customer.getValue() != null
                     ? customer.getValue().userId()
                     : null;
@@ -186,26 +217,15 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
                 return;
             }
             List<Long> seatIds = new ArrayList<>();
-            seats.getValue().forEach(option -> seatIds.add(option.seatId()));
-            BookingReceipt bookingReceipt = bookingService.createBooking(
-                    selectedShowing.showingId(), seatIds, customerId);
+            selected.forEach(seat -> seatIds.add(seat.seatId()));
+            BookingReceipt bookingReceipt = bookingService.createBooking(activeShowingId, seatIds, customerId);
             receipt.setValue(bookingReceipt.toReceiptText());
-            refreshSeats();
+            seatPicker.clearSelection();
+            seatPicker.setSeats(bookingService.listSeatMap(activeShowingId));
+            Notification.show("Booking confirmed");
         } catch (RuntimeException ex) {
             Notification.show(ex.getMessage());
         }
-    }
-
-    private void updateSelectionSummary() {
-        int selected = seats.getValue() == null ? 0 : seats.getValue().size();
-        if (showing.getValue() == null) {
-            selectionSummary.setText("Choose a showing to start a new ticket order.");
-        } else if (seatArea.getValue() == null) {
-            selectionSummary.setText("Showing selected. Pick a seat area to load inventory.");
-        } else {
-            selectionSummary.setText(selected + " seat(s) selected in " + seatArea.getValue() + ".");
-        }
-        selectionSummary.addClassName("selection-summary");
     }
 
     private Div sectionTitle(String title, String caption) {
