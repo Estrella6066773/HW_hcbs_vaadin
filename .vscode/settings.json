@@ -1,5 +1,14 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
+    "java.jdt.ls.java.home": "C:\\Users\\one\\.jdks\\ms-21.0.11",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:\\Users\\one\\.jdks\\ms-21.0.11",
+            "default": true
+        }
+    ],
+    "java.configuration.maven.userSettings": "${workspaceFolder}/maven-settings.xml",
     "java.debug.settings.hotCodeReplace": "auto"
 }

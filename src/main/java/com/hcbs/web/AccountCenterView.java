@@ -63,7 +63,9 @@ public class AccountCenterView extends VerticalLayout {
         } else {
             links.add(linkButton("订票柜台", BookingView.class));
             links.add(linkButton("退票柜台", CancellationView.class));
-            links.add(linkButton("数据管理", AdminDataView.class));
+            if (user.getRole().canAccessAdminTools()) {
+                links.add(linkButton("数据管理", AdminDataView.class));
+            }
         }
 
         Button signOut = new Button("Sign out", event -> authUiService.signOut());

@@ -22,7 +22,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "admin", layout = MainLayout.class)
 @PageTitle("Data admin")
-@RolesAllowed({"BOOKING_STAFF", "ADMIN", "MANAGER"})
+@RolesAllowed({"ADMIN", "MANAGER"})
 public class AdminDataView extends VerticalLayout {
 
     private final AdminCatalogService adminCatalogService;

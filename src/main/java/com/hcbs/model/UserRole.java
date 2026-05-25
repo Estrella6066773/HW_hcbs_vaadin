@@ -13,4 +13,8 @@ public enum UserRole {
     public boolean isCustomer() {
         return this == CUSTOMER;
     }
+
+    public boolean canAccessAdminTools() {
+        return this == ADMIN || this == MANAGER;
+    }
 }

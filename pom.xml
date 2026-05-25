@@ -17,7 +17,9 @@
     <name>Horizon Cinemas Booking System</name>
 
     <properties>
+        <!-- Bytecode target 21; JDK 24 can compile when Lombok is new enough -->
         <java.version>21</java.version>
+        <lombok.version>1.18.38</lombok.version>
         <vaadin.version>24.3.11</vaadin.version>
         <!-- Set to true for mvn test when dev server locks frontend/generated -->
         <vaadin.skipBuild>false</vaadin.skipBuild>
@@ -66,6 +68,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -86,11 +89,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <release>${java.version}</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.32</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

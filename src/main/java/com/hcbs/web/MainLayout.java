@@ -116,7 +116,9 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
                 drawerContent.add(navLink("My bookings", MyBookingsView.class, "View and cancel your orders"));
             } else {
                 drawerContent.add(navLink("Cancellation", CancellationView.class, "Refund desk for any booking"));
-                drawerContent.add(navLink("Data admin", AdminDataView.class, "Manage films and accounts"));
+                if (user.getRole().canAccessAdminTools()) {
+                    drawerContent.add(navLink("Data admin", AdminDataView.class, "Manage films and accounts"));
+                }
             }
         }
     }

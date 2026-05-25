@@ -102,7 +102,7 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
             book.addClassName("primary-action");
             book.addClickListener(e -> book.getUI().ifPresent(ui -> ui.navigate(
                     BookingView.class,
-                    ShowingFilterQuery.withShowingId(filter, row.showingId())));
+                    ShowingFilterQuery.withShowingId(filter, row.showingId()))));
             return book;
         }).setHeader("").setWidth("120px").setFlexGrow(0);
         showings.setItems(film.upcomingShowings());

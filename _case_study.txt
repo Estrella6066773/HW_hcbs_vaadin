@@ -1,0 +1,57 @@
+﻿Case Study
+Horizon Cinemas Booking System (HCBS)
+ 
+The Horizon Cinemas (HC) is a successful chain of cinemas in Birmingham, Bristol, Cardiff and London. Each city has at least two cinemas at different locations. HC is looking for an IT solution to manage screening of films and ticket booking system with the objective of making it convenient for customers to book tickets when they visit a cinema booking office.  
+ 
+Each cinema has up to 6 screens, and each screen runs between one to four daily shows of a selected film. Film listings, show times and prices may vary from one cinema to another. Seating capacity for each screen varies between 50 to 120. For each screen, seat(s) can be reserved in lower hall or in upper gallery. The following table indicates standard price range for lower hall type tickets for different shows/listings at different times of the day.  
+ 
+Table: Price range for lower hall  
+ 
+Morning             Show 
+(between 8am 鈥?noon) 
+Afternoon         Shows 
+(From noon 鈥?1700) 
+Evening Shows (From 1700 鈥?
+midnight) 
+Birmingham 
+拢5
+拢6
+拢7
+Bristol 
+拢6
+拢7
+拢8
+Cardiff 
+拢5
+拢6
+拢7
+London 
+拢10
+拢11
+拢12
+ 
+Tickets can also be booked for up to one week in advance. Tickets can be cancelled at least one day prior to film show at 50% cancellation charges. No ticket cancellation allowed on the day of show.    
+ 
+System has three types of users: Booking staff, Admins and Managers.  
+ 
+The system has the following Graphical User Interfaces (GUIs) needs. Please keep it simple and be creative by using labels, text boxes, radio buttons, check boxes, menus, drop-down lists, window tabs, buttons, data tables etc.:  
+ 
+1.     Film Listing: films with description and actors鈥?details, film genre and age, rating, show times, etc. The following figure depicts an example of how data should look but be creative and use different GUI widgets as you see appropriate: 
+ 
+ 
+2.     Booking: System should allow a user to fill in a booking form that will provide option to check seats availability and total tickets price for a selected date, showing and type of tickets. Booking references should be unique for each booking. Booking receipt should include Booking reference, Film name, Film date, Showing time, Screen #, Number of tickets, seat numbers, Total booking cost and Booking date. The following figure depicts an example of booking form but be creative and use different GUI widget as you see appropriate: 
+ 
+Only admins can select listings from other HC cinemas and make bookings on behalf of customers. Note: You are NOT required to provide a payment mechanism for your system, though you may simulate this. 
+ 
+3.     Cancellation: There should be an option to cancel booking. There is no cancellation or refund for missed shows.  
+Managers, Admins and Booking staff can access Film listing, booking and cancellation GUIs/views.  
+ 
+4.     Admin view: Admin view to manage screening of films. They can add, update and remove listings e.g., add new films, remove films, update show times, attach shows to screen/hall, etc. They can also generate admin reports e.g., number of bookings for each listing, total monthly revenue for each cinema, top revenue generating film, monthly list of staff making number of bookings in sorted order, etc. 
+Admins and Managers can access Admin GUI/view.  
+ 
+5.     Manager view: HC also expects to expand their business in existing or new cities in near future and would like their IT solution to allow adding new cinemas. Manager view allows the manager to add new cinemas and listings in existing or new cities. These new cinemas then become available for booking by the booking staff.  
+Only Managers can access Manager GUI/view.  
+ 
+You should also consider other suitable non-functional requirements (e.g., security measures) necessary for the HC booking system. Be creative.  
+ 
+You are a member of a team who have been asked to design and implement a system which enables the Managers, Admins and Booking Staff to schedule listings and booking activities and keep track of the cinemas, films, screens and bookings in a simpler and easier way, enforcing the rules described above.
