@@ -29,7 +29,7 @@ public class CurrentUserService {
         if (!isAuthenticated()) {
             return Optional.empty();
         }
-        return userRepository.findByUsername(
+        return userRepository.findByPhone(
                 SecurityContextHolder.getContext().getAuthentication().getName());
     }
 

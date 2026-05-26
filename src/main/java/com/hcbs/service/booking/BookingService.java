@@ -4,9 +4,9 @@ import com.hcbs.dto.BookingReceipt;
 import com.hcbs.dto.BookingShowingContext;
 import com.hcbs.dto.SeatMapSeat;
 import com.hcbs.dto.SeatOption;
+import com.hcbs.dto.PhoneSearchOption;
 import com.hcbs.dto.ShowingOption;
 import com.hcbs.dto.ShowingTimeSlot;
-import com.hcbs.dto.UserOption;
 import com.hcbs.model.Booking;
 import com.hcbs.model.BookingSeat;
 import com.hcbs.model.BookingStatus;
@@ -16,6 +16,7 @@ import com.hcbs.model.SeatArea;
 import com.hcbs.model.Showing;
 import com.hcbs.model.User;
 import com.hcbs.model.UserRole;
+import com.hcbs.model.UserStatus;
 import com.hcbs.repository.BookingRepository;
 import com.hcbs.repository.BookingSeatRepository;
 import com.hcbs.repository.PriceRuleRepository;
@@ -23,6 +24,7 @@ import com.hcbs.repository.SeatRepository;
 import com.hcbs.repository.ShowingRepository;
 import com.hcbs.repository.UserRepository;
 import com.hcbs.security.CurrentUserService;
+import com.hcbs.util.PhoneNumbers;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,10 +82,14 @@ public class BookingService {
                 .toList();
     }
 
-    public List<UserOption> listCustomersForDesk() {
-        requireEmployeeActor();
-        return userRepository.findByRoleOrderByFullNameAsc(UserRole.CUSTOMER).stream()
-                .map(user -> new UserOption(user.getUserId(), user.getUsername(), user.getFullName()))
+    public List<PhoneSearchOption> searchCustomerPhones(String rawQuery) {
+        requireEmployeeActor(currentUserService.requireCurrentUser());
+        String prefix = PhoneNumbers.normalize(rawQuery);
+        if (prefix == null || prefix.length() < 3) {
+            return List.of();
+        }
+        return userRepository.findByRoleAndPhoneStartsWithOrderByPhoneAsc(UserRole.CUSTOMER, prefix).stream()
+                .map(user -> PhoneSearchOption.forCustomer(user.getPhone(), user.getFullName()))
                 .toList();
     }
 
@@ -154,9 +159,35 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingReceipt createBooking(Long showingId, List<Long> seatIds, Long customerUserId) {
+    public BookingReceipt createBooking(Long showingId, List<Long> seatIds, String customerPhone) {
         User actor = currentUserService.requireCurrentUser();
-        User customer = resolveCustomer(actor, customerUserId);
+        User customer;
+        String guestPhone = null;
+
+        if (actor.getRole().isCustomer()) {
+            if (customerPhone != null && !customerPhone.isBlank()) {
+                throw new AccessDeniedException("Customers can only book for their own account");
+            }
+            customer = actor;
+        } else {
+            requireEmployeeActor(actor);
+            String normalizedPhone = requireCustomerPhone(customerPhone);
+            Optional<User> matchedCustomer = userRepository.findByPhone(normalizedPhone);
+            if (matchedCustomer.isPresent()) {
+                User account = matchedCustomer.get();
+                if (!account.getRole().isCustomer()) {
+                    throw new IllegalArgumentException("This phone number is not linked to a customer account");
+                }
+                if (account.getStatus() != UserStatus.ACTIVE) {
+                    throw new IllegalStateException("Customer account is not active");
+                }
+                customer = account;
+            } else {
+                customer = null;
+                guestPhone = normalizedPhone;
+            }
+        }
+
         Showing showing = requireShowing(showingId);
         List<Seat> seats = seatIds.stream()
                 .map(seatId -> seatRepository.findById(seatId)
@@ -171,6 +202,7 @@ public class BookingService {
         booking.setShowing(showing);
         booking.setCreatedBy(actor);
         booking.setCustomer(customer);
+        booking.setGuestPhone(guestPhone);
         booking.setBookingDateTime(LocalDateTime.now());
         booking.setNumberOfTickets(seats.size());
         booking.setTotalCost(calculateTotalCost(showing, seats));
@@ -181,33 +213,18 @@ public class BookingService {
             bookingSeatRepository.save(new BookingSeat(saved, seat, showing, calculateTicketPrice(showing, seat)));
         }
 
-        return toReceipt(saved, seats, customer);
+        return toReceipt(saved, seats, customer, guestPhone);
     }
 
-    private User resolveCustomer(User actor, Long customerUserId) {
-        if (actor.getRole().isCustomer()) {
-            if (customerUserId != null && !customerUserId.equals(actor.getUserId())) {
-                throw new AccessDeniedException("Customers can only book for their own account");
-            }
-            return actor;
+    private static String requireCustomerPhone(String customerPhone) {
+        if (customerPhone == null || customerPhone.isBlank()) {
+            throw new IllegalArgumentException("Enter the customer phone number");
         }
-        requireEmployeeActor(actor);
-        if (customerUserId == null) {
-            throw new IllegalArgumentException("Select a customer when booking on behalf of someone");
+        String normalized = PhoneNumbers.normalize(customerPhone);
+        if (!PhoneNumbers.isValid(normalized)) {
+            throw new IllegalArgumentException("Phone number format is invalid");
         }
-        User customer = userRepository.findById(customerUserId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerUserId));
-        if (!customer.getRole().isCustomer()) {
-            throw new IllegalArgumentException("Bookings must be assigned to a customer account");
-        }
-        if (customer.getStatus() != com.hcbs.model.UserStatus.ACTIVE) {
-            throw new IllegalStateException("Customer account is not active");
-        }
-        return customer;
-    }
-
-    private void requireEmployeeActor() {
-        requireEmployeeActor(currentUserService.requireCurrentUser());
+        return normalized;
     }
 
     private static void requireEmployeeActor(User actor) {
@@ -269,7 +286,14 @@ public class BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Showing not found: " + showingId));
     }
 
-    private BookingReceipt toReceipt(Booking booking, List<Seat> seats, User customer) {
+    public static String customerLabel(User customer, String guestPhone) {
+        if (customer != null) {
+            return customer.getFullName();
+        }
+        return "Guest (" + guestPhone + ")";
+    }
+
+    private BookingReceipt toReceipt(Booking booking, List<Seat> seats, User customer, String guestPhone) {
         String seatNumbers = seats.stream()
                 .map(Seat::getSeatNumber)
                 .reduce((left, right) -> left + ", " + right)
@@ -284,7 +308,7 @@ public class BookingService {
                 seatNumbers,
                 booking.getTotalCost(),
                 booking.getBookingDateTime(),
-                customer.getFullName(),
+                customerLabel(customer, guestPhone),
                 booking.getCreatedBy().getFullName());
     }
 }

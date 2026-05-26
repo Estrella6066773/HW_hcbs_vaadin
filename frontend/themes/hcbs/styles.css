@@ -389,6 +389,14 @@ vaadin-vertical-layout.page-view {
 .booking-form .booking-picker-host {
     width: 100%;
     max-width: 520px;
+    --vaadin-input-field-label-color: #ffffff;
+    --vaadin-input-field-focused-label-color: #ffffff;
+    --vaadin-input-field-value-color: #ffffff;
+    --vaadin-input-field-readonly-label-color: #ffffff;
+    --vaadin-input-field-readonly-value-color: #ffffff;
+    --vaadin-input-field-disabled-label-color: #ffffff;
+    --vaadin-input-field-disabled-value-color: #ffffff;
+    --vaadin-input-field-placeholder-color: rgba(255, 255, 255, 0.55);
 }
 
 .booking-form .primary-action {

@@ -2,11 +2,12 @@ package com.hcbs.web;
 
 import com.hcbs.dto.BookingReceipt;
 import com.hcbs.dto.BookingShowingContext;
+import com.hcbs.dto.PhoneSearchOption;
 import com.hcbs.dto.SeatMapSeat;
 import com.hcbs.dto.ShowingOption;
-import com.hcbs.dto.UserOption;
 import com.hcbs.security.CurrentUserService;
 import com.hcbs.service.booking.BookingService;
+import com.hcbs.util.PhoneNumbers;
 import com.hcbs.web.component.PageHero;
 import com.hcbs.web.component.SeatMapPicker;
 import com.vaadin.flow.component.button.Button;
@@ -41,8 +42,8 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
     private final BookingService bookingService;
     private final CurrentUserService currentUserService;
 
+    private final ComboBox<PhoneSearchOption> customerPhone = new ComboBox<>("Customer phone");
     private final ComboBox<ShowingOption> showing = new ComboBox<>("Showing");
-    private final ComboBox<UserOption> customer = new ComboBox<>("Customer");
     private final SeatMapPicker seatPicker = new SeatMapPicker();
     private final TextArea receipt = new TextArea("Booking receipt");
     private final Span filmTitle = new Span();
@@ -82,21 +83,31 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
         loadShowing(preset);
     }
 
+    private String selectedCustomerPhone;
+
     private void buildWorkspace() {
         boolean employeeDesk = currentUserService.isEmployee();
-        customer.setVisible(employeeDesk);
+        customerPhone.setVisible(employeeDesk);
         if (employeeDesk) {
-            customer.setItems(bookingService.listCustomersForDesk());
-            customer.setRequired(true);
-            customer.setPlaceholder("Select customer for on-behalf booking");
+            configurePhoneComboBox(customerPhone, bookingService::searchCustomerPhones);
+            customerPhone.addValueChangeListener(event -> {
+                PhoneSearchOption value = event.getValue();
+                selectedCustomerPhone = value != null ? value.phone() : null;
+            });
+            customerPhone.addCustomValueSetListener(event ->
+                    selectedCustomerPhone = PhoneNumbers.normalize(event.getDetail()));
         }
 
         showing.setItems(bookingService.listBookableShowings());
+        showing.setWidthFull();
+        showing.setClearButtonVisible(true);
         showing.setVisible(false);
         showing.addValueChangeListener(e -> {
             ShowingOption value = e.getValue();
             if (value != null) {
                 switchShowing(value.showingId());
+            } else {
+                resetShowingSelection();
             }
         });
 
@@ -117,9 +128,9 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
 
         Div formPanel = new Div(
                 sectionTitle("Select seats", employeeDesk
-                        ? "10×10 grid (3 + aisle + 4 + aisle + 3). Confirm for the selected customer."
+                        ? "10×10 grid (3 + aisle + 4 + aisle + 3). Search customer phone, pick showing, then confirm."
                         : "10×10 grid (3 + aisle + 4 + aisle + 3). Click seats to select."),
-                customer,
+                customerPhone,
                 showing,
                 pickerHost,
                 confirm
@@ -131,7 +142,7 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
                 metricLine("Layout", "100 seats per screen · rows 1–10"),
                 metricLine("Policy", "Bookings up to 7 days ahead"),
                 metricLine("Seat lock", "A seat cannot be sold twice"),
-                metricLine("Ownership", employeeDesk ? "Order belongs to selected customer" : "Order belongs to you")
+                metricLine("Ownership", employeeDesk ? "Order linked by phone when account exists" : "Order belongs to you")
         );
         policyCard.addClassName("ticket-policy");
 
@@ -149,20 +160,35 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
                 "Pick a showtime, then choose seats on the grid."), workspace);
     }
 
+    private static void configurePhoneComboBox(
+            ComboBox<PhoneSearchOption> comboBox,
+            java.util.function.Function<String, List<PhoneSearchOption>> search) {
+        comboBox.setWidthFull();
+        comboBox.setRequiredIndicatorVisible(true);
+        comboBox.setClearButtonVisible(true);
+        comboBox.setAllowCustomValue(true);
+        comboBox.setItemLabelGenerator(PhoneSearchOption::label);
+        comboBox.setItems(query -> {
+            String filter = query.getFilter().orElse("");
+            return search.apply(filter).stream()
+                    .skip(query.getOffset())
+                    .limit(query.getLimit());
+        });
+    }
+
     private void loadShowing(Long showingId) {
         if (showingId == null) {
+            showing.clear();
             showing.setVisible(true);
-            activeShowingId = null;
-            pickerHost.setVisible(false);
-            filmTitle.setText("Choose a showing to load the seat map.");
-            sessionMeta.setText("");
+            resetShowingSelection();
             return;
         }
         Optional<BookingShowingContext> context = bookingService.findBookingContext(showingId);
         if (context.isEmpty()) {
             Notification.show("Selected showing is no longer available for booking");
+            showing.clear();
             showing.setVisible(true);
-            pickerHost.setVisible(false);
+            resetShowingSelection();
             return;
         }
         applyContext(context.get());
@@ -170,7 +196,8 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
 
     private void applyContext(BookingShowingContext context) {
         activeShowingId = context.showingId();
-        showing.setVisible(false);
+        bookingService.findBookableShowing(context.showingId()).ifPresent(showing::setValue);
+        showing.setVisible(true);
         pickerHost.setVisible(true);
 
         filmTitle.setText(context.filmTitle());
@@ -179,8 +206,17 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
         List<SeatMapPicker.ShowtimeOption> chips = context.showtimes().stream()
                 .map(slot -> new SeatMapPicker.ShowtimeOption(slot.showingId(), slot.startTime()))
                 .toList();
+        seatPicker.clearSelection();
         seatPicker.setShowtimes(chips, context.showingId(), this::switchShowing);
         seatPicker.setSeats(bookingService.listSeatMap(context.showingId()));
+    }
+
+    private void resetShowingSelection() {
+        activeShowingId = null;
+        pickerHost.setVisible(false);
+        filmTitle.setText("Choose a showing to load the seat map.");
+        sessionMeta.setText("");
+        seatPicker.clearSelection();
     }
 
     private void switchShowing(Long showingId) {
@@ -209,16 +245,14 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
             return;
         }
         try {
-            Long customerId = customer.isVisible() && customer.getValue() != null
-                    ? customer.getValue().userId()
-                    : null;
-            if (customer.isVisible() && customerId == null) {
-                Notification.show("Please select a customer");
+            String phone = resolveCustomerPhone();
+            if (customerPhone.isVisible() && phone == null) {
+                Notification.show("Please enter the customer phone number");
                 return;
             }
             List<Long> seatIds = new ArrayList<>();
             selected.forEach(seat -> seatIds.add(seat.seatId()));
-            BookingReceipt bookingReceipt = bookingService.createBooking(activeShowingId, seatIds, customerId);
+            BookingReceipt bookingReceipt = bookingService.createBooking(activeShowingId, seatIds, phone);
             receipt.setValue(bookingReceipt.toReceiptText());
             seatPicker.clearSelection();
             seatPicker.setSeats(bookingService.listSeatMap(activeShowingId));
@@ -226,6 +260,17 @@ public class BookingView extends VerticalLayout implements BeforeEnterObserver {
         } catch (RuntimeException ex) {
             Notification.show(ex.getMessage());
         }
+    }
+
+    private String resolveCustomerPhone() {
+        if (!customerPhone.isVisible()) {
+            return null;
+        }
+        PhoneSearchOption selected = customerPhone.getValue();
+        if (selected != null) {
+            return selected.phone();
+        }
+        return selectedCustomerPhone;
     }
 
     private Div sectionTitle(String title, String caption) {

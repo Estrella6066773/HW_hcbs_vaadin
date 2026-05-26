@@ -43,10 +43,14 @@ public class Booking {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
 
-    /** Customer who owns this order (may differ from createdBy when booked on behalf). */
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_user_id", nullable = false)
+    /** Registered customer who owns this order; null for guest phone bookings. */
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "customer_user_id")
     private User customer;
+
+    /** Phone used for guest bookings when no customer account is linked. */
+    @Column(length = 30)
+    private String guestPhone;
 
     @Column(nullable = false)
     private LocalDateTime bookingDateTime;

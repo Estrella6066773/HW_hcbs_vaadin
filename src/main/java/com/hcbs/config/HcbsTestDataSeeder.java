@@ -266,12 +266,14 @@ public class HcbsTestDataSeeder {
     private SeedUsers seedUsers() {
         String encoded = passwordEncoder.encode(DemoAccountCatalog.DEMO_PASSWORD);
         for (DemoAccountCatalog.DemoAccount account : DemoAccountCatalog.all()) {
-            userRepository.save(new User(
+            User user = new User(
                     account.username(),
                     account.email(),
                     encoded,
                     account.fullName(),
-                    account.role()));
+                    account.role());
+            user.setPhone(account.phone());
+            userRepository.save(user);
         }
         User staff = userRepository.findByUsername("staff").orElseThrow();
         User alice = userRepository.findByUsername("alice").orElseThrow();

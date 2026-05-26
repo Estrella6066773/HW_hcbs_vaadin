@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.hcbs.util.PhoneNumbers;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -42,7 +44,7 @@ public class User {
     @Column(nullable = false, length = 100)
     private String fullName;
 
-    @Column(length = 30)
+    @Column(unique = true, length = 30)
     private String phone;
 
     @Enumerated(EnumType.STRING)
@@ -79,6 +81,7 @@ public class User {
         if (username != null) {
             username = username.trim();
         }
+        phone = PhoneNumbers.normalize(phone);
     }
 
     @PreUpdate
@@ -88,6 +91,7 @@ public class User {
         if (username != null) {
             username = username.trim();
         }
+        phone = PhoneNumbers.normalize(phone);
     }
 
     public static String normalizeEmail(String email) {

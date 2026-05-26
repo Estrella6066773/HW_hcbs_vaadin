@@ -5,6 +5,7 @@ import com.hcbs.model.User;
 import com.hcbs.model.UserRole;
 import com.hcbs.model.UserStatus;
 import com.hcbs.repository.UserRepository;
+import com.hcbs.util.PhoneNumbers;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,6 @@ public class RegistrationService {
 
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._-]{3,32}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^[+0-9][0-9\\s-]{6,18}$");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -35,7 +35,7 @@ public class RegistrationService {
         user.setEmail(User.normalizeEmail(request.email()));
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName().trim());
-        user.setPhone(blankToNull(request.phone()));
+        user.setPhone(PhoneNumbers.normalize(request.phone()));
         user.setRole(UserRole.CUSTOMER);
         user.setStatus(UserStatus.ACTIVE);
         return userRepository.save(user);
@@ -79,16 +79,12 @@ public class RegistrationService {
             throw new IllegalArgumentException("Passwords do not match");
         }
 
-        String phone = blankToNull(request.phone());
-        if (phone != null && !PHONE_PATTERN.matcher(phone).matches()) {
+        String phone = PhoneNumbers.normalize(request.phone());
+        if (phone != null && !PhoneNumbers.isValid(phone)) {
             throw new IllegalArgumentException("Phone number format is invalid");
         }
-    }
-
-    private static String blankToNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
+        if (phone != null && userRepository.existsByPhone(phone)) {
+            throw new IllegalArgumentException("Phone number is already registered");
         }
-        return value.trim();
     }
 }

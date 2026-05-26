@@ -1,10 +1,14 @@
 package com.hcbs.web;
 
-import com.hcbs.dto.BookingSummary;
+import com.hcbs.dto.CustomerBookingRow;
+import com.hcbs.model.BookingStatus;
 import com.hcbs.security.CurrentUserService;
 import com.hcbs.service.cancellation.CancellationService;
-import com.vaadin.flow.component.button.Button;
+import com.hcbs.util.PhoneNumbers;
 import com.hcbs.web.component.PageHero;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
@@ -12,8 +16,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
@@ -22,10 +24,14 @@ import jakarta.annotation.security.RolesAllowed;
 @PageTitle("Cancellation")
 @RolesAllowed({"BOOKING_STAFF", "ADMIN", "MANAGER"})
 public class CancellationView extends VerticalLayout {
+
     private final CancellationService cancellationService;
     private final CurrentUserService currentUserService;
-    private final TextField reference = new TextField("Booking reference");
-    private final TextArea details = new TextArea("Booking details");
+
+    private final ComboBox<String> customerPhone = new ComboBox<>("Customer phone");
+    private final Grid<CustomerBookingRow> bookingsGrid = new Grid<>(CustomerBookingRow.class, false);
+
+    private String activePhone;
 
     public CancellationView(CancellationService cancellationService, CurrentUserService currentUserService) {
         this.cancellationService = cancellationService;
@@ -35,24 +41,50 @@ public class CancellationView extends VerticalLayout {
         setMargin(false);
         addClassName("page-view");
 
-        details.setWidthFull();
-        details.setMinHeight("220px");
-        details.setPlaceholder("Search any booking reference to inspect cancellation eligibility.");
-        details.addClassName("receipt-field");
+        customerPhone.setWidthFull();
+        customerPhone.setClearButtonVisible(true);
+        customerPhone.setAllowCustomValue(true);
+        customerPhone.setItems(query -> {
+            String filter = query.getFilter().orElse("");
+            return cancellationService.searchPhonesWithBookings(filter).stream()
+                    .skip(query.getOffset())
+                    .limit(query.getLimit());
+        });
+        customerPhone.addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                activePhone = event.getValue();
+                loadBookings(event.getValue());
+            } else {
+                activePhone = null;
+                bookingsGrid.setItems();
+            }
+        });
+        customerPhone.addCustomValueSetListener(event -> {
+            activePhone = PhoneNumbers.normalize(event.getDetail());
+            loadBookings(event.getDetail());
+        });
 
-        Button find = new Button("Find booking", event -> findBooking());
-        Button cancel = new Button("Cancel booking", event -> cancelBooking());
-        find.addClassName("secondary-action");
-        cancel.addClassName("danger-action");
-
-        HorizontalLayout actions = new HorizontalLayout(reference, find, cancel);
-        actions.addClassName("filter-bar");
-        actions.setDefaultVerticalComponentAlignment(Alignment.END);
+        bookingsGrid.addColumn(CustomerBookingRow::bookingReference).setHeader("Reference").setFlexGrow(1);
+        bookingsGrid.addColumn(CustomerBookingRow::filmTitle).setHeader("Film").setFlexGrow(2);
+        bookingsGrid.addColumn(CustomerBookingRow::showDate).setHeader("Date");
+        bookingsGrid.addColumn(CustomerBookingRow::startTime).setHeader("Time");
+        bookingsGrid.addColumn(CustomerBookingRow::numberOfTickets).setHeader("Tickets");
+        bookingsGrid.addColumn(CustomerBookingRow::totalCost).setHeader("Total");
+        bookingsGrid.addColumn(row -> row.status().name()).setHeader("Status");
+        bookingsGrid.addComponentColumn(row -> {
+            Button cancel = new Button("Cancel", event -> cancelBooking(row.bookingReference()));
+            boolean cancellable = row.status() == BookingStatus.CONFIRMED && row.canCancel();
+            cancel.setEnabled(cancellable);
+            cancel.addClassName(cancellable ? "danger-action" : "inactive-action");
+            return cancel;
+        }).setHeader("Action");
+        bookingsGrid.setWidthFull();
+        bookingsGrid.setAllRowsVisible(true);
 
         Div lookupPanel = new Div(
-                sectionTitle("Refund desk", "Employees can cancel any customer booking that meets policy rules."),
-                actions,
-                details
+                sectionTitle("Refund desk", "Search by phone to list bookings, then cancel the selected order."),
+                customerPhone,
+                bookingsGrid
         );
         lookupPanel.addClassName("surface-panel");
 
@@ -70,22 +102,32 @@ public class CancellationView extends VerticalLayout {
         workspace.addClassName("booking-workspace");
         workspace.setWidthFull();
 
-        add(new PageHero("Refund control", "Cancellation", "Handle refunds for any customer order."), workspace);
+        add(new PageHero("Refund control", "Cancellation", "Find orders by phone and cancel eligible bookings."), workspace);
     }
 
-    private void findBooking() {
+    private void loadBookings(String rawPhone) {
         try {
-            BookingSummary summary = cancellationService.findBookingSummary(reference.getValue());
-            details.setValue(summary.toDetailText());
+            String phone = PhoneNumbers.normalize(rawPhone);
+            if (phone == null || phone.length() < 3) {
+                bookingsGrid.setItems();
+                return;
+            }
+            bookingsGrid.setItems(cancellationService.listBookingsByPhone(phone));
         } catch (RuntimeException ex) {
+            bookingsGrid.setItems();
             Notification.show(ex.getMessage());
         }
     }
 
-    private void cancelBooking() {
+    private void cancelBooking(String reference) {
         try {
-            BookingSummary summary = cancellationService.cancelBooking(reference.getValue());
-            details.setValue(summary.toDetailText());
+            cancellationService.cancelBooking(reference);
+            if (activePhone != null && !activePhone.isBlank()) {
+                loadBookings(activePhone);
+            } else {
+                bookingsGrid.setItems();
+            }
+            Notification.show("Booking cancelled: " + reference);
         } catch (RuntimeException ex) {
             Notification.show(ex.getMessage());
         }

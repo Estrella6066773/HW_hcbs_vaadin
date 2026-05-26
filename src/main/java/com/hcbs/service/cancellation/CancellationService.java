@@ -8,6 +8,8 @@ import com.hcbs.model.User;
 import com.hcbs.repository.BookingRepository;
 import com.hcbs.repository.BookingSeatRepository;
 import com.hcbs.security.CurrentUserService;
+import com.hcbs.service.booking.BookingService;
+import com.hcbs.util.PhoneNumbers;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +18,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CancellationService {
@@ -37,6 +42,26 @@ public class CancellationService {
                 ? bookingRepository.findByCustomerOrderByBookingDateTimeDesc(actor)
                 : bookingRepository.findAll();
         return bookings.stream().map(this::toCustomerRow).toList();
+    }
+
+    public List<String> searchPhonesWithBookings(String rawQuery) {
+        requireEmployeeActor();
+        String prefix = PhoneNumbers.normalize(rawQuery);
+        if (prefix == null || prefix.length() < 3) {
+            return List.of();
+        }
+        Set<String> phones = new LinkedHashSet<>();
+        phones.addAll(bookingRepository.findDistinctCustomerPhonesWithBookings(prefix));
+        phones.addAll(bookingRepository.findDistinctGuestPhonesWithBookings(prefix));
+        return new ArrayList<>(phones);
+    }
+
+    public List<CustomerBookingRow> listBookingsByPhone(String rawPhone) {
+        requireEmployeeActor();
+        String phone = requireValidPhone(rawPhone);
+        return bookingRepository.findByCustomerPhoneOrGuestPhoneOrderByBookingDateTimeDesc(phone).stream()
+                .map(this::toCustomerRow)
+                .toList();
     }
 
     public BookingSummary findBookingSummary(String bookingReference) {
@@ -73,7 +98,8 @@ public class CancellationService {
     private void assertCanAccess(Booking booking) {
         User actor = currentUserService.requireCurrentUser();
         if (actor.getRole().isCustomer()
-                && !booking.getCustomer().getUserId().equals(actor.getUserId())) {
+                && (booking.getCustomer() == null
+                || !booking.getCustomer().getUserId().equals(actor.getUserId()))) {
             throw new AccessDeniedException("You can only manage your own bookings");
         }
     }
@@ -81,6 +107,24 @@ public class CancellationService {
     private Booking findBookingByReference(String bookingReference) {
         return bookingRepository.findByBookingReference(bookingReference)
                 .orElseThrow(() -> new IllegalArgumentException("Booking reference not found"));
+    }
+
+    private static String requireValidPhone(String rawPhone) {
+        if (rawPhone == null || rawPhone.isBlank()) {
+            throw new IllegalArgumentException("Enter a phone number");
+        }
+        String phone = PhoneNumbers.normalize(rawPhone);
+        if (!PhoneNumbers.isValid(phone)) {
+            throw new IllegalArgumentException("Phone number format is invalid");
+        }
+        return phone;
+    }
+
+    private void requireEmployeeActor() {
+        User actor = currentUserService.requireCurrentUser();
+        if (!actor.getRole().isEmployee()) {
+            throw new AccessDeniedException("Only employee accounts can search bookings by phone");
+        }
     }
 
     private CustomerBookingRow toCustomerRow(Booking booking) {
@@ -105,7 +149,7 @@ public class CancellationService {
                 booking.getStatus(),
                 canCancel(booking),
                 booking.getCancellationCharge(),
-                booking.getCustomer().getFullName(),
+                BookingService.customerLabel(booking.getCustomer(), booking.getGuestPhone()),
                 booking.getCreatedBy().getFullName());
     }
 }

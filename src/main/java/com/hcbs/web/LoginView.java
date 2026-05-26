@@ -19,6 +19,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.hcbs.util.PhoneNumbers;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.servlet.ServletException;
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
 @AnonymousAllowed
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final TextField username = new TextField("Username");
+    private final TextField phone = new TextField("手机号");
     private final PasswordField password = new PasswordField("Password");
-    private final Span loginError = new Span("Invalid username or password");
+    private final Span loginError = new Span("手机号或密码不正确");
 
     public LoginView() {
         setWidthFull();
@@ -53,9 +54,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 "Sign in to book tickets, view orders, or use staff tools."
         );
 
-        username.setRequiredIndicatorVisible(true);
-        username.setWidthFull();
-        username.getElement().setAttribute("autocomplete", "username");
+        phone.setRequiredIndicatorVisible(true);
+        phone.setWidthFull();
+        phone.getElement().setAttribute("autocomplete", "tel");
 
         password.setRequiredIndicatorVisible(true);
         password.setWidthFull();
@@ -75,7 +76,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         Button submit = new Button("Sign in", event -> submitLogin());
         submit.addClassName("primary-action");
 
-        Div credentialsPanel = new Div(username, password, submit);
+        Div credentialsPanel = new Div(phone, password, submit);
         credentialsPanel.addClassName("auth-credentials-panel");
 
         Anchor register = new Anchor("register", "没有账号？注册新客户");
@@ -99,10 +100,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     private void submitLogin() {
         loginError.setVisible(false);
-        String user = username.getValue();
+        String user = phone.getValue();
         String pass = password.getValue();
         if (user == null || user.isBlank() || pass == null || pass.isEmpty()) {
-            loginError.setText("请输入用户名和密码");
+            loginError.setText("请输入手机号和密码");
             loginError.setVisible(true);
             return;
         }
@@ -115,7 +116,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         }
 
         try {
-            request.getHttpServletRequest().login(user.trim(), pass);
+            request.getHttpServletRequest().login(PhoneNumbers.normalize(user.trim()), pass);
             request.getHttpServletRequest().changeSessionId();
             getUI().ifPresent(ui -> {
                 String redirect = resolveRedirectTarget();
@@ -126,7 +127,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 }
             });
         } catch (ServletException ex) {
-            loginError.setText("Invalid username or password");
+            loginError.setText("手机号或密码不正确");
             loginError.setVisible(true);
         }
     }
@@ -135,7 +136,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         Div panel = new Div();
         panel.addClassName("demo-accounts-panel");
 
-        Paragraph intro = new Paragraph("数据库初始化后可使用以下演示账号登录（每类 3 个）：");
+        Paragraph intro = new Paragraph("数据库初始化后可使用以下演示手机号登录（每类 3 个，密码均为 demo）：");
         intro.addClassName("auth-hint");
         panel.add(intro);
 
@@ -152,7 +153,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             UnorderedList list = new UnorderedList();
             list.addClassName("demo-accounts-list");
             for (DemoAccountCatalog.DemoAccount account : entry.getValue()) {
-                ListItem item = new ListItem(account.username());
+                ListItem item = new ListItem(account.phone());
                 list.add(item);
             }
             panel.add(heading, list);
@@ -186,7 +187,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 .getQueryParameters()
                 .getParameters()
                 .containsKey("registered")) {
-            Notification.show("注册成功，请使用用户名和密码登录。");
+            Notification.show("注册成功，请使用手机号和密码登录。");
         }
     }
 }
