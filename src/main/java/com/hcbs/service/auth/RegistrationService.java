@@ -54,15 +54,25 @@ public class RegistrationService {
             throw new IllegalArgumentException("Username is already taken");
         }
 
-        if (request.email() == null || request.email().isBlank()) {
-            throw new IllegalArgumentException("Email is required");
+        String phone = PhoneNumbers.normalize(request.phone());
+        if (phone == null) {
+            throw new IllegalArgumentException("Phone number is required");
         }
+        if (!PhoneNumbers.isValid(phone)) {
+            throw new IllegalArgumentException("Phone number format is invalid");
+        }
+        if (userRepository.existsByPhone(phone)) {
+            throw new IllegalArgumentException("Phone number is already registered");
+        }
+
         String email = User.normalizeEmail(request.email());
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-            throw new IllegalArgumentException("Email format is invalid");
-        }
-        if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new IllegalArgumentException("Email is already registered");
+        if (email != null && !email.isBlank()) {
+            if (!EMAIL_PATTERN.matcher(email).matches()) {
+                throw new IllegalArgumentException("Email format is invalid");
+            }
+            if (userRepository.existsByEmailIgnoreCase(email)) {
+                throw new IllegalArgumentException("Email is already registered");
+            }
         }
 
         if (request.fullName() == null || request.fullName().isBlank()) {
@@ -77,14 +87,6 @@ public class RegistrationService {
         }
         if (!request.password().equals(request.confirmPassword())) {
             throw new IllegalArgumentException("Passwords do not match");
-        }
-
-        String phone = PhoneNumbers.normalize(request.phone());
-        if (phone != null && !PhoneNumbers.isValid(phone)) {
-            throw new IllegalArgumentException("Phone number format is invalid");
-        }
-        if (phone != null && userRepository.existsByPhone(phone)) {
-            throw new IllegalArgumentException("Phone number is already registered");
         }
     }
 }

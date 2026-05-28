@@ -66,24 +66,24 @@
 
 | # | 偏移 | 城市 / 影院 | 影片 | 时段 | 测试用途 |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | **+3** | London Central · Screen 1 | Skyline Run | Evening | **锚点场次**：`findAll()[0]`，标准座 £12，`BookingServiceTest` |
-| 2 | +3 | London Central · Screen 2 | Orbit Garden | Morning | 同城多场次 |
-| 3 | +3 | London East | Skyline Run | Afternoon | 二级影院筛选 |
-| 4 | +3 | London Central · Screen 3 | Archive Echo | Morning | 纪录片早场 |
-| 5 | +4 | Birmingham Bullring | Harbour Lights | Afternoon | 伯明翰筛选 |
-| 6 | +3 | Birmingham New Street | Coral Bay | Morning | 二级影院 |
-| 7 | +2 | Birmingham Bullring | Skyline Run | Evening | 日期筛选 |
-| 8 | +5 | Bristol Harbour | Coral Bay | Evening | 布里斯托尔 |
-| 9 | +3 | Bristol Clifton | Orbit Garden | Morning | 二级影院 |
-| 10 | +3 | Bristol Harbour | Harbour Lights | Afternoon | 片名 / 城市筛选 |
-| 11 | +2 | Cardiff Bay | Archive Echo | Morning | 加的夫 day+2 |
-| 12 | +4 | Cardiff Bay | Orbit Garden | Evening | 加的夫旗舰 |
-| 13 | +6 | Cardiff Central | Skyline Run | Evening | 二级影院 |
-| 14 | **+7** | London Central | Skyline Run | Evening | 订票上限（允许） |
-| 15 | **+8** | London Central | Orbit Garden | Evening | 超过 7 日（应拒绝） |
-| 16 | **+1** | London Central | Harbour Lights | Evening | 种子订单 + 可取消 |
-| 17 | **0** | Birmingham Bullring | Coral Bay | Evening | 当日取消应拒绝 |
-| 18 | **-1** | Cardiff Bay | Archive Echo | Afternoon | 过期场次，不可订 |
+| 1 | **+3** | London Central · Screen 1 | Spirited Away | Evening | **锚点场次**：`findAll()[0]`，标准座 £12，`BookingServiceTest` |
+| 2 | +3 | London Central · Screen 2 | The Legend of 1900 | Morning | 同城多场次 |
+| 3 | +3 | London East | Spirited Away | Afternoon | 二级影院筛选 |
+| 4 | +3 | London Central · Screen 3 | Solitude | Morning | 纪录片早场 |
+| 5 | +4 | Birmingham Bullring | The Wasted Times | Afternoon | 伯明翰筛选 |
+| 6 | +3 | Birmingham New Street | Harry Potter and the Order of the Phoenix | Morning | 二级影院 |
+| 7 | +2 | Birmingham Bullring | Spirited Away | Evening | 日期筛选 |
+| 8 | +5 | Bristol Harbour | Harry Potter and the Order of the Phoenix | Evening | 布里斯托尔 |
+| 9 | +3 | Bristol Clifton | The Legend of 1900 | Morning | 二级影院 |
+| 10 | +3 | Bristol Harbour | The Wasted Times | Afternoon | 片名 / 城市筛选 |
+| 11 | +2 | Cardiff Bay | Solitude | Morning | 加的夫 day+2 |
+| 12 | +4 | Cardiff Bay | The Legend of 1900 | Evening | 加的夫旗舰 |
+| 13 | +6 | Cardiff Central | Spirited Away | Evening | 二级影院 |
+| 14 | **+7** | London Central | Spirited Away | Evening | 订票上限（允许） |
+| 15 | **+8** | London Central | The Legend of 1900 | Evening | 超过 7 日（应拒绝） |
+| 16 | **+1** | London Central | The Wasted Times | Evening | 种子订单 + 可取消 |
+| 17 | **0** | Birmingham Bullring | Harry Potter and the Order of the Phoenix | Evening | 当日取消应拒绝 |
+| 18 | **-1** | Cardiff Bay | Solitude | Afternoon | 过期场次，不可订 |
 
 ---
 
@@ -92,14 +92,14 @@
 | 字段 | 值 |
 | --- | --- |
 | 参考号 | `HCBS-SEED001` |
-| 场次 | London Central · Screen 2 · Harbour Lights · **today + 1** · Evening |
+| 场次 | London Central · Screen 2 · The Wasted Times · **today + 1** · Evening |
 | 客户 | `alice`（`staff` 代订） |
 | 座位 | 下厅 `L1` |
 | 总价 | £12.00（由票价规则自动计算） |
 | 状态 | `CONFIRMED` |
 
 | 参考号 | `HCBS-SEED002` |
-| 场次 | Cardiff Bay · Orbit Garden · **today + 4～5** · Evening |
+| 场次 | Cardiff Bay · The Legend of 1900 · **today + 4～5** · Evening |
 | 客户 | `bob`（自助订票） |
 | 座位 | 下厅 2 张 |
 | 状态 | `CONFIRMED` |
@@ -110,13 +110,13 @@
 
 | 键 | 片名 | 类型 | 分级 |
 | --- | --- | --- | --- |
-| Midnight | Midnight Courier | Thriller | 15 |
-| Velvet | Velvet Compass | Romance | 12A |
-| Iron | Iron Tempest | Action | 12A |
-| Lantern | Lantern Folk | Animation | U |
-| Quiet | Quiet Room 7 | Horror | 15 |
-| North | Northbound | Adventure | 12A |
-| Paper | Paper Throne | Comedy | 12 |
+| Midnight | Call Me by Your Name | Thriller | 15 |
+| Velvet | Maleficent | Romance | 12A |
+| Iron | Inception | Action | 12A |
+| Lantern | The Cabin in the Woods | Animation | U |
+| Quiet | Rock Star | Horror | 15 |
+| North | Reign Over Me | Adventure | 12A |
+| Paper | Cirque du Soleil: O | Comedy | 12 |
 
 ---
 

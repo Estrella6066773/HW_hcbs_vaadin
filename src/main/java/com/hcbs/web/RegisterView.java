@@ -26,9 +26,9 @@ public class RegisterView extends VerticalLayout {
     private final RegistrationService registrationService;
 
     private final TextField username = new TextField("Username");
-    private final EmailField email = new EmailField("Email");
+    private final TextField phone = new TextField("Phone number");
+    private final EmailField email = new EmailField("Email (optional)");
     private final TextField fullName = new TextField("Full name");
-    private final TextField phone = new TextField("Phone (optional)");
     private final PasswordField password = new PasswordField("Password");
     private final PasswordField confirmPassword = new PasswordField("Confirm password");
 
@@ -55,14 +55,17 @@ public class RegisterView extends VerticalLayout {
 
         username.setHelperText("3–32 characters: letters, numbers, . _ -");
         username.setMaxLength(32);
+        phone.setHelperText("Required for sign in and booking lookup");
+        phone.setRequiredIndicatorVisible(true);
+        phone.getElement().setAttribute("autocomplete", "tel");
         email.setClearButtonVisible(true);
+        email.getElement().setAttribute("autocomplete", "email");
         fullName.setMaxLength(100);
-        phone.setHelperText("Optional contact number");
         password.setHelperText("At least 8 characters");
         password.setRevealButtonVisible(true);
         confirmPassword.setRevealButtonVisible(true);
 
-        FormLayout form = new FormLayout(username, email, fullName, phone, password, confirmPassword);
+        FormLayout form = new FormLayout(username, phone, fullName, email, password, confirmPassword);
         form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
         form.setWidthFull();
 

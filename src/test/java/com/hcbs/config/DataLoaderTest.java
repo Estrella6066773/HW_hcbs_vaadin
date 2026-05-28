@@ -91,7 +91,7 @@ class DataLoaderTest {
     @Test
     void anchorShowingSupportsAutomatedBookingTests() {
         Showing anchor = showingRepository.findAll().getFirst();
-        assertThat(anchor.getFilm().getTitle()).isEqualTo("Skyline Run");
+        assertThat(anchor.getFilm().getTitle()).isEqualTo("Spirited Away");
         assertThat(anchor.getScreen().getCinema().getName()).contains("London Central");
         assertThat(anchor.getScreen().getScreenNumber()).isEqualTo(1);
         assertThat(anchor.getShowDate()).isEqualTo(LocalDate.now().plusDays(HcbsTestDataSeeder.ANCHOR_SHOWING_DAY_OFFSET));

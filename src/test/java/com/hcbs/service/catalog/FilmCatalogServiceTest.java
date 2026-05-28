@@ -43,10 +43,10 @@ class FilmCatalogServiceTest {
 
     @Test
     void searchFilmsMatchesTitleGenreOrDescription() {
-        assertThat(filmCatalogService.searchFilms("Skyline")).hasSize(1)
+        assertThat(filmCatalogService.searchFilms("Spirited")).hasSize(1)
                 .first()
                 .extracting(FilmCardDto::title)
-                .isEqualTo("Skyline Run");
+                .isEqualTo("Spirited Away");
 
         assertThat(filmCatalogService.searchFilms("sci-fi")).isNotEmpty();
         assertThat(filmCatalogService.searchFilms("")).hasSize(12);

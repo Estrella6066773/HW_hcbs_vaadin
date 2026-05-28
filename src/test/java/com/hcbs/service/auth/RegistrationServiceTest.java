@@ -27,7 +27,7 @@ class RegistrationServiceTest {
     private UserRepository userRepository;
 
     @Test
-    void registersActiveCustomerWithNormalizedEmail() {
+    void registersActiveCustomerWithPhoneAndNormalizedEmail() {
         User user = registrationService.registerCustomer(new RegistrationRequest(
                 "diana",
                 "Diana@Example.COM",
@@ -41,24 +41,62 @@ class RegistrationServiceTest {
         assertThat(user.getRole()).isEqualTo(UserRole.CUSTOMER);
         assertThat(user.getStatus()).isEqualTo(UserStatus.ACTIVE);
         assertThat(user.getEmail()).isEqualTo("diana@example.com");
+        assertThat(user.getPhone()).isEqualTo("+447700900123");
         assertThat(user.getCreatedAt()).isNotNull();
         assertThat(userRepository.findByUsername("diana")).isPresent();
     }
 
     @Test
+    void registersCustomerWithoutEmail() {
+        User user = registrationService.registerCustomer(new RegistrationRequest(
+                "noemail",
+                "",
+                "password1",
+                "password1",
+                "No Email",
+                "+44 7700 900124"
+        ));
+
+        assertThat(user.getEmail()).isNull();
+        assertThat(user.getPhone()).isEqualTo("+447700900124");
+    }
+
+    @Test
     void rejectsDuplicateUsername() {
-        registrationService.registerCustomer(request("dave1", "dave1@test.com"));
-        assertThatThrownBy(() -> registrationService.registerCustomer(request("dave1", "dave2@test.com")))
+        registrationService.registerCustomer(request("dave1", "dave1@test.com", "+44 7700 900125"));
+        assertThatThrownBy(() -> registrationService.registerCustomer(request("dave1", "dave2@test.com", "+44 7700 900126")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Username");
     }
 
     @Test
     void rejectsDuplicateEmail() {
-        registrationService.registerCustomer(request("erin", "erin@test.com"));
-        assertThatThrownBy(() -> registrationService.registerCustomer(request("erin2", "erin@test.com")))
+        registrationService.registerCustomer(request("erin", "erin@test.com", "+44 7700 900127"));
+        assertThatThrownBy(() -> registrationService.registerCustomer(request("erin2", "erin@test.com", "+44 7700 900128")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Email");
+    }
+
+    @Test
+    void rejectsMissingPhone() {
+        assertThatThrownBy(() -> registrationService.registerCustomer(new RegistrationRequest(
+                "nophone",
+                null,
+                "password1",
+                "password1",
+                "No Phone",
+                null
+        ))).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Phone number");
+    }
+
+    @Test
+    void rejectsDuplicatePhone() {
+        registrationService.registerCustomer(request("phone1", null, "+44 7700 900129"));
+
+        assertThatThrownBy(() -> registrationService.registerCustomer(request("phone2", null, "+44 7700 900129")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Phone number");
     }
 
     @Test
@@ -69,12 +107,12 @@ class RegistrationServiceTest {
                 "password1",
                 "password2",
                 "Frank",
-                null
+                "+44 7700 900130"
         ))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("do not match");
     }
 
-    private static RegistrationRequest request(String username, String email) {
-        return new RegistrationRequest(username, email, "password1", "password1", "Test User", null);
+    private static RegistrationRequest request(String username, String email, String phone) {
+        return new RegistrationRequest(username, email, "password1", "password1", "Test User", phone);
     }
 }

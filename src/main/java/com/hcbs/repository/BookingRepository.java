@@ -1,6 +1,7 @@
 package com.hcbs.repository;
 
 import com.hcbs.model.Booking;
+import com.hcbs.model.Showing;
 import com.hcbs.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByBookingReference(String bookingReference);
 
     boolean existsByBookingReference(String bookingReference);
+
+    boolean existsByShowing(Showing showing);
 
     List<Booking> findByCustomerOrderByBookingDateTimeDesc(User customer);
 

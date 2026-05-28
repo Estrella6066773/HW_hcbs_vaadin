@@ -14,6 +14,7 @@ public record ShowingRow(
         String genre,
         String ageRating,
         String cinemaName,
+        Long screenId,
         int screenNumber,
         LocalDate showDate,
         LocalTime startTime,
