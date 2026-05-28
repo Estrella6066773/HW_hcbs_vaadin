@@ -448,7 +448,7 @@ vaadin-vertical-layout.page-view {
     flex-direction: column;
     justify-content: center;
     gap: 4px;
-    min-height: 210px;
+    min-height: 430px;
     padding: 8px;
     color: #ffe1aa;
     background: rgba(35, 25, 29, 0.92);
@@ -464,14 +464,15 @@ vaadin-vertical-layout.page-view {
 
 .admin-schedule-cell {
     position: relative;
-    min-height: 210px;
+    min-height: 430px;
+    overflow: hidden;
     background:
         repeating-linear-gradient(
             180deg,
             rgba(255, 208, 138, 0.08) 0,
             rgba(255, 208, 138, 0.08) 1px,
             transparent 1px,
-            transparent calc(100% / 11)
+            transparent calc(100% / 14)
         ),
         rgba(255, 237, 202, 0.035);
 }
@@ -484,7 +485,7 @@ vaadin-vertical-layout.page-view {
             rgba(255, 208, 138, 0.16) 0,
             rgba(255, 208, 138, 0.16) 1px,
             transparent 1px,
-            transparent calc(100% / 11)
+            transparent calc(100% / 14)
         );
     box-shadow: inset 0 0 0 2px rgba(255, 208, 138, 0.72);
 }
@@ -506,8 +507,8 @@ vaadin-vertical-layout.page-view {
     flex-direction: column;
     justify-content: center;
     gap: 1px;
-    min-height: 44px;
-    padding: 6px 7px;
+    min-height: 72px;
+    padding: 7px 8px;
     box-sizing: border-box;
     border: 1px solid rgba(255, 244, 220, 0.28);
     border-radius: 6px;
@@ -519,19 +520,19 @@ vaadin-vertical-layout.page-view {
 
 .admin-showing-block span:first-child {
     color: #ffe1aa;
-    font-size: 0.7rem;
+    font-size: 0.74rem;
     font-weight: 900;
-    line-height: 1;
+    line-height: 1.05;
+    white-space: nowrap;
 }
 
 .admin-showing-block span:last-child {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    font-size: 0.78rem;
+    display: block;
+    overflow: visible;
+    font-size: 0.8rem;
     font-weight: 900;
-    line-height: 1.05;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
 }
 
 .admin-showing-block:hover,
@@ -617,7 +618,7 @@ vaadin-vertical-layout.page-view {
 
     .admin-screen-label,
     .admin-schedule-cell {
-        min-height: 190px;
+        min-height: 380px;
     }
 }
 

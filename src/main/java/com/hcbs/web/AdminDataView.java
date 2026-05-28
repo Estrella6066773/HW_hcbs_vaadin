@@ -39,7 +39,8 @@ import java.util.List;
 public class AdminDataView extends VerticalLayout {
 
     private static final LocalTime SCHEDULE_START = LocalTime.of(9, 0);
-    private static final LocalTime SCHEDULE_END = LocalTime.of(20, 0);
+    private static final LocalTime SCHEDULE_END = LocalTime.of(23, 0);
+    private static final double MIN_SHOWING_BLOCK_PERCENT = 24.0;
 
     private final AdminCatalogService adminCatalogService;
     private final Grid<User> userGrid = new Grid<>(User.class, false);
@@ -48,6 +49,7 @@ public class AdminDataView extends VerticalLayout {
     private final ComboBox<Cinema> cinemaFilter = new ComboBox<>("Cinemas");
     private final Div scheduleHost = new Div();
     private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE M/d");
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     private Button editSelected;
     private Button deleteSelected;
@@ -326,7 +328,7 @@ public class AdminDataView extends VerticalLayout {
     }
 
     private Div timeRail() {
-        Div rail = new Div(new Span("Screen"), new Span("09:00-20:00"));
+        Div rail = new Div(new Span("Screen"), new Span("09:00-23:00"));
         rail.addClassName("admin-time-rail");
         return rail;
     }
@@ -346,7 +348,7 @@ public class AdminDataView extends VerticalLayout {
 
     private Div showingBlock(ShowingRow showing, boolean onSelectedDate) {
         Div block = new Div(
-                new Span(showing.startTime() + "-" + showing.endTime()),
+                new Span(timeFormatter.format(showing.startTime()) + "-" + timeFormatter.format(showing.endTime())),
                 new Span(showing.filmTitle())
         );
         block.addClassName("admin-showing-block");
@@ -357,8 +359,9 @@ public class AdminDataView extends VerticalLayout {
         if (selectedShowing != null && selectedShowing.showingId().equals(showing.showingId())) {
             block.addClassName("admin-showing-selected");
         }
-        block.getStyle().set("top", schedulePercent(showing.startTime()) + "%");
-        block.getStyle().set("height", scheduleHeightPercent(showing.startTime(), showing.endTime()) + "%");
+        double height = scheduleHeightPercent(showing.startTime(), showing.endTime());
+        block.getStyle().set("top", scheduleTopPercent(showing.startTime(), height) + "%");
+        block.getStyle().set("height", height + "%");
         block.addClickListener(event -> {
             selectedShowing = showing;
             refreshSchedule();
@@ -370,16 +373,18 @@ public class AdminDataView extends VerticalLayout {
         scheduleHost.getElement().executeJs("this.scrollIntoView({behavior: 'smooth', block: 'start'});");
     }
 
-    private double schedulePercent(LocalTime time) {
+    private double scheduleTopPercent(LocalTime time, double heightPercent) {
         long minutes = Duration.between(SCHEDULE_START, clamp(time, SCHEDULE_START, SCHEDULE_END)).toMinutes();
-        return minutes * 100.0 / Duration.between(SCHEDULE_START, SCHEDULE_END).toMinutes();
+        double top = minutes * 100.0 / Duration.between(SCHEDULE_START, SCHEDULE_END).toMinutes();
+        return Math.min(top, Math.max(0, 100.0 - heightPercent - 8.0));
     }
 
     private double scheduleHeightPercent(LocalTime start, LocalTime end) {
         long minutes = Duration.between(
                 clamp(start, SCHEDULE_START, SCHEDULE_END),
                 clamp(end, SCHEDULE_START, SCHEDULE_END)).toMinutes();
-        return Math.max(12.0, minutes * 100.0 / Duration.between(SCHEDULE_START, SCHEDULE_END).toMinutes());
+        return Math.max(MIN_SHOWING_BLOCK_PERCENT,
+                minutes * 100.0 / Duration.between(SCHEDULE_START, SCHEDULE_END).toMinutes());
     }
 
     private LocalTime clamp(LocalTime time, LocalTime min, LocalTime max) {
