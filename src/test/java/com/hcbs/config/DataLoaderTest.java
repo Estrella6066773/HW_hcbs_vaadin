@@ -4,6 +4,7 @@ import com.hcbs.model.SeatArea;
 import com.hcbs.model.Showing;
 import com.hcbs.model.TimeBand;
 import com.hcbs.repository.BookingRepository;
+import com.hcbs.repository.FilmRepository;
 import com.hcbs.repository.CinemaRepository;
 import com.hcbs.repository.CityRepository;
 import com.hcbs.repository.PriceRuleRepository;
@@ -46,6 +47,9 @@ class DataLoaderTest {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private FilmRepository filmRepository;
 
     @Test
     void createsAtLeastTwoCinemasForEveryCity() {
@@ -101,5 +105,17 @@ class DataLoaderTest {
     @Test
     void createsSeedBookingForCancellationDemo() {
         assertThat(bookingRepository.findByBookingReference(HcbsTestDataSeeder.SEED_BOOKING_REFERENCE)).isPresent();
+    }
+
+    @Test
+    void persistsPosterImageUrlOnEveryFilm() {
+        assertThat(filmRepository.findAll()).isNotEmpty();
+        filmRepository.findAll().forEach(film -> {
+            assertThat(film.getPosterUrl())
+                    .as(film.getTitle())
+                    .isNotBlank()
+                    .doesNotEndWith(".svg")
+                    .matches("^(https?://|/).+");
+        });
     }
 }

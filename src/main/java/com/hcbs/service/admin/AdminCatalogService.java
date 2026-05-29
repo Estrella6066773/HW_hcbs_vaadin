@@ -93,7 +93,11 @@ public class AdminCatalogService {
         film.setAgeRating(row.getAgeRating());
         film.setRating(row.getRating());
         film.setDurationMinutes(row.getDurationMinutes());
-        film.setPosterUrl(row.getPosterUrl());
+        String posterUrl = row.getPosterUrl();
+        if (posterUrl == null || posterUrl.isBlank()) {
+            throw new IllegalArgumentException("Poster image URL is required");
+        }
+        film.setPosterUrl(posterUrl.trim());
         if (film.getDescription() == null) {
             film.setDescription("");
         }

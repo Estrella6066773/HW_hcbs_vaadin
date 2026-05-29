@@ -25,7 +25,9 @@ class FilmCatalogServiceTest {
         assertThat(filmCatalogService.listRecommendedFilms())
                 .hasSize(12)
                 .allSatisfy(card -> {
-                    assertThat(card.posterUrl()).startsWith("/images/posters/");
+                    assertThat(card.posterUrl()).isNotBlank();
+                    assertThat(card.posterUrl()).doesNotEndWith(".svg");
+                    assertThat(card.posterUrl()).matches("^(https?://|/).+");
                     assertThat(card.title()).isNotBlank();
                 });
     }

@@ -180,23 +180,23 @@ public class HcbsTestDataSeeder {
         films.put("Skyline", saveFilm(new HcbsMediaCatalog.FilmSeed(
                 "Skyline", "Spirited Away",
                 "A fast-paced city thriller following a courier racing across London before dawn.",
-                "Action", "12A", 4.4, 118, "/images/posters/home/spirited-away.png")));
+                "Action", "12A", 4.4, 118, FilmPosterCatalog.SPIRITED_AWAY)));
         films.put("Orbit", saveFilm(new HcbsMediaCatalog.FilmSeed(
                 "Orbit", "The Legend of 1900",
                 "A science fiction story set around a lost orbital station and its last crew.",
-                "Sci-Fi", "PG", 4.6, 132, "/images/posters/home/legend-of-1900.png")));
+                "Sci-Fi", "PG", 4.6, 132, FilmPosterCatalog.LEGEND_OF_1900)));
         films.put("Harbour", saveFilm(new HcbsMediaCatalog.FilmSeed(
                 "Harbour", "The Wasted Times",
                 "A warm drama about family reconciliation in a seaside town.",
-                "Drama", "PG", 4.1, 105, "/images/posters/home/wasted-times.png")));
+                "Drama", "PG", 4.1, 105, FilmPosterCatalog.WASTED_TIMES)));
         films.put("Coral", saveFilm(new HcbsMediaCatalog.FilmSeed(
                 "Coral", "Harry Potter and the Order of the Phoenix",
                 "A family adventure on the Welsh coast with treasure hunts and summer storms.",
-                "Family", "U", 4.0, 95, "/images/posters/home/harry-potter-phoenix.png")));
+                "Family", "U", 4.0, 95, FilmPosterCatalog.HARRY_POTTER_PHOENIX)));
         films.put("Archive", saveFilm(new HcbsMediaCatalog.FilmSeed(
                 "Archive", "Solitude",
                 "A documentary on restored cinema heritage and touring projectionists.",
-                "Documentary", "PG", 4.3, 88, "/images/posters/home/solitude.png")));
+                "Documentary", "PG", 4.3, 88, FilmPosterCatalog.SOLITUDE)));
         for (HcbsMediaCatalog.FilmSeed film : HcbsMediaCatalog.extendedFilms()) {
             films.put(film.key(), saveFilm(film));
         }

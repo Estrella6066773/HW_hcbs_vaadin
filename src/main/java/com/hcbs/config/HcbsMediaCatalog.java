@@ -20,25 +20,25 @@ public final class HcbsMediaCatalog {
         return List.of(
                 new FilmSeed("Midnight", "Call Me by Your Name",
                         "A night-shift driver uncovers a smuggling ring along the Thames.",
-                        "Thriller", "15", 4.5, 110, "/images/posters/home/call-me-by-your-name.png"),
+                        "Thriller", "15", 4.5, 110, FilmPosterCatalog.CALL_ME_BY_YOUR_NAME),
                 new FilmSeed("Velvet", "Maleficent",
                         "Two musicians reunite on a cross-country train journey.",
-                        "Romance", "12A", 4.2, 102, "/images/posters/home/maleficent.png"),
+                        "Romance", "12A", 4.2, 102, FilmPosterCatalog.MALEFICENT),
                 new FilmSeed("Iron", "Inception",
                         "An ex-pilot is pulled back into service for one final storm rescue.",
-                        "Action", "12A", 4.7, 125, "/images/posters/home/inception.png"),
+                        "Action", "12A", 4.7, 125, FilmPosterCatalog.INCEPTION),
                 new FilmSeed("Lantern", "The Cabin in the Woods",
                         "Animated fable about village lanterns that guide lost travellers.",
-                        "Animation", "U", 4.8, 98, "/images/posters/home/cabin-in-the-woods.png"),
+                        "Animation", "U", 4.8, 98, FilmPosterCatalog.CABIN_IN_THE_WOODS),
                 new FilmSeed("Quiet", "Rock Star",
                         "A hotel night clerk discovers guests who never checked out.",
-                        "Horror", "15", 4.0, 99, "/images/posters/home/rock-star.png"),
+                        "Horror", "15", 4.0, 99, FilmPosterCatalog.ROCK_STAR),
                 new FilmSeed("North", "Reign Over Me",
                         "Teenagers hike the Brecon Beacons and find a hidden valley.",
-                        "Adventure", "12A", 4.3, 115, "/images/posters/home/reign-over-me.png"),
+                        "Adventure", "12A", 4.3, 115, FilmPosterCatalog.REIGN_OVER_ME),
                 new FilmSeed("Paper", "Cirque du Soleil: O",
                         "A satirical comedy about a local council election in a seaside town.",
-                        "Comedy", "12", 4.1, 108, "/images/posters/home/cirque-du-soleil-o.png")
+                        "Comedy", "12", 4.1, 108, FilmPosterCatalog.CIRQUE_DU_SOLEIL_O)
         );
     }
 

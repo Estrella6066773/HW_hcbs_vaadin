@@ -1,5 +1,6 @@
 package com.hcbs.service.catalog;
 
+import com.hcbs.config.FilmPosterCatalog;
 import com.hcbs.dto.FilmCardDto;
 import com.hcbs.dto.FilmCatalogFilter;
 import com.hcbs.dto.FilmDetailDto;
@@ -21,8 +22,6 @@ import java.util.Map;
 
 @Service
 public class FilmCatalogService {
-    private static final String DEFAULT_POSTER = "/images/posters/default.svg";
-
     private final FilmRepository filmRepository;
     private final ShowingRepository showingRepository;
     private final FilmActorRepository filmActorRepository;
@@ -116,11 +115,12 @@ public class FilmCatalogService {
                 film.getRating());
     }
 
+    /** Returns the poster URL stored on the film row (no generated placeholders). */
     private String resolvePosterUrl(Film film) {
         if (film.getPosterUrl() == null || film.getPosterUrl().isBlank()) {
-            return DEFAULT_POSTER;
+            return FilmPosterCatalog.FALLBACK;
         }
-        return film.getPosterUrl();
+        return film.getPosterUrl().trim();
     }
 
     private ShowingRow toShowingRow(Showing showing) {
