@@ -26,12 +26,12 @@ public class Film {
     private double rating;
     private int durationMinutes;
 
-    /** Poster image URL persisted in DB (https or app-relative path under /images/). */
-    @Column(nullable = false, length = 512)
+    /** Local poster path persisted in DB (app-relative, e.g. {@code /images/posters/title.jpg}). */
+    @Column(length = 512)
     private String posterUrl;
 
     public Film(String title, String description, String genre, String ageRating, double rating, int durationMinutes) {
-        this(title, description, genre, ageRating, rating, durationMinutes, com.hcbs.config.FilmPosterCatalog.FALLBACK);
+        this(title, description, genre, ageRating, rating, durationMinutes, null);
     }
 
     public Film(String title, String description, String genre, String ageRating, double rating, int durationMinutes,

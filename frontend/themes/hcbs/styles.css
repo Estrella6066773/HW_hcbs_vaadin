@@ -933,12 +933,47 @@ vaadin-grid {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
+.film-poster-slot {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+}
+
+.film-poster-slot.film-detail-poster {
+    width: 220px;
+    max-width: 100%;
+    flex-shrink: 0;
+}
+
 .film-poster-image {
     width: 100%;
+    height: 100%;
     aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: var(--lumo-border-radius-m);
     background: #2a1f24;
+    display: block;
+}
+
+.film-poster-missing {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-radius: var(--lumo-border-radius-m);
+    border: 1px dashed rgba(255, 208, 138, 0.35);
+    background: rgba(42, 31, 36, 0.92);
+    color: #c7b89e;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
+
+.film-poster-slot.film-detail-poster .film-poster-missing {
+    border-radius: var(--lumo-border-radius-l);
+    border-color: rgba(255, 208, 138, 0.22);
 }
 
 .film-poster-title {
@@ -1015,14 +1050,8 @@ vaadin-grid {
     gap: 28px;
 }
 
-.film-detail-poster {
-    width: 220px;
-    max-width: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
+.film-detail-poster.film-poster-slot {
     border-radius: var(--lumo-border-radius-l);
-    border: 1px solid rgba(255, 208, 138, 0.22);
-    flex-shrink: 0;
 }
 
 .film-detail-copy h2 {

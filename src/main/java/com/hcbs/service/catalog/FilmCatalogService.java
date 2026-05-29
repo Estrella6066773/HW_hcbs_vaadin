@@ -1,6 +1,5 @@
 package com.hcbs.service.catalog;
 
-import com.hcbs.config.FilmPosterCatalog;
 import com.hcbs.dto.FilmCardDto;
 import com.hcbs.dto.FilmCatalogFilter;
 import com.hcbs.dto.FilmDetailDto;
@@ -95,7 +94,7 @@ public class FilmCatalogService {
         return new FilmDetailDto(
                 film.getFilmId(),
                 film.getTitle(),
-                resolvePosterUrl(film),
+                posterUrlFromDb(film),
                 film.getDescription(),
                 film.getGenre(),
                 film.getAgeRating(),
@@ -109,16 +108,16 @@ public class FilmCatalogService {
         return new FilmCardDto(
                 film.getFilmId(),
                 film.getTitle(),
-                resolvePosterUrl(film),
+                posterUrlFromDb(film),
                 film.getGenre(),
                 film.getAgeRating(),
                 film.getRating());
     }
 
-    /** Returns the poster URL stored on the film row (no generated placeholders). */
-    private String resolvePosterUrl(Film film) {
+    /** Returns the poster path stored on the film row (may point at a missing file). */
+    private String posterUrlFromDb(Film film) {
         if (film.getPosterUrl() == null || film.getPosterUrl().isBlank()) {
-            return FilmPosterCatalog.FALLBACK;
+            return null;
         }
         return film.getPosterUrl().trim();
     }

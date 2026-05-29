@@ -20,6 +20,7 @@ import com.hcbs.repository.ScreenRepository;
 import com.hcbs.repository.ShowingRepository;
 import com.hcbs.repository.UserRepository;
 import com.hcbs.security.CurrentUserService;
+import com.hcbs.service.catalog.PosterResourceService;
 import com.hcbs.util.PhoneNumbers;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -41,13 +42,15 @@ public class AdminCatalogService {
     private final FilmActorRepository filmActorRepository;
     private final ScreenRepository screenRepository;
     private final CurrentUserService currentUserService;
+    private final PosterResourceService posterResourceService;
 
     public AdminCatalogService(FilmRepository filmRepository, UserRepository userRepository,
                                ShowingRepository showingRepository, BookingRepository bookingRepository,
                                BookingSeatRepository bookingSeatRepository, CinemaRepository cinemaRepository,
                                FilmActorRepository filmActorRepository,
                                ScreenRepository screenRepository,
-                               CurrentUserService currentUserService) {
+                               CurrentUserService currentUserService,
+                               PosterResourceService posterResourceService) {
         this.filmRepository = filmRepository;
         this.userRepository = userRepository;
         this.showingRepository = showingRepository;
@@ -57,6 +60,7 @@ public class AdminCatalogService {
         this.filmActorRepository = filmActorRepository;
         this.screenRepository = screenRepository;
         this.currentUserService = currentUserService;
+        this.posterResourceService = posterResourceService;
     }
 
     public List<FilmAdminRow> listFilms() {
@@ -94,9 +98,7 @@ public class AdminCatalogService {
         film.setRating(row.getRating());
         film.setDurationMinutes(row.getDurationMinutes());
         String posterUrl = row.getPosterUrl();
-        if (posterUrl == null || posterUrl.isBlank()) {
-            throw new IllegalArgumentException("Poster image URL is required");
-        }
+        posterResourceService.requireLocalPath(posterUrl);
         film.setPosterUrl(posterUrl.trim());
         if (film.getDescription() == null) {
             film.setDescription("");

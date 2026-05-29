@@ -3,14 +3,15 @@ package com.hcbs.web;
 import com.hcbs.dto.FilmDetailDto;
 import com.hcbs.dto.ShowingListingFilter;
 import com.hcbs.dto.ShowingRow;
+import com.hcbs.service.catalog.PosterResourceService;
 import com.hcbs.service.search.HcbsSearchService;
 import com.hcbs.web.component.BackToHomeAction;
+import com.hcbs.web.component.FilmPoster;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -33,10 +34,12 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final HcbsSearchService searchService;
+    private final PosterResourceService posterResources;
     private final VerticalLayout content = new VerticalLayout();
 
-    public FilmDetailView(HcbsSearchService searchService) {
+    public FilmDetailView(HcbsSearchService searchService, PosterResourceService posterResources) {
         this.searchService = searchService;
+        this.posterResources = posterResources;
         setSizeFull();
         setPadding(false);
         setMargin(false);
@@ -64,8 +67,8 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
     }
 
     private Div buildDetail(FilmDetailDto film, ShowingListingFilter filter) {
-        Image poster = new Image(film.posterUrl(), film.title() + " poster");
-        poster.addClassName("film-detail-poster");
+        FilmPoster poster = new FilmPoster(
+                posterResources, film.posterUrl(), film.title() + " poster", "film-detail-poster");
 
         H2 title = new H2(film.title());
         Span meta = new Span(film.genre() + " · " + film.ageRating() + " · ★ " + film.rating()

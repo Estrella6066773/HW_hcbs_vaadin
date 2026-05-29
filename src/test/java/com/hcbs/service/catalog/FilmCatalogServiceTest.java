@@ -1,5 +1,6 @@
 package com.hcbs.service.catalog;
 
+import com.hcbs.config.FilmPosterCatalog;
 import com.hcbs.dto.FilmCardDto;
 import com.hcbs.dto.FilmDetailDto;
 import org.junit.jupiter.api.Test;
@@ -20,16 +21,20 @@ class FilmCatalogServiceTest {
     @Autowired
     private FilmCatalogService filmCatalogService;
 
+    @Autowired
+    private PosterResourceService posterResourceService;
+
     @Test
     void listsRecommendedFilmsWithPosters() {
         assertThat(filmCatalogService.listRecommendedFilms())
                 .hasSize(12)
                 .allSatisfy(card -> {
-                    assertThat(card.posterUrl()).isNotBlank();
+                    assertThat(card.posterUrl()).startsWith(FilmPosterCatalog.BASE);
                     assertThat(card.posterUrl()).doesNotEndWith(".svg");
-                    assertThat(card.posterUrl()).matches("^(https?://|/).+");
                     assertThat(card.title()).isNotBlank();
                 });
+        assertThat(posterResourceService.isAvailable(FilmPosterCatalog.SOLITUDE)).isFalse();
+        assertThat(posterResourceService.isAvailable(FilmPosterCatalog.SPIRITED_AWAY)).isTrue();
     }
 
     @Test

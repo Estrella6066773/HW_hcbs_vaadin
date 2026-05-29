@@ -3,12 +3,13 @@ package com.hcbs.web;
 import com.hcbs.dto.FilmCardDto;
 import com.hcbs.dto.FilmCatalogFilter;
 import com.hcbs.dto.ShowingListingFilter;
+import com.hcbs.service.catalog.PosterResourceService;
 import com.hcbs.service.search.HcbsSearchService;
 import com.hcbs.web.component.AdditiveShowingFilterPanel;
+import com.hcbs.web.component.FilmPoster;
 import com.hcbs.web.component.PageHero;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -27,12 +28,14 @@ import java.util.List;
 public class FilmRecommendView extends VerticalLayout implements BeforeEnterObserver {
 
     private final HcbsSearchService searchService;
+    private final PosterResourceService posterResources;
     private final AdditiveShowingFilterPanel filterPanel;
     private final Div posterGrid = new Div();
     private boolean filteredBrowse;
 
-    public FilmRecommendView(HcbsSearchService searchService) {
+    public FilmRecommendView(HcbsSearchService searchService, PosterResourceService posterResources) {
         this.searchService = searchService;
+        this.posterResources = posterResources;
         this.filterPanel = new AdditiveShowingFilterPanel(searchService, this::runSearch, this::showAllFilms);
 
         setWidthFull();
@@ -95,8 +98,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
     }
 
     private RouterLink createPosterCard(FilmCardDto film) {
-        Image poster = new Image(film.posterUrl(), film.title() + " poster");
-        poster.addClassName("film-poster-image");
+        FilmPoster poster = new FilmPoster(posterResources, film.posterUrl(), film.title() + " poster");
 
         H2 title = new H2(film.title());
         title.addClassName("film-poster-title");

@@ -114,8 +114,8 @@ class DataLoaderTest {
             assertThat(film.getPosterUrl())
                     .as(film.getTitle())
                     .isNotBlank()
-                    .doesNotEndWith(".svg")
-                    .matches("^(https?://|/).+");
+                    .startsWith("/images/posters/")
+                    .endsWith(".jpg");
         });
     }
 }

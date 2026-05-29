@@ -1,0 +1,33 @@
+package com.hcbs.service.catalog;
+
+import com.hcbs.config.FilmPosterCatalog;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
+/**
+ * Checks that a DB poster path points at a file served from {@code META-INF/resources}.
+ */
+@Service
+public class PosterResourceService {
+
+    public boolean isAvailable(String posterUrl) {
+        if (posterUrl == null || posterUrl.isBlank()) {
+            return false;
+        }
+        String path = posterUrl.trim();
+        if (!path.startsWith("/")) {
+            return false;
+        }
+        return new ClassPathResource("META-INF/resources" + path).exists();
+    }
+
+    public void requireLocalPath(String posterUrl) {
+        if (posterUrl == null || posterUrl.isBlank()) {
+            throw new IllegalArgumentException("Poster path is required");
+        }
+        String path = posterUrl.trim();
+        if (!FilmPosterCatalog.isLocalPath(path)) {
+            throw new IllegalArgumentException("Poster path must start with " + FilmPosterCatalog.BASE);
+        }
+    }
+}
