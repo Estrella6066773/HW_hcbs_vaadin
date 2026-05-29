@@ -247,6 +247,7 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 | [TEST_DATABASE.md](TEST_DATABASE.md) | 测试数据库设计、种子数据场景与重置方法 |
 | [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md) | 开发环境：格式/锁库异常时删 `./data/`，勿改代码 |
 | [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 成员贡献与答辩（不在本文档中说明） |
+| [roles/README.md](roles/README.md) | 成员 A–D 各自负责范围的详细说明（单人单文档） |
 | [req/](req/) | 案例与作业要求 |
 
 ---
