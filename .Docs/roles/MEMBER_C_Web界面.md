@@ -30,6 +30,7 @@
 | C5 | 主题样式 | `frontend/themes/hcbs/styles.css` | — |
 | C6 | 功能说明（界面流程） | 与 [README_CN.md](../README_CN.md) 一致 | — |
 | C7 | 联调与文案 | 错误提示、`Notification` | — |
+| C8 | 影片封面展示 | `FilmPoster` 组件、`styles.css` 中 `.film-poster-missing` | — |
 
 > 说明：早期矩阵中的 `FilmListingView` 已合并进主页 `FilmRecommendView`；列表能力由 `AdditiveShowingFilterPanel` + 搜索服务完成。
 
@@ -39,8 +40,8 @@
 
 | 路由 | 类 | 布局 | 主要注入 | 说明 |
 | --- | --- | --- | --- | --- |
-| `/` | `FilmRecommendView` | `MainLayout` | `HcbsSearchService`、`FilmCatalogService` 等 | 默认海报墙；搜索后显示统计与场次表 |
-| `/film/:id` | `FilmDetailView` | `MainLayout` | `FilmCatalogService` | 简介、演员、场次列表 |
+| `/` | `FilmRecommendView` | `MainLayout` | `HcbsSearchService`、`PosterResourceService` 等 | 默认海报墙；搜索后显示统计与场次表 |
+| `/film/:id` | `FilmDetailView` | `MainLayout` | `HcbsSearchService`、`PosterResourceService` | 简介、演员、场次列表 |
 | `/booking` | `BookingView` | `MainLayout` | **`BookingService`** | 场次、座位图、收据 |
 | `/cancellation` | `CancellationView` | `MainLayout` | **`CancellationService`** | 参考号查询与取消 |
 | `/my-bookings` | `MyBookingsView` | `MainLayout` | `CancellationService` | 客户订单列表 |
@@ -58,12 +59,21 @@
 
 | 组件 | 用途 | 使用方 |
 | --- | --- | --- |
+| `FilmPoster` | 按 DB 路径显示本地 JPEG；文件缺失时显示「缺失」 | `FilmRecommendView`、`FilmDetailView` |
 | `AdditiveShowingFilterPanel` | 城市/影院/日期/片名叠加筛选 | `FilmRecommendView` |
 | `SeatMapPicker` | 座位图勾选、区域切换 | `BookingView` |
 | `PageHero` | 页头标题区 | 多页 |
 | `BackToHomeAction` | 返回主页按钮 | 详情、订票等 |
 
 改筛选 UI → 确认仍产出 `ShowingListingFilter` 或 B 约定的参数；改座位图 → 与 `BookingService.loadSeatMap` 返回的 `SeatMapSeat` 字段一致。
+
+### 4.1 影片封面（`FilmPoster`）
+
+1. 注入 `PosterResourceService`（与 `HcbsSearchService` 一起在 View 构造器中）。  
+2. `FilmCardDto.posterUrl()` / `FilmDetailDto.posterUrl()` 来自数据库，**不要在 View 里拼路径或生成图**。  
+3. `new FilmPoster(posterResources, url, altText[, classNames...])`：有文件则 `<img>`，否则灰色虚线框 + **「缺失」**。  
+4. 样式：`.film-poster-slot`、`.film-poster-image`、`.film-poster-missing`（见 `styles.css`）。  
+5. 演示缺失：种子影片 **Solitude** 的路径为 `/images/posters/solitude.jpg`，仓库未附带该文件。
 
 ---
 

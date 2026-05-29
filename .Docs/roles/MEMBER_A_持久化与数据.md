@@ -47,7 +47,7 @@
 
 | 实体 | 要点 |
 | --- | --- |
-| `Film` | 片名、简介、时长、评分等 |
+| `Film` | 片名、简介、时长、评分等；**`posterUrl`** 存本地封面路径（如 `/images/posters/spirited-away.jpg`，可空） |
 | `Actor` | 演员 |
 | `FilmActor` | 影片–演员多对多关联表 |
 | `Showing` | 场次：`Film` + `Screen` + 日期时间；`TimeBand`（早/午/晚）；`ShowingStatus` |
@@ -77,7 +77,8 @@
 1. **票价存在 `PriceRule` 表**，不按场次写死价格；B 的 `BookingService` 按城市、时段、座位区域查价。上厅在同城同时段下厅价基础上 +£2（业务在 Service 层实现，表存基础价）。  
 2. **占座以 `BookingSeat` + `Booking.status = CONFIRMED` 为准**；取消后删除 `BookingSeat` 行，座位才可再订。  
 3. **场次唯一性** 由 `Showing` 表级唯一约束保证，避免同一银幕重复排片。  
-4. **索引：** `Booking` 上对 `customer_user_id`、`created_by_user_id`、`showing_showing_id` 建索引，便于按客户、场次查订单。
+4. **索引：** `Booking` 上对 `customer_user_id`、`created_by_user_id`、`showing_showing_id` 建索引，便于按客户、场次查订单。  
+5. **封面路径：** `Film.posterUrl` 只存应用内路径字符串，**不存图片二进制**；实际文件在 `src/main/resources/META-INF/resources/images/posters/`。路径是否有效由 B/C 在 Service 与界面层判断，你只需保证字段长度与可空性合理。
 
 ---
 

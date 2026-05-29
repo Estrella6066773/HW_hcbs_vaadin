@@ -40,19 +40,27 @@ A/B/C 实现  →  你写/维护测试与用例表  →  验证业务规则  →
 | `FilmListingServiceTest` | `FilmListingService` | TC_001、TC_002 |
 | `BookingServiceTest` | `BookingService` | TC_003–TC_007 |
 | `CancellationServiceTest` | `CancellationService` | TC_008–TC_010 |
-| `DataLoaderTest` | 种子数据完整性 | 启动数据、城市影院数量 |
+| `DataLoaderTest` | 种子数据完整性 | 启动数据、城市影院数量；含 `persistsPosterImageUrlOnEveryFilm` |
 
 ### 3.2 扩展与基础设施
 
 | 测试类 | 覆盖内容 |
 | --- | --- |
-| `FilmCatalogServiceTest` | 影片目录、详情 DTO |
+| `FilmCatalogServiceTest` | 影片目录、详情 DTO、**封面路径为 `/images/posters/*.jpg`** |
 | `HcbsSearchServiceTest` | 主页搜索与统计 |
 | `RegistrationServiceTest` | 客户注册 |
 | `HcbsPortAllocatorTest` | 端口分配（开发便利） |
 | `UiThemeTest` | Vaadin 主题名 `hcbs` |
 
-### 3.3 运行命令
+### 3.3 影片封面相关断言
+
+| 测试 | 断言要点 |
+| --- | --- |
+| `DataLoaderTest.persistsPosterImageUrlOnEveryFilm` | 每部影片 `posterUrl` 以 `/images/posters/` 开头且以 `.jpg` 结尾 |
+| `FilmCatalogServiceTest.listsRecommendedFilmsWithPosters` | DTO 路径格式；`PosterResourceService.isAvailable(SOLITUDE)` 为 false |
+| 手工 | 主页与详情：有图显示 JPEG，**Solitude** 显示「缺失」 |
+
+### 3.4 运行命令
 
 ```powershell
 # 全量（提交前必跑）

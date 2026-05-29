@@ -31,6 +31,7 @@ web (C)  →  只依赖 dto + service.*
 | B4 | DTO 层 | `com.hcbs.dto` 下全部 record |
 | B5 | 启动灌数入口 | `DataLoader` → 调用 `HcbsTestDataSeeder` |
 | B6 | 为 C 提供稳定 API | 见 §5 各 View 对照表 |
+| B7 | 封面路径与校验 | `FilmCatalogService`、`PosterResourceService`、`FilmPosterCatalog`（种子路径常量） |
 
 ---
 
@@ -127,6 +128,19 @@ DTO 均为 **Java record**，只承载数据，无业务逻辑。
 | `ShowingTimeSlot` | 详情页场次时段 |
 
 **原则：** 新增界面字段时，先加/改 DTO，再在 Service 中赋值；不要让 C 直接拿 `Film`、`Showing` 实体。
+
+### 4.4 影片封面
+
+| 类 / 字段 | 作用 |
+| --- | --- |
+| `FilmCardDto.posterUrl` / `FilmDetailDto.posterUrl` | 原样透出数据库中的路径（可为 `null`） |
+| `FilmCatalogService.posterUrlFromDb` | **不做** fallback，不生成占位图 |
+| `PosterResourceService.isAvailable` | 检查 `META-INF/resources` 下文件是否存在 |
+| `PosterResourceService.requireLocalPath` | 管理端保存时要求路径以 `/images/posters/` 开头 |
+| `FilmPosterCatalog` | 种子数据用的路径常量（`config` 包，与 `HcbsTestDataSeeder` 协作） |
+| `AdminCatalogService.saveFilm` | 写入 `posterUrl` 前校验本地路径格式 |
+
+**分工：** B 负责路径规则与 DTO；C 的 `FilmPoster` 组件根据 `isAvailable` 决定显示图片或「缺失」；A 维护 `Film.posterUrl` 字段。
 
 ---
 
