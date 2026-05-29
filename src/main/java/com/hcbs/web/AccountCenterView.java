@@ -34,12 +34,12 @@ public class AccountCenterView extends VerticalLayout {
     }
 
     private Div guestPanel() {
-        H2 title = new H2("个人中心");
-        Paragraph copy = new Paragraph("登录后可订票、查看订单并管理账户。");
-        Button signIn = new Button("登录", event ->
+        H2 title = new H2("Account");
+        Paragraph copy = new Paragraph("Sign in to book tickets, view orders, and manage your account.");
+        Button signIn = new Button("Sign in", event ->
                 getUI().ifPresent(ui -> ui.navigate(LoginView.class)));
         signIn.addClassName("primary-action");
-        Button register = new Button("注册新账户", event ->
+        Button register = new Button("Register", event ->
                 getUI().ifPresent(ui -> ui.navigate(RegisterView.class)));
         register.addClassName("secondary-action");
 
@@ -50,7 +50,7 @@ public class AccountCenterView extends VerticalLayout {
     }
 
     private Div signedInPanel(User user, AuthUiService authUiService) {
-        H2 title = new H2("个人中心");
+        H2 title = new H2("Account");
         Span profile = new Span(user.getFullName() + " · " + user.getEmail());
         profile.addClassName("account-profile");
 
@@ -58,13 +58,13 @@ public class AccountCenterView extends VerticalLayout {
         links.addClassName("account-links");
 
         if (user.getRole().isCustomer()) {
-            links.add(linkButton("我的订单", MyBookingsView.class));
-            links.add(linkButton("订票", BookingView.class));
+            links.add(linkButton("My bookings", MyBookingsView.class));
+            links.add(linkButton("Book tickets", BookingView.class));
         } else {
-            links.add(linkButton("订票柜台", BookingView.class));
-            links.add(linkButton("退票柜台", CancellationView.class));
+            links.add(linkButton("Booking desk", BookingView.class));
+            links.add(linkButton("Cancellation desk", CancellationView.class));
             if (user.getRole().canAccessAdminTools()) {
-                links.add(linkButton("数据管理", AdminDataView.class));
+                links.add(linkButton("Data admin", AdminDataView.class));
             }
         }
 

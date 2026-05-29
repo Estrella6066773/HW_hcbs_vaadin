@@ -80,7 +80,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private void refreshHeader() {
         headerActions.removeAll();
-        Button account = new Button("个人中心", event -> openAccountCenter());
+        Button account = new Button("Account", event -> openAccountCenter());
         account.addClassName("primary-action");
         account.addClassName("account-button");
 

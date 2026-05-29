@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 @AnonymousAllowed
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final TextField phone = new TextField("手机号");
+    private final TextField phone = new TextField("Phone number");
     private final PasswordField password = new PasswordField("Password");
-    private final Span loginError = new Span("手机号或密码不正确");
+    private final Span loginError = new Span("Incorrect phone number or password");
 
     public LoginView() {
         setWidthFull();
@@ -67,7 +67,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         loginError.setVisible(false);
 
         Paragraph passwordNote = new Paragraph(
-                "演示账号统一密码：" + DemoAccountCatalog.DEMO_PASSWORD);
+                "Demo account password: " + DemoAccountCatalog.DEMO_PASSWORD);
         passwordNote.addClassName("auth-hint");
         passwordNote.addClassName("auth-password-note");
 
@@ -79,7 +79,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         Div credentialsPanel = new Div(phone, password, submit);
         credentialsPanel.addClassName("auth-credentials-panel");
 
-        Anchor register = new Anchor("register", "没有账号？注册新客户");
+        Anchor register = new Anchor("register", "No account? Register as a new customer");
         register.addClassName("auth-link");
 
         VerticalLayout page = new VerticalLayout(
@@ -103,14 +103,14 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         String user = phone.getValue();
         String pass = password.getValue();
         if (user == null || user.isBlank() || pass == null || pass.isEmpty()) {
-            loginError.setText("请输入手机号和密码");
+            loginError.setText("Please enter your phone number and password");
             loginError.setVisible(true);
             return;
         }
 
         VaadinServletRequest request = (VaadinServletRequest) VaadinServletRequest.getCurrent();
         if (request == null) {
-            loginError.setText("无法提交登录请求，请刷新页面后重试");
+            loginError.setText("Unable to submit sign-in request. Please refresh the page and try again.");
             loginError.setVisible(true);
             return;
         }
@@ -127,7 +127,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 }
             });
         } catch (ServletException ex) {
-            loginError.setText("手机号或密码不正确");
+            loginError.setText("Incorrect phone number or password");
             loginError.setVisible(true);
         }
     }
@@ -136,7 +136,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         Div panel = new Div();
         panel.addClassName("demo-accounts-panel");
 
-        Paragraph intro = new Paragraph("数据库初始化后可使用以下演示手机号登录（每类 3 个，密码均为 demo）：");
+        Paragraph intro = new Paragraph(
+                "After database initialization, sign in with the demo phone numbers below (3 per role, password: demo):");
         intro.addClassName("auth-hint");
         panel.add(intro);
 
@@ -187,7 +188,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 .getQueryParameters()
                 .getParameters()
                 .containsKey("registered")) {
-            Notification.show("注册成功，请使用手机号和密码登录。");
+            Notification.show("Registration successful. Please sign in with your phone number and password.");
         }
     }
 }

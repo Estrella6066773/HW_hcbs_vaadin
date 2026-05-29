@@ -59,7 +59,7 @@ public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Lo
             content.add(buildDetail(searchService.getFilmDetail(filmId, filter), filter));
         } catch (IllegalArgumentException ex) {
             content.add(new Paragraph(ex.getMessage()));
-            content.add(new RouterLink("返回主页", FilmRecommendView.class));
+            content.add(new RouterLink("Back to home", FilmRecommendView.class));
         }
     }
 
