@@ -14,7 +14,7 @@ public class BackToHomeAction extends Button {
     }
 
     public BackToHomeAction(ShowingListingFilter filter) {
-        super("返回主页");
+        super("Back to home");
         addClickListener(event -> getUI().ifPresent(ui -> {
             if (filter != null && ShowingFilterQuery.hasCriteria(filter)) {
                 ui.navigate(FilmRecommendView.class, ShowingFilterQuery.toQueryParameters(filter));
