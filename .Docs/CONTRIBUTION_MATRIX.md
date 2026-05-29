@@ -18,6 +18,15 @@
 
 本矩阵与代码包结构一致；技术架构见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
+**各角色详细上手说明（单人单文档）：** [roles/README.md](roles/README.md)
+
+| 成员 | 快速上手文档 |
+| --- | --- |
+| A | [MEMBER_A_持久化与数据.md](roles/MEMBER_A_持久化与数据.md) |
+| B | [MEMBER_B_应用服务.md](roles/MEMBER_B_应用服务.md) |
+| C | [MEMBER_C_Web界面.md](roles/MEMBER_C_Web界面.md) |
+| D | [MEMBER_D_测试与交付.md](roles/MEMBER_D_测试与交付.md) |
+
 ---
 
 ## 1. Group members（小组成员）
