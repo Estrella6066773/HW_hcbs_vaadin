@@ -135,6 +135,7 @@ public class FilmCatalogService {
                 showing.getFilm().getGenre(),
                 showing.getFilm().getAgeRating(),
                 showing.getScreen().getCinema().getName(),
+                showing.getScreen().getScreenId(),
                 showing.getScreen().getScreenNumber(),
                 showing.getShowDate(),
                 showing.getStartTime(),

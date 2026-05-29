@@ -2,6 +2,7 @@ package com.hcbs.repository;
 
 import com.hcbs.model.Cinema;
 import com.hcbs.model.Film;
+import com.hcbs.model.Screen;
 import com.hcbs.model.Showing;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -19,6 +20,8 @@ public interface ShowingRepository extends JpaRepository<Showing, Long> {
     List<Showing> findByScreenCinema(Cinema cinema);
 
     List<Showing> findByFilmAndShowDate(Film film, LocalDate date);
+
+    List<Showing> findByScreenAndShowDate(Screen screen, LocalDate date);
 
     @Query("""
             SELECT s FROM Showing s

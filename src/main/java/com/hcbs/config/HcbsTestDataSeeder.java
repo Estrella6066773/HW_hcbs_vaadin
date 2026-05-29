@@ -178,25 +178,25 @@ public class HcbsTestDataSeeder {
     private Map<String, Film> seedFilmsAndActors() {
         Map<String, Film> films = new LinkedHashMap<>();
         films.put("Skyline", saveFilm(new HcbsMediaCatalog.FilmSeed(
-                "Skyline", "Skyline Run",
+                "Skyline", "Spirited Away",
                 "A fast-paced city thriller following a courier racing across London before dawn.",
-                "Action", "12A", 4.4, 118, "/images/posters/skyline-run.svg")));
+                "Action", "12A", 4.4, 118, "/images/posters/home/spirited-away.png")));
         films.put("Orbit", saveFilm(new HcbsMediaCatalog.FilmSeed(
-                "Orbit", "Orbit Garden",
+                "Orbit", "The Legend of 1900",
                 "A science fiction story set around a lost orbital station and its last crew.",
-                "Sci-Fi", "PG", 4.6, 132, "/images/posters/orbit-garden.svg")));
+                "Sci-Fi", "PG", 4.6, 132, "/images/posters/home/legend-of-1900.png")));
         films.put("Harbour", saveFilm(new HcbsMediaCatalog.FilmSeed(
-                "Harbour", "Harbour Lights",
+                "Harbour", "The Wasted Times",
                 "A warm drama about family reconciliation in a seaside town.",
-                "Drama", "PG", 4.1, 105, "/images/posters/harbour-lights.svg")));
+                "Drama", "PG", 4.1, 105, "/images/posters/home/wasted-times.png")));
         films.put("Coral", saveFilm(new HcbsMediaCatalog.FilmSeed(
-                "Coral", "Coral Bay",
+                "Coral", "Harry Potter and the Order of the Phoenix",
                 "A family adventure on the Welsh coast with treasure hunts and summer storms.",
-                "Family", "U", 4.0, 95, "/images/posters/coral-bay.svg")));
+                "Family", "U", 4.0, 95, "/images/posters/home/harry-potter-phoenix.png")));
         films.put("Archive", saveFilm(new HcbsMediaCatalog.FilmSeed(
-                "Archive", "Archive Echo",
+                "Archive", "Solitude",
                 "A documentary on restored cinema heritage and touring projectionists.",
-                "Documentary", "PG", 4.3, 88, "/images/posters/archive-echo.svg")));
+                "Documentary", "PG", 4.3, 88, "/images/posters/home/solitude.png")));
         for (HcbsMediaCatalog.FilmSeed film : HcbsMediaCatalog.extendedFilms()) {
             films.put(film.key(), saveFilm(film));
         }
@@ -374,7 +374,7 @@ public class HcbsTestDataSeeder {
     private void seedSampleBookings(SeedUsers users, SeedContext ctx) {
         Showing cancellationDemo = ctx.showings.stream()
                 .filter(s -> s.getShowDate().equals(LocalDate.now().plusDays(1)))
-                .filter(s -> s.getFilm().getTitle().equals("Harbour Lights"))
+                .filter(s -> s.getFilm().getTitle().equals("The Wasted Times"))
                 .filter(s -> s.getScreen().getCinema().getName().contains("London Central"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Seed cancellation showing missing"));
@@ -400,11 +400,11 @@ public class HcbsTestDataSeeder {
     private void seedSecondSampleBooking(SeedUsers users, SeedContext ctx) {
         Showing bobShowing = ctx.showings.stream()
                 .filter(s -> s.getShowDate().equals(LocalDate.now().plusDays(5)))
-                .filter(s -> s.getFilm().getTitle().equals("Orbit Garden"))
+                .filter(s -> s.getFilm().getTitle().equals("The Legend of 1900"))
                 .filter(s -> s.getScreen().getCinema().getName().contains("Cardiff Bay"))
                 .findFirst()
                 .orElseGet(() -> ctx.showings.stream()
-                        .filter(s -> s.getFilm().getTitle().equals("Orbit Garden"))
+                        .filter(s -> s.getFilm().getTitle().equals("The Legend of 1900"))
                         .filter(s -> !s.getShowDate().isBefore(LocalDate.now()))
                         .findFirst()
                         .orElseThrow(() -> new IllegalStateException("Seed booking #2 showing missing")));

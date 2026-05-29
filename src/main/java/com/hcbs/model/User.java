@@ -35,7 +35,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 120)
+    @Column(unique = true, length = 120)
     private String email;
 
     @Column(nullable = false, length = 100)
@@ -95,7 +95,10 @@ public class User {
     }
 
     public static String normalizeEmail(String email) {
-        return email == null ? null : email.trim().toLowerCase();
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+        return email.trim().toLowerCase();
     }
 
     @Override
