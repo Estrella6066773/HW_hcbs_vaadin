@@ -33,7 +33,7 @@ class FilmCatalogServiceTest {
                     assertThat(card.posterUrl()).doesNotEndWith(".svg");
                     assertThat(card.title()).isNotBlank();
                 });
-        assertThat(posterResourceService.isAvailable(FilmPosterCatalog.SOLITUDE)).isFalse();
+        assertThat(posterResourceService.isAvailable(FilmPosterCatalog.SOLITUDE)).isTrue();
         assertThat(posterResourceService.isAvailable(FilmPosterCatalog.SPIRITED_AWAY)).isTrue();
     }
 

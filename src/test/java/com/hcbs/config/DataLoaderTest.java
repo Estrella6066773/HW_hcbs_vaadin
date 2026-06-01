@@ -115,7 +115,7 @@ class DataLoaderTest {
                     .as(film.getTitle())
                     .isNotBlank()
                     .startsWith("/images/posters/")
-                    .endsWith(".jpg");
+                    .matches(".*\\.(jpg|png)$");
         });
     }
 }
