@@ -49,7 +49,7 @@
 | `/register` | `RegisterView` | 无 | `RegistrationService` | 客户注册 |
 | `/logout` | `LogoutView` | — | — | 登出 |
 | `/account` | `AccountCenterView` | `MainLayout` | 用户相关 | 账户中心 |
-| `/admin` | `AdminDataView` | `MainLayout` | `AdminCatalogService` | 员工数据管理（扩展） |
+| `/admin` | `AdminDataView` | `MainLayout` | `AdminCatalogService` | 管理员数据管理（仅 `ADMIN`） |
 
 **Shell：** `AppShell.java` 注册主题名 `hcbs`；`@Theme` 与 `styles.css` 关联。
 

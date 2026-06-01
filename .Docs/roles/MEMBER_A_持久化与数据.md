@@ -66,7 +66,7 @@
 | 实体 | 要点 |
 | --- | --- |
 | `User` | 用户名、邮箱、手机、角色 `UserRole`、状态 `UserStatus` |
-| 枚举 | `UserRole`（客户/员工/管理员等）、`UserStatus`、`BookingStatus`、`ShowingStatus`、`TimeBand`、`SeatArea` |
+| 枚举 | `UserRole`：`CUSTOMER` / `BOOKING_STAFF` / `ADMIN`；以及 `UserStatus`、`BookingStatus`、`ShowingStatus`、`TimeBand`、`SeatArea` |
 
 **答辩必讲：** 一张简化 ERD（City → Cinema → Screen → Seat；Film → Showing ← Screen；Booking → BookingSeat → Seat）。
 

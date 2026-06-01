@@ -1,11 +1,11 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.jdt.ls.java.home": "C:\\Users\\one\\.jdks\\ms-21.0.11",
+    "java.jdt.ls.java.home": "C:\\Users\\C3542\\.jdks\\openjdk-25.0.1",
     "java.configuration.runtimes": [
         {
             "name": "JavaSE-21",
-            "path": "C:\\Users\\one\\.jdks\\ms-21.0.11",
+            "path": "C:\\Users\\C3542\\.jdks\\openjdk-25.0.1",
             "default": true
         }
     ],

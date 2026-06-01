@@ -102,7 +102,7 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 | 文档 | 内容 |
 | --- | --- |
 | [TEST_DATABASE.md](../TEST_DATABASE.md) | 四城、场次边界日期、演示用户、`HCBS-SEED001` |
-| [README_CN.md](../README_CN.md) §演示数据 | 12 个演示账号，密码 `demo` |
+| [README_CN.md](../README_CN.md) §演示数据 | 9 个演示账号（三类角色各 3），密码 `demo` |
 
 **重置库（集成 / 手工测试前常用）：**
 

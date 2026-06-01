@@ -35,9 +35,13 @@ Horizon Cinemas Booking System is a web application for cinema staff to browse f
 | **Home** | `/` | Poster browse by default; additive search with metric cards and a full showing grid. |
 | **Film detail** | `/film/{id}` | Synopsis, cast, rating, and upcoming showtimes for one film. |
 | **Booking** | `/booking` | Pick a showing within the allowed booking window, choose seat area (lower hall or upper gallery), select one or more free seats, and confirm. A receipt is printed with a unique booking reference. |
-| **Cancellation** | `/cancellation` | Find a booking by reference, review status and cancellation charge, and cancel if the policy allows. |
+| **Cancellation** | `/cancellation` | Staff: find any booking by reference and cancel when policy allows. |
+| **My bookings** | `/my-bookings` | Customers: view and cancel their own bookings. |
+| **Sign in** | `/login` | Phone number and password; demo accounts grouped by role. |
+| **Register** | `/register` | Customer self-registration (username, email, password). |
+| **Data admin** | `/admin` | Administrators: manage films, showings, and accounts (`ADMIN` only). |
 
-**Not implemented** (out of coursework scope): Admin/Manager screens, login and role-based access control, payment processing.
+**Not implemented** (out of coursework scope): payment processing, email verification, password recovery.
 
 ---
 
@@ -225,9 +229,9 @@ On first startup, `HcbsTestDataSeeder` loads a full **test database** aligned wi
 | Films & actors | 5 films with cast, posters, and searchable descriptions |
 | Showings | 18 dated sessions across four cities (booking/cancellation edge cases) |
 | Price rules | Case-study lower-hall prices; upper gallery +£2 |
-| Users | `staff`, `admin`, `manager` in the database |
+| Users | 9 demo accounts (3 per role: customer, booking staff, administrator); password `demo`; listed on `/login` by phone; new customers via `/register` |
 
-There is no login screen. Bookings are recorded against the `BOOKING_STAFF` user automatically.
+Customers book for themselves; staff desk bookings require selecting a customer phone. Self-service and staff flows use signed-in users (`CUSTOMER` / `BOOKING_STAFF` / `ADMIN`).
 
 **Pre-seeded booking:** reference `HCBS-SEED001` (for cancellation demos on the Cancellation page).
 
