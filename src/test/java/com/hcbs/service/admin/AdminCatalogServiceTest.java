@@ -33,7 +33,7 @@ class AdminCatalogServiceTest {
     void filtersCustomerAccountsByPhonePrefix() {
         signInAsAdmin();
 
-        assertThat(adminCatalogService.listUsersByCustomerPhone("")).hasSize(12);
+        assertThat(adminCatalogService.listUsersByCustomerPhone("")).hasSize(9);
 
         List<User> customers = adminCatalogService.listUsersByCustomerPhone("1380013800");
 

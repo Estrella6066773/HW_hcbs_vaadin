@@ -27,11 +27,7 @@ public final class DemoAccountCatalog {
                 // Administrators
                 new DemoAccount("admin", "admin@demo.hcbs", "Ava Admin", "13800338001", UserRole.ADMIN, "Administrator"),
                 new DemoAccount("admin01", "admin01@demo.hcbs", "Olivia Admin", "13800338002", UserRole.ADMIN, "Administrator"),
-                new DemoAccount("admin02", "admin02@demo.hcbs", "Noah Admin", "13800338003", UserRole.ADMIN, "Administrator"),
-                // Managers
-                new DemoAccount("manager", "manager@demo.hcbs", "Mia Manager", "13800438001", UserRole.MANAGER, "Manager"),
-                new DemoAccount("mgr01", "mgr01@demo.hcbs", "Grace Manager", "13800438002", UserRole.MANAGER, "Manager"),
-                new DemoAccount("mgr02", "mgr02@demo.hcbs", "James Manager", "13800438003", UserRole.MANAGER, "Manager")
+                new DemoAccount("admin02", "admin02@demo.hcbs", "Noah Admin", "13800338003", UserRole.ADMIN, "Administrator")
         );
     }
 

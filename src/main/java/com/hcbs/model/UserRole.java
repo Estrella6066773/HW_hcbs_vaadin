@@ -3,8 +3,7 @@ package com.hcbs.model;
 public enum UserRole {
     CUSTOMER,
     BOOKING_STAFF,
-    ADMIN,
-    MANAGER;
+    ADMIN;
 
     public boolean isEmployee() {
         return this != CUSTOMER;
@@ -15,6 +14,6 @@ public enum UserRole {
     }
 
     public boolean canAccessAdminTools() {
-        return this == ADMIN || this == MANAGER;
+        return this == ADMIN;
     }
 }

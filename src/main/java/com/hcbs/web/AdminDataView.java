@@ -35,7 +35,7 @@ import java.util.List;
 
 @Route(value = "admin", layout = MainLayout.class)
 @PageTitle("Data admin")
-@RolesAllowed({"ADMIN", "MANAGER"})
+@RolesAllowed("ADMIN")
 public class AdminDataView extends VerticalLayout {
 
     private static final LocalTime SCHEDULE_START = LocalTime.of(9, 0);

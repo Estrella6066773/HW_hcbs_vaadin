@@ -22,7 +22,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "cancellation", layout = MainLayout.class)
 @PageTitle("Cancellation")
-@RolesAllowed({"BOOKING_STAFF", "ADMIN", "MANAGER"})
+@RolesAllowed({"BOOKING_STAFF", "ADMIN"})
 public class CancellationView extends VerticalLayout {
 
     private final CancellationService cancellationService;
