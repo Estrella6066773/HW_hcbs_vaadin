@@ -8,7 +8,7 @@ Horizon Cinemas Booking System is a web application for cinema staff to browse f
 
 **Languages:** English (this file) · [简体中文](.Docs/README_CN.md)
 
-> Group membership, contribution split, and presentation notes are in [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md). This readme describes **what the software does** and **how to run it** only.
+> Group membership and **module-based** division of labour: [.Docs/四人分工.md](.Docs/四人分工.md) and [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md). This readme describes **what the software does** and **how to run it** only.
 
 ---
 
@@ -93,15 +93,21 @@ hcbs-vaadin/
 │   ├── repository/         # Spring Data repositories
 │   ├── dto/                # Data passed to the UI layer
 │   ├── service/
-│   │   ├── listing/        # FilmListingService
-│   │   ├── booking/        # BookingService
-│   │   └── cancellation/   # CancellationService
-│   ├── web/                # Vaadin views and layout
-│   └── config/             # DataLoader (demo seed data)
-├── src/test/java/          # Automated tests
+│   │   ├── search/         # Module A — home search
+│   │   ├── listing/        # Module A — showings list
+│   │   ├── catalog/        # Module A — films & posters
+│   │   ├── booking/        # Module B
+│   │   ├── cancellation/   # Module C
+│   │   ├── auth/           # Module C
+│   │   └── admin/          # Module D
+│   ├── security/           # Module C
+│   ├── web/                # Vaadin views (home, booking, auth, …)
+│   └── config/             # Seed data, security, port (mostly Module D)
+├── src/test/java/          # Automated tests (per module owner)
 ├── frontend/themes/hcbs/   # Application theme
 ├── README.md               # Functional overview (this file)
 └── .Docs/                  # All other documentation
+    ├── 四人分工.md         # Module ownership + file links (primary)
     ├── README_CN.md
     ├── ARCHITECTURE.md
     ├── CONTRIBUTION_MATRIX.md
@@ -183,13 +189,18 @@ Run all automated tests:
 mvn "-Dmaven.repo.local=.m2/repository" clean test
 ```
 
-| Test class | Covers |
-| --- | --- |
-| `BookingServiceTest` | Booking, pricing, duplicate seat, 7-day limit |
-| `CancellationServiceTest` | Cancel fee, seat release, same-day rejection |
-| `FilmListingServiceTest` | Search rows, description field |
-| `DataLoaderTest` | Seed data (cities, cinemas, seats) |
-| `UiThemeTest` | Custom `hcbs` theme |
+| Test class | Module | Covers |
+| --- | --- | --- |
+| `HcbsSearchServiceTest` | A | Home search & filters |
+| `FilmListingServiceTest` | A | Listing rows, description |
+| `FilmCatalogServiceTest` | A | Film catalog / posters |
+| `BookingServiceTest` | B | Booking, pricing, duplicate seat, 7-day limit |
+| `RegistrationServiceTest` | C | Customer registration |
+| `CancellationServiceTest` | C | Cancel fee, seat release, same-day rejection |
+| `AdminCatalogServiceTest` | D | Admin catalog logic |
+| `DataLoaderTest` | D | Seed data (cities, cinemas, seats) |
+| `HcbsPortAllocatorTest` | D | Port selection |
+| `UiThemeTest` | D | Custom `hcbs` theme |
 
 Manual scenarios: [.Docs/TEST_CASES.md](.Docs/TEST_CASES.md) (TC_001–TC_011).
 
@@ -244,12 +255,14 @@ Customers book for themselves; staff desk bookings require selecting a customer 
 | Document | Purpose |
 | --- | --- |
 | [.Docs/README.md](.Docs/README.md) | Index of all project documentation |
+| [.Docs/四人分工.md](.Docs/四人分工.md) | **Primary:** module ownership A–D + clickable source paths |
 | [.Docs/README_CN.md](.Docs/README_CN.md) | Chinese version of this readme |
 | [.Docs/ARCHITECTURE.md](.Docs/ARCHITECTURE.md) | Technical layering and dependencies |
 | [.Docs/TEST_CASES.md](.Docs/TEST_CASES.md) | Manual test case table |
 | [.Docs/TEST_DATABASE.md](.Docs/TEST_DATABASE.md) | Test database design, seed scenarios, reset steps |
 | [.Docs/DEV_TROUBLESHOOTING.md](.Docs/DEV_TROUBLESHOOTING.md) | Dev-only: delete `./data/` on format/lock errors—do not change code |
-| [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md) | Group members, contributions, presentation |
+| [.Docs/CONTRIBUTION_MATRIX.md](.Docs/CONTRIBUTION_MATRIX.md) | Names, contribution %, signatures, presentation |
+| [.Docs/roles/](.Docs/roles/) | Per-member module guides |
 | [.Docs/req/](.Docs/req/) | Case study and coursework brief |
 
 ---

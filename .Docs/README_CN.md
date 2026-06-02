@@ -8,7 +8,7 @@
 
 Horizon Cinemas 影院订票系统面向影院柜台人员，用于查询放映场次、完成订票与办理取消。本系统实现 HCBS 案例要求的**影片列表**、**订票**、**取消订票**三项核心功能。
 
-> 小组成员、贡献比例与答辩安排见 **[CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md)**（同目录）。本文档仅介绍**系统功能**与**运行方式**。
+> 小组成员与**按模块垂直分工**见 **[四人分工.md](四人分工.md)**、**[CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md)**。本文档仅介绍**系统功能**与**运行方式**。
 
 ---
 
@@ -93,15 +93,21 @@ hcbs-vaadin/
 │   ├── repository/         # 数据访问
 │   ├── dto/                # 界面层使用的数据对象
 │   ├── service/
-│   │   ├── listing/        # 影片列表服务
-│   │   ├── booking/        # 订票服务
-│   │   └── cancellation/   # 取消服务
-│   ├── web/                # Vaadin 页面与布局
-│   └── config/             # 启动时种子数据
-├── src/test/java/          # 自动化测试
+│   │   ├── search/         # 模块 A — 搜索
+│   │   ├── listing/        # 模块 A — 场次列表
+│   │   ├── catalog/        # 模块 A — 影片与海报
+│   │   ├── booking/        # 模块 B
+│   │   ├── cancellation/   # 模块 C
+│   │   ├── auth/           # 模块 C
+│   │   └── admin/          # 模块 D
+│   ├── security/           # 模块 C
+│   ├── web/                # Vaadin 页面（按菜单分包）
+│   └── config/             # 种子数据、安全、端口等
+├── src/test/java/          # 自动化测试（按模块归属）
 ├── frontend/themes/hcbs/   # 应用主题
 ├── README.md               # 功能说明（英文，仓库根目录）
 └── .Docs/                  # 其余文档（本目录）
+    ├── 四人分工.md         # 主分工文档（可点击源码）
     ├── README_CN.md
     ├── ARCHITECTURE.md
     ├── CONTRIBUTION_MATRIX.md
@@ -181,13 +187,18 @@ mvn "-Dmaven.repo.local=.m2/repository" vaadin:prepare-frontend
 mvn "-Dmaven.repo.local=.m2/repository" clean test
 ```
 
-| 测试类 | 覆盖内容 |
-| --- | --- |
-| `BookingServiceTest` | 订票、计价、重复占座、7 日限制 |
-| `CancellationServiceTest` | 取消费用、释放座位、当日不可取消 |
-| `FilmListingServiceTest` | 搜索与简介字段 |
-| `DataLoaderTest` | 种子数据 |
-| `UiThemeTest` | `hcbs` 主题 |
+| 测试类 | 模块 | 覆盖内容 |
+| --- | --- | --- |
+| `HcbsSearchServiceTest` | A | 主页搜索与筛选 |
+| `FilmListingServiceTest` | A | 列表与简介字段 |
+| `FilmCatalogServiceTest` | A | 影片目录与海报 |
+| `BookingServiceTest` | B | 订票、计价、重复占座、7 日限制 |
+| `RegistrationServiceTest` | C | 客户注册 |
+| `CancellationServiceTest` | C | 取消费用、释放座位、当日不可取消 |
+| `AdminCatalogServiceTest` | D | 管理端逻辑 |
+| `DataLoaderTest` | D | 种子数据 |
+| `HcbsPortAllocatorTest` | D | 端口选择 |
+| `UiThemeTest` | D | `hcbs` 主题 |
 
 手工场景见 [TEST_CASES.md](TEST_CASES.md)（TC_001–TC_011）。
 
@@ -242,12 +253,13 @@ mvn "-Dmaven.repo.local=.m2/repository" package
 | --- | --- |
 | [README.md](../README.md) | 英文功能说明（本稿中文对应版） |
 | [文档索引](README.md) | 本目录文档一览 |
+| [四人分工.md](四人分工.md) | **主分工**：A–D 模块 + 可点击源码路径 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 技术分层与依赖 |
 | [TEST_CASES.md](TEST_CASES.md) | 手工测试用例表 |
 | [TEST_DATABASE.md](TEST_DATABASE.md) | 测试数据库设计、种子数据场景与重置方法 |
 | [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md) | 开发环境：格式/锁库异常时删 `./data/`，勿改代码 |
-| [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 功能分工、测试归属、答辩顺序与小抄（不在本文档中说明） |
-| [roles/README.md](roles/README.md) | 成员 A–D 各自主责模块的详细说明（单人单文档） |
+| [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 贡献矩阵、答辩顺序、签字 |
+| [roles/README.md](roles/README.md) | 各成员模块说明（单人单文档） |
 | [req/](req/) | 案例与作业要求 |
 
 ---

@@ -1,6 +1,13 @@
 # HCBS Test Cases
 
-分工与答辩说明见 [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) §2、§6。各用例由功能主责人维护 **Actual Result** 并能在答辩中讲解对应自动化测试。
+分工见 [四人分工.md](四人分工.md) 与 [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) §2、§6。各用例由**模块主责人**维护 **Actual Result** 并能在答辩中讲解对应自动化测试。
+
+| 模块 | 主责 | 用例 |
+| --- | --- | --- |
+| A 影片浏览 | **A** | TC_001–002 |
+| B 订票 | **B** | TC_003–007 |
+| C 账户·取消·导航 | **C** | TC_008–011；登录/注册（手工，见 C 答辩） |
+| D 管理·平台 | **D** | Admin 排片（手工）；汇总本表 Actual Result |
 
 | Test Case ID | Owner | Test Case Name | Purpose | Condition | Expected Result | Actual Result |
 | --- | --- | --- | --- | --- | --- | --- |

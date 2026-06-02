@@ -1,18 +1,18 @@
 # 角色贡献说明（快速上手）
 
-本目录为四人分工各备一份**独立说明**。总表与答辩安排见 [CONTRIBUTION_MATRIX.md](../CONTRIBUTION_MATRIX.md)。
+本目录为四人 **模块分工** 各备一份独立说明。  
+**完整文件清单（可点击跳转源码）** 见 [四人分工.md](../四人分工.md)。  
+总表与答辩见 [CONTRIBUTION_MATRIX.md](../CONTRIBUTION_MATRIX.md)。
 
-**分工原则：** 按**功能纵向主责**答辩（每人讲一块完整用户故事 + 自己模块的测试）；开发合并时仍遵守 [ARCHITECTURE.md](../ARCHITECTURE.md) 分层依赖。
+**分工原则：** 每人垂直负责 **一个完整模块**（Service + View + 数据层 + 测试 + 相关配置），**不按前端/业务/测试横向切分**。
 
-| 成员 | 答辩主责 | 文档 | 一句话 |
+| 成员 | 模块 | 文档 | 一句话 |
 | --- | --- | --- | --- |
-| **A** | Film Listing + 场馆/价格 | [MEMBER_A_持久化与数据.md](MEMBER_A_持久化与数据.md) | 列表、筛选、详情、价目与场次数据 |
-| **B** | Booking / 订票 | [MEMBER_B_应用服务.md](MEMBER_B_应用服务.md) | 订票规则、座位图、收据 |
-| **C** | Cancellation + My Bookings | [MEMBER_C_Web界面.md](MEMBER_C_Web界面.md) | 取消规则、员工/客户订单页 |
-| **D** | Login / Register / Role / Nav + Admin | [MEMBER_D_测试与交付.md](MEMBER_D_测试与交付.md) | 登录注册、角色导航、管理页、用例汇总与提交 |
+| **A** | 影片浏览 | [MEMBER_A_影片浏览.md](MEMBER_A_影片浏览.md) | 找片、筛选、详情、海报与场次数据 |
+| **B** | 订票 | [MEMBER_B_订票.md](MEMBER_B_订票.md) | 选座、计价、下单、收据 |
+| **C** | 账户 · 取消 · 导航 | [MEMBER_C_账户与导航.md](MEMBER_C_账户与导航.md) | 登录注册、侧栏、取消与我的订单 |
+| **D** | 数据管理 · 平台 | [MEMBER_D_管理与平台.md](MEMBER_D_管理与平台.md) | Admin、种子数据、启动与端口 |
 
-**阅读顺序：** 本角色文档 → [ARCHITECTURE.md](../ARCHITECTURE.md) → [README_CN.md](../README_CN.md) → [CONTRIBUTION_MATRIX.md](../CONTRIBUTION_MATRIX.md) §6（答辩底线与演示顺序）。
+**阅读顺序：** 本角色文档 → [四人分工.md](../四人分工.md) → 源码内 `web/*/README.md` → [CONTRIBUTION_MATRIX.md](../CONTRIBUTION_MATRIX.md) §6。
 
-**组内目标：** 每人总体贡献约 **25%**；修改他人功能主责范围内的代码须走 Review。
-
-**全组 1 页小抄（答辩前必背）：** Vaadin/Spring Boot 各一句；自己功能的 `View→Service→Repository→Entity`；`@Entity`/`@Table`/`@Column`；Repository 作用；一个 Vaadin 组件例子。详见贡献矩阵 §6.1。
+**组内目标：** 每人约 **25%**；修改他人模块代码须 PR + 模块主责人 Review。
