@@ -6,8 +6,8 @@
 | --- | --- |
 | [README_CN.md](README_CN.md) | 功能说明（中文） |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 技术分层与依赖规则 |
-| [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 成员 A–D 贡献与分项答辩 |
-| [roles/README.md](roles/README.md) | Per-member role guides (A–D) |
+| [CONTRIBUTION_MATRIX.md](CONTRIBUTION_MATRIX.md) | 成员 A–D 功能主责、测试归属与分项答辩 |
+| [roles/README.md](roles/README.md) | 各成员功能模块说明（A 列表 / B 订票 / C 取消 / D 登录与管理） |
 | [TEST_CASES.md](TEST_CASES.md) | 手工测试用例表（TC_001–TC_011） |
 | [TEST_DATABASE.md](TEST_DATABASE.md) | 测试数据库设计与种子数据场景 |
 | [DEV_TROUBLESHOOTING.md](DEV_TROUBLESHOOTING.md) | 开发环境异常：删本地库，勿改代码迁就旧数据 |
