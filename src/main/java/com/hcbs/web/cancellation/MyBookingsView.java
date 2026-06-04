@@ -19,17 +19,24 @@ import jakarta.annotation.security.RolesAllowed;
 /**
  * 客户自助「我的订单」页面（成员 C · 取消模块）。
  * <p>
- * 路由为 {@code /my-bookings}，仅允许 {@code CUSTOMER} 角色访问（与侧边栏和 {@link com.hcbs.web.shell.MainLayout} 一致）。
- * 订单列表来自 {@link CancellationService#listAccessibleBookings()}，仅能取消本人名下且满足「放映日期严格晚于今天」条件的订单（对应 TC_008–010 测试用例）。
+ * 路由为 {@code /my-bookings}，仅允许 {@code CUSTOMER} 角色访问（与侧边栏菜单可见性一致）。
+ * 订单列表来自 {@link CancellationService#listAccessibleBookings()}，Service 层会自动按当前登录客户过滤订单。
+ * 仅能取消本人名下、状态为 CONFIRMED 且满足「放映日期严格晚于今天」条件的订单（对应 TC_008–010 测试用例）。
  */
 @Route(value = "my-bookings", layout = MainLayout.class)
 @PageTitle("My bookings")
 @RolesAllowed("CUSTOMER")
 public class MyBookingsView extends VerticalLayout {
 
+    /** 取消服务，处理订单查询和取消操作 */
     private final CancellationService cancellationService;
+    /** 订单数据表格，展示客户的所有订单 */
     private final Grid<CustomerBookingRow> grid = new Grid<>(CustomerBookingRow.class, false);
 
+    /**
+     * 构造函数：初始化「我的订单」页面。
+     * @param cancellationService 取消服务
+     */
     public MyBookingsView(CancellationService cancellationService) {
         this.cancellationService = cancellationService;
         setSizeFull();
@@ -37,6 +44,7 @@ public class MyBookingsView extends VerticalLayout {
         setMargin(false);
         addClassName("page-view");
 
+        // 配置订单数据表格
         grid.addColumn(CustomerBookingRow::bookingReference).setHeader("Reference").setFlexGrow(1);
         grid.addColumn(CustomerBookingRow::filmTitle).setHeader("Film").setFlexGrow(2);
         grid.addColumn(CustomerBookingRow::showDate).setHeader("Date");
@@ -51,25 +59,36 @@ public class MyBookingsView extends VerticalLayout {
             cancel.addClassName(cancellable ? "danger-action" : "inactive-action");
             return cancel;
         }).setHeader("Action");
-        grid.setItems(cancellationService.listAccessibleBookings()); // Service 层内按当前 CUSTOMER 过滤
+        grid.setItems(cancellationService.listAccessibleBookings()); // Service 层内按当前 CUSTOMER 自动过滤订单
         grid.setWidthFull();
 
+        // 构建页面布局
         Div panel = new Div(sectionTitle("Your orders", "Only bookings on your account are listed. Cancel before show day."), grid);
         panel.addClassName("surface-panel");
 
         add(pageHero("My bookings", "View and cancel orders you placed."), panel);
     }
 
+    /**
+     * 取消指定订单。
+     * @param reference 订单编号
+     */
     private void cancel(String reference) {
         try {
-            cancellationService.cancelBooking(reference); // assertCanAccess 保证仅本人订单
-            grid.setItems(cancellationService.listAccessibleBookings());
+            cancellationService.cancelBooking(reference); // Service 层会通过 assertCanAccess 保证仅可取消本人订单
+            grid.setItems(cancellationService.listAccessibleBookings()); // 刷新订单列表
             Notification.show("Booking cancelled: " + reference);
         } catch (RuntimeException ex) {
             Notification.show(ex.getMessage());
         }
     }
 
+    /**
+     * 构建页头组件。
+     * @param heading 标题文本
+     * @param copy 说明文本
+     * @return 页头组件
+     */
     private Div pageHero(String heading, String copy) {
         Span badge = new Span("Self-service");
         badge.addClassName("eyebrow");
@@ -80,6 +99,12 @@ public class MyBookingsView extends VerticalLayout {
         return hero;
     }
 
+    /**
+     * 构建章节标题组件。
+     * @param title 标题文本
+     * @param caption 说明文本
+     * @return 章节标题组件
+     */
     private Div sectionTitle(String title, String caption) {
         H2 heading = new H2(title);
         Paragraph detail = new Paragraph(caption);
