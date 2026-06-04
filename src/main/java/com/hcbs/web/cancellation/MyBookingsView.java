@@ -17,11 +17,10 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
 /**
- * 客户自助「我的订单」（成员 C · 取消模块）。
+ * 客户自助「我的订单」页面（成员 C · 取消模块）。
  * <p>
- * 路由 {@code /my-bookings}，仅 {@code CUSTOMER} 可访问。
- * 列表来自 {@link com.hcbs.service.cancellation.CancellationService#listAccessibleBookings()}，
- * 仅能取消本人名下、且满足「放映日前一天」规则的订单。
+ * 路由为 {@code /my-bookings}，仅允许 {@code CUSTOMER} 角色访问（与侧边栏和 {@link com.hcbs.web.shell.MainLayout} 一致）。
+ * 订单列表来自 {@link CancellationService#listAccessibleBookings()}，仅能取消本人名下且满足「放映日期严格晚于今天」条件的订单（对应 TC_008–010 测试用例）。
  */
 @Route(value = "my-bookings", layout = MainLayout.class)
 @PageTitle("My bookings")
@@ -52,7 +51,7 @@ public class MyBookingsView extends VerticalLayout {
             cancel.addClassName(cancellable ? "danger-action" : "inactive-action");
             return cancel;
         }).setHeader("Action");
-        grid.setItems(cancellationService.listAccessibleBookings());
+        grid.setItems(cancellationService.listAccessibleBookings()); // Service 层内按当前 CUSTOMER 过滤
         grid.setWidthFull();
 
         Div panel = new Div(sectionTitle("Your orders", "Only bookings on your account are listed. Cancel before show day."), grid);
@@ -63,7 +62,7 @@ public class MyBookingsView extends VerticalLayout {
 
     private void cancel(String reference) {
         try {
-            cancellationService.cancelBooking(reference);
+            cancellationService.cancelBooking(reference); // assertCanAccess 保证仅本人订单
             grid.setItems(cancellationService.listAccessibleBookings());
             Notification.show("Booking cancelled: " + reference);
         } catch (RuntimeException ex) {

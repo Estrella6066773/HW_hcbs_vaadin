@@ -21,13 +21,13 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 /**
  * 账户中心（成员 C · 账户模块）。
  * <p>
- * 路由 {@code /account}，嵌在 {@link com.hcbs.web.shell.MainLayout} 右侧。
- * 顶栏 Account 按钮：未登录跳转 {@link LoginView}，已登录跳转本页。
- * 已登录时按角色展示快捷入口（客户：我的订单；员工：柜台 + 可选管理）。
+ * 路由为 {@code /account}，嵌在 {@link MainLayout} 右侧。
+ * 顶栏 Account 按钮：未登录时跳转到 {@link LoginView}，已登录时跳转到本页。
+ * 已登录时按角色展示快捷入口（与 {@link MainLayout#refreshDrawer()} 菜单互补，但不替代权限控制）。
  */
 @Route(value = "account", layout = MainLayout.class)
 @PageTitle("Account")
-@AnonymousAllowed
+@AnonymousAllowed // 未登录显示 guestPanel，不抛 403
 public class AccountCenterView extends VerticalLayout {
 
     public AccountCenterView(CurrentUserService currentUserService, AuthUiService authUiService) {
@@ -38,14 +38,17 @@ public class AccountCenterView extends VerticalLayout {
 
         if (!currentUserService.isAuthenticated()) {
             add(guestPanel());
-            return;
+            return; // 不调用 requireCurrentUser，避免 AccessDeniedException
         }
 
         User user = currentUserService.requireCurrentUser();
         add(signedInPanel(user, authUiService));
     }
 
-    /** 未登录：引导注册或登录 */
+    /**
+     * 未登录时的面板：引导用户注册或登录（与侧边栏仅显示 Home 时的 Account 顶栏行为一致）。
+     * @return 访客面板组件
+     */
     private Div guestPanel() {
         H2 title = new H2("Account");
         Paragraph copy = new Paragraph("Sign in to book tickets, view orders, and manage your account.");
@@ -62,7 +65,13 @@ public class AccountCenterView extends VerticalLayout {
         return panel;
     }
 
-    /** 已登录：展示资料与角色相关快捷导航 */
+    /**
+     * 已登录时的面板：展示用户资料与角色相关快捷导航。
+     * 注意：各目标 View 仍有 {@code @RolesAllowed} 权限控制，此处按钮仅为便利入口。
+     * @param user 当前登录用户
+     * @param authUiService 认证 UI 服务
+     * @return 已登录用户面板组件
+     */
     private Div signedInPanel(User user, AuthUiService authUiService) {
         H2 title = new H2("Account");
         Span profile = new Span(user.getFullName() + " · " + user.getEmail());
@@ -72,13 +81,13 @@ public class AccountCenterView extends VerticalLayout {
         links.addClassName("account-links");
 
         if (user.getRole().isCustomer()) {
-            links.add(linkButton("My bookings", MyBookingsView.class));
-            links.add(linkButton("Book tickets", BookingView.class));
+            links.add(linkButton("My bookings", MyBookingsView.class));   // CUSTOMER 的取消入口
+            links.add(linkButton("Book tickets", BookingView.class));     // 自助订票（B 模块）
         } else {
-            links.add(linkButton("Booking desk", BookingView.class));
+            links.add(linkButton("Booking desk", BookingView.class));       // BOOKING_STAFF / ADMIN
             links.add(linkButton("Cancellation desk", CancellationView.class));
             if (user.getRole().canAccessAdminTools()) {
-                links.add(linkButton("Data admin", AdminDataView.class));
+                links.add(linkButton("Data admin", AdminDataView.class)); // 仅 ADMIN（D 主责数据管理）
             }
         }
 
@@ -92,6 +101,12 @@ public class AccountCenterView extends VerticalLayout {
         return panel;
     }
 
+    /**
+     * 创建一个导航按钮，点击后跳转到指定路由。
+     * @param label 按钮标签
+     * @param route 目标路由类
+     * @return 导航按钮组件
+     */
     private Button linkButton(String label, Class<? extends com.vaadin.flow.component.Component> route) {
         Button button = new Button(label, event -> getUI().ifPresent(ui -> ui.navigate(route)));
         button.addClassName("secondary-action");

@@ -16,8 +16,10 @@ import java.util.regex.Pattern;
  * 客户注册业务（成员 C · 账户模块）。
  * <p>
  * 仅创建 {@link UserRole#CUSTOMER} 且状态为 {@link UserStatus#ACTIVE} 的用户；
- * 密码经 {@link PasswordEncoder} 哈希后入库。手机号经 {@link com.hcbs.util.PhoneNumbers} 规范化，
+ * 密码经 {@link PasswordEncoder} 哈希后存入数据库。手机号经 {@link PhoneNumbers} 规范化，
  * 与登录、{@link com.hcbs.security.HcbsUserDetailsService} 使用同一套格式。
+ * <p>
+ * 自动化测试：{@link com.hcbs.service.auth.RegistrationServiceTest}；注册成功路径为手工演示。
  */
 @Service
 public class RegistrationService {
@@ -33,7 +35,9 @@ public class RegistrationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /** 校验通过后持久化新客户；注册/角色演示为手工用例，自动化见测试类 RegistrationServiceTest */
+    /**
+     * 校验通过后持久化新客户；角色固定为 CUSTOMER，不可通过本 API 注册员工账号。
+     */
     @Transactional
     public User registerCustomer(RegistrationRequest request) {
         validate(request);
@@ -43,13 +47,15 @@ public class RegistrationService {
         user.setEmail(User.normalizeEmail(request.email()));
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName().trim());
-        user.setPhone(PhoneNumbers.normalize(request.phone()));
+        user.setPhone(PhoneNumbers.normalize(request.phone())); // 登录 principal
         user.setRole(UserRole.CUSTOMER);
         user.setStatus(UserStatus.ACTIVE);
         return userRepository.save(user);
     }
 
-    /** 用户名、手机、邮箱唯一性及密码一致性校验；失败抛 {@link IllegalArgumentException} */
+    /**
+     * 用户名、手机、邮箱唯一性及密码一致性校验；校验失败时抛出 {@link IllegalArgumentException} 供 UI 展示。
+     */
     public void validate(RegistrationRequest request) {
         if (request.username() == null || request.username().isBlank()) {
             throw new IllegalArgumentException("Username is required");

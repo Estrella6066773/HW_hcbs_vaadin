@@ -21,9 +21,9 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 /**
  * 客户注册页（成员 C · 账户模块）。
  * <p>
- * 路由 {@code /register}，全屏独立页。仅允许注册 {@link com.hcbs.model.UserRole#CUSTOMER}，
- * 员工账号由管理员在后台创建。表单提交委托 {@link com.hcbs.service.auth.RegistrationService}，
- * 成功后跳转 {@code /login?registered}。
+ * 路由为 {@code /register}，全屏独立页面。仅允许注册 {@link com.hcbs.model.UserRole#CUSTOMER} 角色，
+ * 员工账号由管理员在 {@link com.hcbs.web.admin.AdminDataView} 中创建。表单提交委托给
+ * {@link RegistrationService} 处理，成功后跳转到 {@code /login?registered}。
  */
 @Route("register")
 @PageTitle("Create account")
@@ -33,7 +33,7 @@ public class RegisterView extends VerticalLayout {
     private final RegistrationService registrationService;
 
     private final TextField username = new TextField("Username");
-    private final TextField phone = new TextField("Phone number");
+    private final TextField phone = new TextField("Phone number"); // 注册后作为登录名
     private final EmailField email = new EmailField("Email (optional)");
     private final TextField fullName = new TextField("Full name");
     private final PasswordField password = new PasswordField("Password");
@@ -94,7 +94,9 @@ public class RegisterView extends VerticalLayout {
         add(page);
     }
 
-    /** 组装 {@link com.hcbs.dto.RegistrationRequest} 并调用注册服务；校验失败用 Notification 提示 */
+    /**
+     * 组装 DTO 并调用注册服务；业务校验在 Service 层完成，失败消息直接通过 Notification 展示。
+     */
     private void submit() {
         RegistrationRequest request = new RegistrationRequest(
                 username.getValue(),
@@ -105,10 +107,10 @@ public class RegisterView extends VerticalLayout {
                 phone.getValue()
         );
         try {
-            registrationService.registerCustomer(request);
-            getUI().ifPresent(ui -> ui.navigate("login?registered"));
+            registrationService.registerCustomer(request); // 固定 CUSTOMER + ACTIVE
+            getUI().ifPresent(ui -> ui.navigate("login?registered")); // LoginView.beforeEnter 显示成功提示
         } catch (RuntimeException ex) {
-            Notification.show(ex.getMessage());
+            Notification.show(ex.getMessage()); // IllegalArgumentException 文案来自 validate()
         }
     }
 }

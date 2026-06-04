@@ -24,14 +24,14 @@ import jakarta.annotation.security.RolesAllowed;
 /**
  * 员工取消柜台（成员 C · 取消模块）。
  * <p>
- * 路由 {@code /cancellation}，仅 {@code BOOKING_STAFF}、{@code ADMIN} 可访问。
- * 按客户手机号搜索订单 → Grid 展示 → 调用 {@link com.hcbs.service.cancellation.CancellationService#cancelBooking}。
- * 答辩演示：员工登录后取消种子订单 {@code HCBS-SEED001}。
- * 业务规则（提前一天、50% 手续费）在 Service 层执行，本页右侧展示规则说明面板。
+ * 路由为 {@code /cancellation}，仅允许 {@code BOOKING_STAFF} 和 {@code ADMIN} 角色访问（与侧边栏一致）。
+ * 功能流程：按客户手机号搜索订单 → 在 Grid 中展示 → 调用 {@link CancellationService#cancelBooking} 取消订单。
+ * 答辩演示：员工登录后取消种子订单 {@code HCBS-SEED001}（对应 TC_008–010 测试用例）。
+ * 业务规则在 Service 层实现；本页面右侧为规则说明面板（非权威校验）。
  */
 @Route(value = "cancellation", layout = MainLayout.class)
 @PageTitle("Cancellation")
-@RolesAllowed({"BOOKING_STAFF", "ADMIN"})
+@RolesAllowed({"BOOKING_STAFF", "ADMIN"}) // 客户走 MyBookingsView，不能进此页
 public class CancellationView extends VerticalLayout {
 
     private final CancellationService cancellationService;
@@ -40,6 +40,7 @@ public class CancellationView extends VerticalLayout {
     private final ComboBox<String> customerPhone = new ComboBox<>("Customer phone");
     private final Grid<CustomerBookingRow> bookingsGrid = new Grid<>(CustomerBookingRow.class, false);
 
+    /** 当前选中的手机号，取消成功后用于刷新 Grid */
     private String activePhone;
 
     public CancellationView(CancellationService cancellationService, CurrentUserService currentUserService) {
@@ -52,9 +53,10 @@ public class CancellationView extends VerticalLayout {
 
         customerPhone.setWidthFull();
         customerPhone.setClearButtonVisible(true);
-        customerPhone.setAllowCustomValue(true);
+        customerPhone.setAllowCustomValue(true); // 允许手动输入未出现在下拉列表中的号码
         customerPhone.setItems(query -> {
             String filter = query.getFilter().orElse("");
+            // 仅员工可调用；返回曾订票的客户或访客手机号前缀匹配结果
             return cancellationService.searchPhonesWithBookings(filter).stream()
                     .skip(query.getOffset())
                     .limit(query.getLimit());
@@ -82,6 +84,7 @@ public class CancellationView extends VerticalLayout {
         bookingsGrid.addColumn(row -> row.status().name()).setHeader("Status");
         bookingsGrid.addComponentColumn(row -> {
             Button cancel = new Button("Cancel", event -> cancelBooking(row.bookingReference()));
+            // canCancel 由 Service 层计算：订单状态为 CONFIRMED 且放映日期晚于今天（TC_010 当日禁用按钮）
             boolean cancellable = row.status() == BookingStatus.CONFIRMED && row.canCancel();
             cancel.setEnabled(cancellable);
             cancel.addClassName(cancellable ? "danger-action" : "inactive-action");
@@ -93,8 +96,7 @@ public class CancellationView extends VerticalLayout {
         Div lookupPanel = new Div(
                 sectionTitle("Refund desk", "Search by phone to list bookings, then cancel the selected order."),
                 customerPhone,
-                bookingsGrid
-        );
+                bookingsGrid);
         lookupPanel.addClassName("surface-panel");
 
         Div rulePanel = new Div(
@@ -102,8 +104,7 @@ public class CancellationView extends VerticalLayout {
                 ruleLine("Before showing day", "Allowed"),
                 ruleLine("Same day", "Rejected"),
                 ruleLine("Cancellation charge", "50% of total booking cost"),
-                ruleLine("Signed in as", currentUserService.requireCurrentUser().getFullName())
-        );
+                ruleLine("Signed in as", currentUserService.requireCurrentUser().getFullName()));
         rulePanel.addClassName("surface-panel");
         rulePanel.addClassName("rule-panel");
 
@@ -130,7 +131,7 @@ public class CancellationView extends VerticalLayout {
 
     private void cancelBooking(String reference) {
         try {
-            cancellationService.cancelBooking(reference);
+            cancellationService.cancelBooking(reference); // TC_008/009：释放座位 + 50% 手续费
             if (activePhone != null && !activePhone.isBlank()) {
                 loadBookings(activePhone);
             } else {
@@ -138,7 +139,7 @@ public class CancellationView extends VerticalLayout {
             }
             Notification.show("Booking cancelled: " + reference);
         } catch (RuntimeException ex) {
-            Notification.show(ex.getMessage());
+            Notification.show(ex.getMessage()); // 例如当日取消会抛出 IllegalStateException
         }
     }
 
