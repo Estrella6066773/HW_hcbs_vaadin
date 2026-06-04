@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * <p>
  * 继承 {@link VaadinWebSecurity}：未标注 {@code @AnonymousAllowed} 的视图需要登录；
  * 登录页指向 {@link LoginView}；拒绝访问时先跳转到 {@code /} 再由 Vaadin 转发到登录页。
- * 静态图片 {@code /images/**} 允许匿名访问（用于影片海报等资源）。
+ * 静态图片 {@code /images/**}、开发用 H2 控制台 {@code /h2-console/**} 允许匿名访问。
  * <p>
  * 与成员 B、D 的边界：本类不定义业务角色规则，角色由 View 上的 {@code @RolesAllowed} 与
  * {@link com.hcbs.security.HcbsUserDetailsService} 注入的 {@code ROLE_*} 配合使用。
@@ -26,7 +26,9 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/images/**").permitAll()); // 海报等静态资源，无需会话
+                        .requestMatchers("/images/**", "/h2-console/**").permitAll()) // 海报 + 开发用 H2 控制台
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
         // loginView=LoginView；defaultSuccessUrl="/" 供未带 redirect 参数时的默认跳转
         // super.configure 启用 Vaadin 对 @Route、@AnonymousAllowed 和 @RolesAllowed 注解的检查
         setLoginView(http, LoginView.class, "/");
