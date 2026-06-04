@@ -21,6 +21,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * 员工取消柜台（成员 C · 取消模块）。
+ * <p>
+ * 路由 {@code /cancellation}，仅 {@code BOOKING_STAFF}、{@code ADMIN} 可访问。
+ * 按客户手机号搜索订单 → Grid 展示 → 调用 {@link com.hcbs.service.cancellation.CancellationService#cancelBooking}。
+ * 答辩演示：员工登录后取消种子订单 {@code HCBS-SEED001}。
+ * 业务规则（提前一天、50% 手续费）在 Service 层执行，本页右侧展示规则说明面板。
+ */
 @Route(value = "cancellation", layout = MainLayout.class)
 @PageTitle("Cancellation")
 @RolesAllowed({"BOOKING_STAFF", "ADMIN"})

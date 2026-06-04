@@ -12,6 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.regex.Pattern;
 
+/**
+ * 客户注册业务（成员 C · 账户模块）。
+ * <p>
+ * 仅创建 {@link UserRole#CUSTOMER} 且状态为 {@link UserStatus#ACTIVE} 的用户；
+ * 密码经 {@link PasswordEncoder} 哈希后入库。手机号经 {@link com.hcbs.util.PhoneNumbers} 规范化，
+ * 与登录、{@link com.hcbs.security.HcbsUserDetailsService} 使用同一套格式。
+ */
 @Service
 public class RegistrationService {
 
@@ -26,6 +33,7 @@ public class RegistrationService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /** 校验通过后持久化新客户；注册/角色演示为手工用例，自动化见测试类 RegistrationServiceTest */
     @Transactional
     public User registerCustomer(RegistrationRequest request) {
         validate(request);
@@ -41,6 +49,7 @@ public class RegistrationService {
         return userRepository.save(user);
     }
 
+    /** 用户名、手机、邮箱唯一性及密码一致性校验；失败抛 {@link IllegalArgumentException} */
     public void validate(RegistrationRequest request) {
         if (request.username() == null || request.username().isBlank()) {
             throw new IllegalArgumentException("Username is required");

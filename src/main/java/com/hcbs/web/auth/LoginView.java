@@ -29,6 +29,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 登录页（成员 C · 账户模块）。
+ * <p>
+ * 路由 {@code /login}，全屏独立页，不使用 {@link com.hcbs.web.shell.MainLayout}。
+ * 未登录用户访问受保护页（如订票）时，Spring Security 会转发到此页；
+ * 支持 {@code ?redirect=/booking} 登录成功后回到原目标。
+ * <p>
+ * 核心流程：提交表单 → {@link jakarta.servlet.http.HttpServletRequest#login(String, String)}
+ * 建立会话 → {@code changeSessionId()} 防固定会话 → 跳转 redirect 或首页。
+ * 演示账号列表来自 {@link com.hcbs.config.DemoAccountCatalog}。
+ */
 @Route("login")
 @PageTitle("Sign in")
 @AnonymousAllowed
@@ -98,6 +109,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         add(page);
     }
 
+    /** 校验输入后调用容器级 login；失败显示错误，成功按 redirect 参数导航 */
     private void submitLogin() {
         loginError.setVisible(false);
         String user = phone.getValue();
@@ -132,6 +144,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         }
     }
 
+    /** 按角色分组展示种子库演示手机号（答辩演示三种角色登录） */
     private Div buildDemoAccountPanel() {
         Div panel = new Div();
         panel.addClassName("demo-accounts-panel");
@@ -169,6 +182,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         return pendingRedirect;
     }
 
+    /** 解析 {@code redirect}、{@code error}、{@code registered} 查询参数 */
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         pendingRedirect = event.getLocation()

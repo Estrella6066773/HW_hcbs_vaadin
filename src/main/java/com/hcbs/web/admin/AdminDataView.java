@@ -7,6 +7,7 @@ import com.hcbs.model.Screen;
 import com.hcbs.model.User;
 import com.hcbs.model.UserStatus;
 import com.hcbs.service.admin.AdminCatalogService;
+import com.hcbs.util.EnglishWeekdays;
 import com.hcbs.web.shell.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -50,9 +51,8 @@ public class AdminDataView extends VerticalLayout {
     private final DatePicker scheduleDate = new DatePicker("Schedule date");
     private final ComboBox<Cinema> cinemaFilter = new ComboBox<>("Cinemas");
     private final Div scheduleHost = new Div();
-    private static final Locale ENGLISH = Locale.ENGLISH;
-    private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE M/d", ENGLISH);
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm", ENGLISH);
+    private static final DateTimeFormatter TIME_FORMAT =
+            DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
     private Button editSelected;
     private Button deleteSelected;
@@ -116,7 +116,7 @@ public class AdminDataView extends VerticalLayout {
     }
 
     private void configureSchedulePicker() {
-        scheduleDate.setLocale(ENGLISH);
+        EnglishWeekdays.configureDatePicker(scheduleDate);
         scheduleDate.setValue(LocalDate.now());
         scheduleDate.setClearButtonVisible(false);
         scheduleDate.setHelperText("Pick a date to jump to its week.");
@@ -190,7 +190,7 @@ public class AdminDataView extends VerticalLayout {
         screen.setWidthFull();
 
         DatePicker date = new DatePicker("Date");
-        date.setLocale(ENGLISH);
+        EnglishWeekdays.configureDatePicker(date);
         date.setValue(editing ? showing.showDate() : scheduleDate.getValue());
         date.setWidthFull();
 
@@ -342,7 +342,7 @@ public class AdminDataView extends VerticalLayout {
         Div headers = new Div();
         headers.addClassName("admin-day-headers");
         for (LocalDate day : days) {
-            Span label = new Span(dayFormatter.format(day));
+            Span label = new Span(EnglishWeekdays.scheduleHeader(day));
             if (day.equals(selectedDate)) {
                 label.addClassName("admin-selected-date-header");
             }
@@ -353,7 +353,7 @@ public class AdminDataView extends VerticalLayout {
 
     private Div showingBlock(ShowingRow showing, boolean onSelectedDate) {
         Div block = new Div(
-                new Span(timeFormatter.format(showing.startTime()) + "-" + timeFormatter.format(showing.endTime())),
+                new Span(TIME_FORMAT.format(showing.startTime()) + "-" + TIME_FORMAT.format(showing.endTime())),
                 new Span(showing.filmTitle())
         );
         block.addClassName("admin-showing-block");

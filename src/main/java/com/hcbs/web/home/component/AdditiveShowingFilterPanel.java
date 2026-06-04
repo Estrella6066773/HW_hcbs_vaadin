@@ -4,6 +4,7 @@ import com.hcbs.dto.CinemaOption;
 import com.hcbs.dto.CityOption;
 import com.hcbs.dto.ShowingListingFilter;
 import com.hcbs.service.search.HcbsSearchService;
+import com.hcbs.util.EnglishWeekdays;
 import com.hcbs.web.home.ShowingFilterQuery;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -58,6 +59,7 @@ public class AdditiveShowingFilterPanel extends Div {
         cinema.setPlaceholder("Any cinema");
         cinema.addValueChangeListener(event -> refreshActiveFilters());
 
+        EnglishWeekdays.configureDatePicker(date);
         date.setClearButtonVisible(true);
         date.setPlaceholder("Any date");
         date.addValueChangeListener(event -> refreshActiveFilters());

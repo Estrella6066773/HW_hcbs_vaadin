@@ -23,6 +23,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 订单取消业务（成员 C · 取消模块）。
+ * <p>
+ * 规则摘要：
+ * <ul>
+ *   <li>仅 {@link BookingStatus#CONFIRMED} 且 {@code today.isBefore(showDate)} 可取消（TC_010 当日拒绝）</li>
+ *   <li>手续费 = 总价 × 0.5（TC_009）</li>
+ *   <li>取消后删除 {@code BookingSeat} 释放座位（TC_008）</li>
+ * </ul>
+ * 客户只能操作自己的订单；员工可按手机号检索任意客户/访客订单。
+ * 只读依赖成员 B 的 {@link BookingRepository}，不修改订票逻辑。
+ */
 @Service
 public class CancellationService {
     private final BookingRepository bookingRepository;
@@ -70,17 +82,20 @@ public class CancellationService {
         return toSummary(booking);
     }
 
+    /** 是否允许取消：已确认且放映日严格晚于今天 */
     public boolean canCancel(Booking booking) {
         return booking.getStatus() == BookingStatus.CONFIRMED
                 && LocalDate.now().isBefore(booking.getShowing().getShowDate());
     }
 
+    /** 取消手续费：总价 50%，保留两位小数 */
     public BigDecimal calculateCancellationCharge(Booking booking) {
         return booking.getTotalCost()
                 .multiply(new BigDecimal("0.50"))
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
+    /** 执行取消：更新状态、记录手续费与时间，并删除座位占用（TC_008/009/010） */
     @Transactional
     public BookingSummary cancelBooking(String bookingReference) {
         Booking booking = findBookingByReference(bookingReference);

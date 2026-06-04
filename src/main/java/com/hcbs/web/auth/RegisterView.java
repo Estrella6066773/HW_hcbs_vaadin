@@ -18,6 +18,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+/**
+ * 客户注册页（成员 C · 账户模块）。
+ * <p>
+ * 路由 {@code /register}，全屏独立页。仅允许注册 {@link com.hcbs.model.UserRole#CUSTOMER}，
+ * 员工账号由管理员在后台创建。表单提交委托 {@link com.hcbs.service.auth.RegistrationService}，
+ * 成功后跳转 {@code /login?registered}。
+ */
 @Route("register")
 @PageTitle("Create account")
 @AnonymousAllowed
@@ -87,6 +94,7 @@ public class RegisterView extends VerticalLayout {
         add(page);
     }
 
+    /** 组装 {@link com.hcbs.dto.RegistrationRequest} 并调用注册服务；校验失败用 Notification 提示 */
     private void submit() {
         RegistrationRequest request = new RegistrationRequest(
                 username.getValue(),

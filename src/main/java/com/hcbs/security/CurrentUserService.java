@@ -9,6 +9,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/**
+ * 当前登录用户查询（成员 C · 安全模块）。
+ * <p>
+ * 从 {@link org.springframework.security.core.context.SecurityContextHolder} 读取 principal（手机号），
+ * 再映射为领域对象 {@link User}。供 {@link com.hcbs.web.shell.MainLayout} 侧栏、
+ * 取消模块权限判断及各 View 使用。
+ */
 @Service
 public class CurrentUserService {
 
