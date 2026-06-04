@@ -31,32 +31,39 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Route(value = "", layout = MainLayout.class)
-@PageTitle("Home")
-@AnonymousAllowed
+@PageTitle("Home")//浏览器标签标题
+@AnonymousAllowed//未登录也能浏览
 public class FilmRecommendView extends VerticalLayout implements BeforeEnterObserver {
+    //BeforeEnterObserver: 在进入页面之前执行
 
-    private final HcbsSearchService searchService;
-    private final PosterResourceService posterResources;
-    private final AdditiveShowingFilterPanel filterPanel;
+    private final HcbsSearchService searchService;//搜索服务
+    private final PosterResourceService posterResources;//海报资源服务
+    private final AdditiveShowingFilterPanel filterPanel;//筛选面板，城市、影院、日期、片名等筛选 UI
     private final Div featureCarousel = new Div();
+    //featureCarousel: 精选影片轮播（Banner 图）
     private final Div posterGrid = new Div();
-    private boolean filteredBrowse;
+    //posterGrid: 影片海报卡片网格
+    private boolean filteredBrowse;//是否筛选
+//private final = 仅本类使用，且初始化后不再换绑定的字段。
 
     public FilmRecommendView(HcbsSearchService searchService, PosterResourceService posterResources) {
-        this.searchService = searchService;
-        this.posterResources = posterResources;
+        this.searchService = searchService;//搜索服务：HcbsSearchService
+        this.posterResources = posterResources;//海报资源服务：PosterResourceService
         this.filterPanel = new AdditiveShowingFilterPanel(searchService, this::runSearch, this::showAllFilms);
+        //FilmRecommendView 创建 AdditiveShowingFilterPanel 实例；
+        
 
-        setWidthFull();
-        setPadding(false);
-        setMargin(false);
+        setWidthFull();//设置宽度为全宽
+        setPadding(false);//设置内边距为0
+        setMargin(false);//设置外边距为0
         addClassName("page-view");
-
+//"page-view" 类名：在 styles.css 里定义的样式，用于设置页面布局和样式。
         PageHero hero = new PageHero(
                 "Films",
                 "Home",
                 "Browse films on display, or search by city, cinema, date, and title to see what you can watch."
         );
+        //PageHero: 页头标题区（eyebrow + 标题 + 描述）
 
         featureCarousel.addClassName("home-feature-carousel");
         featureCarousel.setWidthFull();
@@ -64,25 +71,27 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
         filterPanel.setWidthFull();
 
         posterGrid.addClassName("film-poster-grid");
-        posterGrid.setWidthFull();
+        posterGrid.setWidthFull();//填充的是最下面的 posterGrid，电影卡片列表展示
 
         add(hero, featureCarousel, filterPanel, posterGrid);
-    }
+    }//给轮播/筛选/海报容器加 CSS 类、全宽，并 add 到页面
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         ShowingListingFilter fromUrl = ShowingFilterQuery.fromQueryParameters(event.getLocation().getQueryParameters());
+       //URL query → ShowingListingFilter → 在选项列表里按 id 找 CityOption/CinemaOption → 设到控件。
         if (ShowingFilterQuery.hasCriteria(fromUrl)) {
             filterPanel.applyFilter(fromUrl);
             filteredBrowse = true;
             displayFilteredFilms(fromUrl);
         } else {
-            filteredBrowse = false;
+            filteredBrowse = false;//如果 URL 没有筛选条件，则设置 filteredBrowse 为 false
             displayAllFilms();
         }
     }
 
     private void runSearch() {
+        //把面板当前条件编成 QueryParameters，导航到本页（URL 变、触发新的 beforeEnter）。这样链接可分享、可收藏。
         getUI().ifPresent(ui -> ui.navigate(
                 FilmRecommendView.class,
                 ShowingFilterQuery.toQueryParameters(filterPanel.getFilter())));
@@ -98,7 +107,8 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
         renderPosters(films);
         filterPanel.setBrowseSummary(films.size(), false);
     }
-
+    
+    //精选轮播：按场次筛选
     private void displayFilteredFilms(ShowingListingFilter filter) {
         List<FilmCardDto> films = searchService.searchFilmsByShowings(filter);
         renderFeatureCarousel(searchService.searchFilms(FilmCatalogFilter.of("")));
@@ -155,6 +165,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
         enableFeatureCarousel(slides.size());
     }
 
+
     private RouterLink createFeatureSlide(FeaturedFilm slide) {
         FilmCardDto film = slide.film();
         Image banner = new Image(slide.imageUrl(), film.title() + " banner");
@@ -163,6 +174,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
             banner.addClassName("home-feature-image-contained");
         }
 
+        //写轮播标题、副标题、评分、详情按钮
         Span label = new Span("Featured Film");
         label.addClassName("home-feature-label");
         H2 title = new H2(film.title());
@@ -177,6 +189,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
 
         RouterLink link = new RouterLink();
         link.setRoute(FilmDetailView.class, film.filmId());
+        //只带影片 ID，不会像下方海报卡片那样附带筛选用的 query 参数
         link.addClassName("home-feature-slide");
         link.add(banner, copy);
         return link;
@@ -245,6 +258,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
         films.forEach(film -> posterGrid.add(createPosterCard(film)));
     }
 
+    //单张「电影卡片」：海报 + 标题 + 副标题
     private RouterLink createPosterCard(FilmCardDto film) {
         FilmPoster poster = new FilmPoster(posterResources, film.posterUrl(), film.title() + " poster");
 
@@ -264,6 +278,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
         return link;
     }
 
+    //是轮播配置用的 record
     private record FeatureBanner(String title, String imageUrl, boolean contained) {
     }
 

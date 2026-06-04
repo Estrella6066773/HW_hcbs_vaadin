@@ -26,6 +26,7 @@ public class HcbsSearchService {
     public HcbsSearchService(FilmCatalogService filmCatalogService, FilmListingService filmListingService) {
         this.filmCatalogService = filmCatalogService;
         this.filmListingService = filmListingService;
+        //它自己还依赖 FilmCatalogService、FilmListingService
     }
 
     public List<FilmCardDto> searchFilms(FilmCatalogFilter filter) {

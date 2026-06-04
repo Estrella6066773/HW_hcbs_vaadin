@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 /**
  * Filter criteria for the Film Listing page (city, cinema, date, film title).
+ * 按城市、影院、日期、片名筛场次
  */
 public record ShowingListingFilter(Long cityId, Long cinemaId, LocalDate date, String filmTitle) {
 

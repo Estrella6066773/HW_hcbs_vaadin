@@ -33,6 +33,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @Route(value = "admin", layout = MainLayout.class)
 @PageTitle("Data admin")
@@ -49,8 +50,9 @@ public class AdminDataView extends VerticalLayout {
     private final DatePicker scheduleDate = new DatePicker("Schedule date");
     private final ComboBox<Cinema> cinemaFilter = new ComboBox<>("Cinemas");
     private final Div scheduleHost = new Div();
-    private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE M/d");
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    private static final Locale ENGLISH = Locale.ENGLISH;
+    private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE M/d", ENGLISH);
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm", ENGLISH);
 
     private Button editSelected;
     private Button deleteSelected;
@@ -114,6 +116,7 @@ public class AdminDataView extends VerticalLayout {
     }
 
     private void configureSchedulePicker() {
+        scheduleDate.setLocale(ENGLISH);
         scheduleDate.setValue(LocalDate.now());
         scheduleDate.setClearButtonVisible(false);
         scheduleDate.setHelperText("Pick a date to jump to its week.");
@@ -187,6 +190,7 @@ public class AdminDataView extends VerticalLayout {
         screen.setWidthFull();
 
         DatePicker date = new DatePicker("Date");
+        date.setLocale(ENGLISH);
         date.setValue(editing ? showing.showDate() : scheduleDate.getValue());
         date.setWidthFull();
 

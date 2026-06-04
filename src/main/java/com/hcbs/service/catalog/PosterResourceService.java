@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 /**
+ * 判断海报是否存在
  * Checks that a DB poster path points at a file served from {@code META-INF/resources}.
  */
 @Service

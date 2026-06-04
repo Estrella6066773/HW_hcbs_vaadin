@@ -14,7 +14,7 @@ import java.util.Optional;
  * Serialises {@link ShowingListingFilter} and booking context as URL query parameters.
  */
 public final class ShowingFilterQuery {
-    //不可被继承，就是工具类
+    //不可被继承，就是工具类，所有方法都是 static
 
     public static final String PARAM_CITY = "city";
     public static final String PARAM_CINEMA = "cinema";
