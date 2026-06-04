@@ -28,7 +28,7 @@ import java.util.Set;
  * <p>
  * 规则摘要（答辩 / TC_008–011）：
  * <ul>
- *   <li>仅 {@link BookingStatus#CONFIRMED} 且 {@code today.isBefore(showDate)} 可取消（TC_010 当日拒绝）</li>
+ *   <li>仅 {@link BookingStatus#CONFIRMED} 且 {@code today.isBefore(showDate)} 可取消（TC_010 当日禁止取消）</li>
  *   <li>手续费 = 总价 × 0.5（TC_009）</li>
  *   <li>取消后删除 {@code BookingSeat} 释放座位（TC_008）</li>
  * </ul>
@@ -49,7 +49,7 @@ public class CancellationService {
     }
 
     /**
-     * 客户：返回本人订单；员工若误调用此方法会得到全库列表（员工应使用 {@link #listBookingsByPhone}）。
+     * 客户：返回本人订单；员工若误调用此方法会得到全部订单（员工应使用 {@link #listBookingsByPhone}）。
      */
     public List<CustomerBookingRow> listAccessibleBookings() {
         User actor = currentUserService.requireCurrentUser();
@@ -59,7 +59,7 @@ public class CancellationService {
         return bookings.stream().map(this::toCustomerRow).toList();
     }
 
-    /** 员工柜台：ComboBox 数据源，前缀至少需要 3 位数字 */
+    /** 员工柜台：下拉框数据源，输入至少 3 位数字进行前缀匹配 */
     public List<String> searchPhonesWithBookings(String rawQuery) {
         requireEmployeeActor();
         String prefix = PhoneNumbers.normalize(rawQuery);
@@ -68,11 +68,11 @@ public class CancellationService {
         }
         Set<String> phones = new LinkedHashSet<>();
         phones.addAll(bookingRepository.findDistinctCustomerPhonesWithBookings(prefix));
-        phones.addAll(bookingRepository.findDistinctGuestPhonesWithBookings(prefix)); // 访客订票无 User 记录
+        phones.addAll(bookingRepository.findDistinctGuestPhonesWithBookings(prefix)); // 访客订票无用户记录
         return new ArrayList<>(phones);
     }
 
-    /** 员工柜台：选定手机号下的全部订单（包括注册客户和访客手机号） */
+    /** 员工柜台：查询选定手机号下的全部订单（包括注册客户和访客手机号） */
     public List<CustomerBookingRow> listBookingsByPhone(String rawPhone) {
         requireEmployeeActor();
         String phone = requireValidPhone(rawPhone);
@@ -88,7 +88,7 @@ public class CancellationService {
     }
 
     /**
-     * 判断是否允许取消：订单已确认且放映日期严格晚于今天（当天 showDate 不可取消，TC_010）。
+     * 判断是否允许取消：订单已确认且放映日期严格晚于今天（当天不可取消，TC_010）。
      */
     public boolean canCancel(Booking booking) {
         return booking.getStatus() == BookingStatus.CONFIRMED
@@ -119,7 +119,7 @@ public class CancellationService {
         return toSummary(bookingRepository.save(booking));
     }
 
-    /** 客户只能取消 customer_id 指向自己的订单；员工无此限制（仍须登录） */
+    /** 客户只能取消 customer_id 为自己的订单；员工无此限制（仍须登录） */
     private void assertCanAccess(Booking booking) {
         User actor = currentUserService.requireCurrentUser();
         if (actor.getRole().isCustomer()

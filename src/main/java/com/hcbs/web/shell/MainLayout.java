@@ -29,8 +29,8 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
  * 全局导航壳层：包含顶栏、左侧抽屉菜单和右侧主内容槽位。
  * <p>
  * <b>在 Vaadin 路由中的位置</b>：业务 View 通过 {@code @Route(..., layout = MainLayout.class)}
- * 声明「嵌在本布局右侧」。例如首页 {@link FilmRecommendView}、订票页 {@link BookingView} 等。
- * 登录页 {@link LoginView}、注册页等<b>不</b>使用本布局，为全屏独立页面。
+ * 声明嵌入本布局右侧。例如首页 {@link FilmRecommendView}、订票页 {@link BookingView} 等。
+ * 登录页 {@link LoginView}、注册页等不使用本布局，为全屏独立页面。
  * <p>
  * <b>与 {@link AppShell} 的分工</b>：
  * <ul>
@@ -40,17 +40,17 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
  * </ul>
  * <p>
  * <b>为何实现 {@link AfterNavigationObserver}</b>：
- * Spring 构造本类时只会执行一次 {@link #MainLayout}，此时用户可能尚未登录。
- * 登录、登出或切换账号后，侧边栏菜单与顶栏按钮必须随之变化，但 layout 实例通常不会重建。
+ * Spring 构造本类时只会执行一次构造函数，此时用户可能尚未登录。
+ * 登录、登出或切换账号后，侧边栏菜单与顶栏按钮必须随之变化，但布局实例通常不会重建。
  * 因此在每次路由导航结束后调用 {@link #afterNavigation} → {@link #refreshChrome()}，
  * 根据 {@link CurrentUserService} 的当前状态重新绘制可变部分。
  * <p>
- * <b>安全</b>：类上的 {@link AnonymousAllowed} 表示「未登录也可加载带此 layout 的公开路由」
+ * <b>安全</b>：类上的 {@link AnonymousAllowed} 表示未登录也可加载带此布局的公开路由
  * （如首页浏览影片）。具体页面仍可在各自 View 上使用 {@code @RolesAllowed} 等限制访问；
  * 侧边栏仅做导航展示，不能替代服务端权限校验。
  * <p>
  * <b>样式</b>：继承自 Vaadin {@link AppLayout}（来自依赖，非本项目源码）。
- * 通过 {@code addClassName} 挂载的类名（如 {@code topbar}、{@code nav-card}）在
+ * 通过 {@code addClassName} 添加的类名（如 {@code topbar}、{@code nav-card}）在
  * {@code frontend/themes/hcbs/styles.css} 中定义。
  *
  * @see #refreshDrawer() 按角色生成侧边栏（答辩常考点）
@@ -64,11 +64,11 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     /**
      * 读取 Spring Security 会话中的当前用户与登录状态。
-     * 所有菜单和顶栏的分支判断均以此为准，切勿在 layout 内缓存 User 对象，以免与登出状态不同步。
+     * 所有菜单和顶栏的分支判断均以此为准，切勿在布局内缓存 User 对象，以免与登出状态不同步。
      */
     private final CurrentUserService currentUserService;
 
-    /** 封装登出等需触发服务端会话变更的 UI 操作（避免 layout 直接依赖 Security API）。 */
+    /** 封装登出等需触发服务端会话变更的 UI 操作（避免布局直接依赖 Security API）。 */
     private final AuthUiService authUiService;
 
     /**

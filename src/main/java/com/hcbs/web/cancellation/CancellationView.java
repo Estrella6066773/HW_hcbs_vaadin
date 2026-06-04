@@ -25,8 +25,8 @@ import jakarta.annotation.security.RolesAllowed;
  * 员工取消柜台（成员 C · 取消模块）。
  * <p>
  * 路由为 {@code /cancellation}，仅允许 {@code BOOKING_STAFF} 和 {@code ADMIN} 角色访问（与侧边栏一致）。
- * 功能流程：按客户手机号搜索订单 → 在 Grid 中展示 → 调用 {@link CancellationService#cancelBooking} 取消订单。
- * 答辩演示：员工登录后取消种子订单 {@code HCBS-SEED001}（对应 TC_008–010 测试用例）。
+ * 功能流程：按客户手机号搜索订单 → 在表格中展示 → 调用 {@link CancellationService#cancelBooking} 取消订单。
+ * 答辩演示：员工登录后取消测试订单 {@code HCBS-SEED001}（对应 TC_008–010 测试用例）。
  * 业务规则在 Service 层实现；本页面右侧为规则说明面板（非权威校验）。
  */
 @Route(value = "cancellation", layout = MainLayout.class)

@@ -16,10 +16,10 @@ import java.util.regex.Pattern;
  * 客户注册业务（成员 C · 账户模块）。
  * <p>
  * 仅创建 {@link UserRole#CUSTOMER} 且状态为 {@link UserStatus#ACTIVE} 的用户；
- * 密码经 {@link PasswordEncoder} 哈希后存入数据库。手机号经 {@link PhoneNumbers} 规范化，
+ * 密码经 {@link PasswordEncoder} 加密后存入数据库。手机号经 {@link PhoneNumbers} 规范化，
  * 与登录、{@link com.hcbs.security.HcbsUserDetailsService} 使用同一套格式。
  * <p>
- * 自动化测试：{@link com.hcbs.service.auth.RegistrationServiceTest}；注册成功路径为手工演示。
+ * 自动化测试：{@link com.hcbs.service.auth.RegistrationServiceTest}；注册成功流程为手工演示。
  */
 @Service
 public class RegistrationService {

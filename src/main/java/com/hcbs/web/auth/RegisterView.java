@@ -22,7 +22,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
  * 客户注册页（成员 C · 账户模块）。
  * <p>
  * 路由为 {@code /register}，全屏独立页面。仅允许注册 {@link com.hcbs.model.UserRole#CUSTOMER} 角色，
- * 员工账号由管理员在 {@link com.hcbs.web.admin.AdminDataView} 中创建。表单提交委托给
+ * 员工账号由管理员在 {@link com.hcbs.web.admin.AdminDataView} 中创建。表单提交由
  * {@link RegistrationService} 处理，成功后跳转到 {@code /login?registered}。
  */
 @Route("register")

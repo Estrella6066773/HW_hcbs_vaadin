@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
  * 支持通过 {@code ?redirect=/booking} 参数在登录成功后跳转到原目标页面。
  * <p>
  * 核心流程：提交表单 → 调用 {@link jakarta.servlet.http.HttpServletRequest#login(String, String)}
- * 建立会话 → 执行 {@code changeSessionId()} 防止会话固定攻击 → 跳转到指定 redirect 页面或首页。
- * 测试区块（用于答辩）：展示演示账号提示与列表，数据来自 {@link com.hcbs.config.DemoAccountCatalog}。
+ * 建立会话 → 执行 {@code changeSessionId()} 防止会话固定攻击 → 跳转到指定页面或首页。
+ * 测试部分（用于答辩）：展示演示账号提示与列表，数据来自 {@link com.hcbs.config.DemoAccountCatalog}。
  *
  * @see com.hcbs.security.HcbsUserDetailsService#loadUserByUsername 负责校验密码与角色
  * @see com.hcbs.config.SecurityConfig#setLoginView 设置未登录访问受保护页面时的入口

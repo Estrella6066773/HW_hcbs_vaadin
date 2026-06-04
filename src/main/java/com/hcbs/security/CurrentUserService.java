@@ -12,7 +12,7 @@ import java.util.Optional;
 /**
  * 当前登录用户查询服务（成员 C · 安全模块）。
  * <p>
- * 从 {@link SecurityContextHolder} 读取 principal（规范化手机号），
+ * 从 {@link SecurityContextHolder} 读取用户标识（规范化手机号），
  * 再映射为领域对象 {@link User}。供 {@link com.hcbs.web.shell.MainLayout} 侧边栏、
  * {@link com.hcbs.service.cancellation.CancellationService} 权限判断及各 View 使用。
  * <p>

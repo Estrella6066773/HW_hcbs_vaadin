@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 /**
  * 登录认证服务：按手机号加载用户（成员 C · 安全模块）。
  * <p>
- * Spring Security 的 principal 为规范化后的 {@link User#getPhone()}，
+ * Spring Security 的用户标识为规范化后的 {@link User#getPhone()}，
  * 与 {@link com.hcbs.web.auth.LoginView} 中 {@code HttpServletRequest.login} 传入的用户名保持一致。
  * 非 {@link UserStatus#ACTIVE} 状态的账号拒绝登录（管理员在后台停用账户时生效）。
  */
