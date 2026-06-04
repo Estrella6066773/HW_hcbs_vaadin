@@ -22,6 +22,13 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * 取消服务自动化测试（成员 C）。
+ * <p>
+ * 用例映射：TC_008/009 → {@link #cancelsBookingAndAppliesFiftyPercentCharge()}；
+ * TC_010 → {@link #rejectsSameDayCancellation()}；TC_011 无效单号见 UI/手工。
+ * 运行：{@code mvn test -Dtest=CancellationServiceTest}
+ */
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:cancellation-service-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
         "spring.jpa.hibernate.ddl-auto=create-drop"
@@ -48,6 +55,7 @@ class CancellationServiceTest {
     @Autowired
     private BookingSeatRepository bookingSeatRepository;
 
+    /** TC_008 成功取消并释放座位；TC_009 £12 订单手续费 £6 */
     @Test
     @WithMockUser(username = STAFF_PHONE, roles = "BOOKING_STAFF")
     void cancelsBookingAndAppliesFiftyPercentCharge() {
@@ -62,6 +70,7 @@ class CancellationServiceTest {
         assertThat(bookingSeatRepository.existsActiveReservationForShowingAndSeat(showing, seat)).isFalse();
     }
 
+    /** TC_010 放映日当天拒绝取消 */
     @Test
     @WithMockUser(username = STAFF_PHONE, roles = "BOOKING_STAFF")
     void rejectsSameDayCancellation() {

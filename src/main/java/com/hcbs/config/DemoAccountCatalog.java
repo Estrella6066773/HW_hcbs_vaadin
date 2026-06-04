@@ -5,7 +5,10 @@ import com.hcbs.model.UserRole;
 import java.util.List;
 
 /**
- * Demo accounts seeded on empty database startup. Password for all: {@link #DEMO_PASSWORD}.
+ * 演示账号目录（成员 C · 安全/答辩）。
+ * <p>
+ * 空库启动时由种子数据写入；全部密码为 {@link #DEMO_PASSWORD}。
+ * 每类角色 3 个账号，供 {@link com.hcbs.web.auth.LoginView} 展示与答辩演示侧栏差异。
  */
 public final class DemoAccountCatalog {
 

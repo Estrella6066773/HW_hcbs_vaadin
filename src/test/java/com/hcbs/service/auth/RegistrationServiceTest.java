@@ -13,6 +13,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * 注册服务自动化测试（成员 C）。
+ * <p>
+ * 覆盖客户注册校验与持久化；登录/三种角色侧栏为手工答辩用例。
+ * 运行：{@code mvn test -Dtest=RegistrationServiceTest}
+ */
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:registration-service-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
         "spring.jpa.hibernate.ddl-auto=create-drop"

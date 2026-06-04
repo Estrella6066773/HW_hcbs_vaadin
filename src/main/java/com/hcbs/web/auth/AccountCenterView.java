@@ -18,6 +18,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+/**
+ * 账户中心（成员 C · 账户模块）。
+ * <p>
+ * 路由 {@code /account}，嵌在 {@link com.hcbs.web.shell.MainLayout} 右侧。
+ * 顶栏 Account 按钮：未登录跳转 {@link LoginView}，已登录跳转本页。
+ * 已登录时按角色展示快捷入口（客户：我的订单；员工：柜台 + 可选管理）。
+ */
 @Route(value = "account", layout = MainLayout.class)
 @PageTitle("Account")
 @AnonymousAllowed
@@ -38,6 +45,7 @@ public class AccountCenterView extends VerticalLayout {
         add(signedInPanel(user, authUiService));
     }
 
+    /** 未登录：引导注册或登录 */
     private Div guestPanel() {
         H2 title = new H2("Account");
         Paragraph copy = new Paragraph("Sign in to book tickets, view orders, and manage your account.");
@@ -54,6 +62,7 @@ public class AccountCenterView extends VerticalLayout {
         return panel;
     }
 
+    /** 已登录：展示资料与角色相关快捷导航 */
     private Div signedInPanel(User user, AuthUiService authUiService) {
         H2 title = new H2("Account");
         Span profile = new Span(user.getFullName() + " · " + user.getEmail());

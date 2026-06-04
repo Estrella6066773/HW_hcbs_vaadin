@@ -16,6 +16,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * 客户自助「我的订单」（成员 C · 取消模块）。
+ * <p>
+ * 路由 {@code /my-bookings}，仅 {@code CUSTOMER} 可访问。
+ * 列表来自 {@link com.hcbs.service.cancellation.CancellationService#listAccessibleBookings()}，
+ * 仅能取消本人名下、且满足「放映日前一天」规则的订单。
+ */
 @Route(value = "my-bookings", layout = MainLayout.class)
 @PageTitle("My bookings")
 @RolesAllowed("CUSTOMER")

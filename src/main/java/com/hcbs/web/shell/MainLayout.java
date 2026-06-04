@@ -135,8 +135,12 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     /**
      * 按角色重建侧栏菜单（答辩重点）。
-     * 所有人可见 Home；员工多 Book tickets；客户多 My bookings；
-     * 非客户员工有 Cancellation；管理员额外 Data admin。
+     * <pre>
+     * 未登录     → Home
+     * CUSTOMER   → Home + My bookings
+     * BOOKING_STAFF → Home + Book tickets + Cancellation
+     * ADMIN      → 同上 + Data admin
+     * </pre>
      */
     private void refreshDrawer() {
         drawerContent.removeAll();
