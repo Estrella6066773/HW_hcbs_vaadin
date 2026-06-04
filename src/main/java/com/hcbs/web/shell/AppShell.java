@@ -1,10 +1,7 @@
 package com.hcbs.web.shell;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.component.page.AppShellSettings;
 import com.vaadin.flow.theme.Theme;
-
-import java.util.Locale;
 
 /**
  * 应用级壳层配置（全站生效，不是某个具体页面）。
@@ -18,12 +15,10 @@ import java.util.Locale;
  *   <li>MainLayout — 顶栏 + 侧栏导航壳层</li>
  *   <li>各业务 View — 右侧主内容区展示什么</li>
  * </ul>
+ * <p>
+ * 英文日期/星期：由 {@link com.hcbs.util.EnglishWeekdays} 在各 {@code DatePicker} 上配置；
+ * HTML {@code lang} 见 {@code frontend/index.html}。
  */
 @Theme("hcbs") // 主题名 = 文件夹 frontend/themes/hcbs/，样式在 styles.css
 public class AppShell implements AppShellConfigurator {
-
-    @Override
-    public void configurePage(AppShellSettings settings) {
-        settings.setLocale(Locale.ENGLISH);
-    }
 }
