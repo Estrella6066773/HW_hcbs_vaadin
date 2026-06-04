@@ -1,7 +1,10 @@
 package com.hcbs.web.shell;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.AppShellSettings;
 import com.vaadin.flow.theme.Theme;
+
+import java.util.Locale;
 
 /**
  * 应用级壳层配置（全站生效，不是某个具体页面）。
@@ -18,4 +21,9 @@ import com.vaadin.flow.theme.Theme;
  */
 @Theme("hcbs") // 主题名 = 文件夹 frontend/themes/hcbs/，样式在 styles.css
 public class AppShell implements AppShellConfigurator {
+
+    @Override
+    public void configurePage(AppShellSettings settings) {
+        settings.setLocale(Locale.ENGLISH);
+    }
 }

@@ -33,7 +33,7 @@ import java.util.Locale;
 @PageTitle("Film Details")
 public class FilmDetailView extends VerticalLayout implements HasUrlParameter<Long> {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
     private final HcbsSearchService searchService;
     private final PosterResourceService posterResources;

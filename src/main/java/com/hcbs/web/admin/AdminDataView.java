@@ -33,6 +33,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @Route(value = "admin", layout = MainLayout.class)
 @PageTitle("Data admin")
@@ -49,8 +50,10 @@ public class AdminDataView extends VerticalLayout {
     private final DatePicker scheduleDate = new DatePicker("Schedule date");
     private final ComboBox<Cinema> cinemaFilter = new ComboBox<>("Cinemas");
     private final Div scheduleHost = new Div();
-    private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE M/d");
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter DAY_FORMAT =
+            DateTimeFormatter.ofPattern("EEE M/d", Locale.ENGLISH);
+    private static final DateTimeFormatter TIME_FORMAT =
+            DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
     private Button editSelected;
     private Button deleteSelected;
@@ -338,7 +341,7 @@ public class AdminDataView extends VerticalLayout {
         Div headers = new Div();
         headers.addClassName("admin-day-headers");
         for (LocalDate day : days) {
-            Span label = new Span(dayFormatter.format(day));
+            Span label = new Span(DAY_FORMAT.format(day));
             if (day.equals(selectedDate)) {
                 label.addClassName("admin-selected-date-header");
             }
@@ -349,7 +352,7 @@ public class AdminDataView extends VerticalLayout {
 
     private Div showingBlock(ShowingRow showing, boolean onSelectedDate) {
         Div block = new Div(
-                new Span(timeFormatter.format(showing.startTime()) + "-" + timeFormatter.format(showing.endTime())),
+                new Span(TIME_FORMAT.format(showing.startTime()) + "-" + TIME_FORMAT.format(showing.endTime())),
                 new Span(showing.filmTitle())
         );
         block.addClassName("admin-showing-block");

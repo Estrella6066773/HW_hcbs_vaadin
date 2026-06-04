@@ -23,7 +23,7 @@ public class FilmPoster extends Div {
         } else {
             Div missing = new Div();
             missing.addClassName("film-poster-missing");
-            missing.add(new Span("缺失"));
+            missing.add(new Span("Missing"));
             add(missing);
         }
     }

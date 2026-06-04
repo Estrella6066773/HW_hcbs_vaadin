@@ -16,7 +16,7 @@
 
 ### 职责
 
-根据数据库里的 `posterUrl` 路径显示 `<img>`，文件不存在则显示灰色「缺失」框。
+根据数据库里的 `posterUrl` 路径显示 `<img>`，文件不存在则显示灰色 **Missing** 占位框。
 
 ### 构造参数
 
@@ -35,12 +35,12 @@ new FilmPoster(posterResources, film.posterUrl(), altText, optionalClassNames...
 ```text
 posterResources.isAvailable(url)?
   ├─ true  → new Image(url) + class "film-poster-image"
-  └─ false → Div "film-poster-missing" + 文字「缺失」
+  └─ false → Div "film-poster-missing" + text "Missing"
 ```
 
 ### 答辩演示
 
-种子数据里 **Solitude** 的海报文件故意缺失，可在主页看到「缺失」占位效果。
+种子数据里 **Solitude** 的海报文件故意缺失，可在主页看到 **Missing** 占位效果。
 
 ### 样式 class（在 styles.css）
 
