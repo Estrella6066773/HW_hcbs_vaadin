@@ -24,36 +24,44 @@ import java.util.Locale;
  * Additive session search: each filled field narrows results; empty fields are ignored.
  */
 public class AdditiveShowingFilterPanel extends Div {
-
+    //继承 Div 表示根节点是一个带 CSS 类名的容器
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
 
     private final HcbsSearchService searchService;
     private final Runnable onSearch;
     private final Runnable onClear;
+    //城市、影院、日期、片名
     private final ComboBox<CityOption> city = new ComboBox<>("City");
     private final ComboBox<CinemaOption> cinema = new ComboBox<>("Cinema");
     private final DatePicker date = new DatePicker("Date");
     private final TextField filmTitle = new TextField("Film title");
-    private final Span activeFilters = new Span();
-    private final Span browseSummary = new Span();
+    private final Span activeFilters = new Span();//显示当前选了什么；
+    private final Span browseSummary = new Span();//显示「共 N 部影片」及是否在筛选模式
 
+
+
+    //constructor: 构造函数
     public AdditiveShowingFilterPanel(HcbsSearchService searchService, Runnable onSearch, Runnable onClear) {
         this.searchService = searchService;
         this.onSearch = onSearch;
         this.onClear = onClear;
+        ////样式名称
         addClassName("surface-panel");
         addClassName("home-filter-panel");
 
+        //选城市后，影院列表只显示该城市下的影院（listCinemas(cityId)）。
         city.setItems(searchService.listCities());
         city.setClearButtonVisible(true);
         city.setPlaceholder("Any city");
         city.addValueChangeListener(event -> {
             Long cityId = event.getValue() == null ? null : event.getValue().cityId();
             cinema.setItems(searchService.listCinemas(cityId));
-            cinema.clear();
+             //把影院下拉的可选列表换成当前城市下的影院
+            cinema.clear();//换城市就清空已选影院
             refreshActiveFilters();
         });
 
+        //影院、日期、片名
         cinema.setItems(searchService.listCinemas(null));
         cinema.setClearButtonVisible(true);
         cinema.setPlaceholder("Any cinema");
@@ -63,11 +71,12 @@ public class AdditiveShowingFilterPanel extends Div {
         date.setClearButtonVisible(true);
         date.setPlaceholder("Any date");
         date.addValueChangeListener(event -> refreshActiveFilters());
-
+        //刷新当前选了什么
         filmTitle.setPlaceholder("Partial title match");
         filmTitle.setClearButtonVisible(true);
         filmTitle.addValueChangeListener(event -> refreshActiveFilters());
         filmTitle.addKeyPressListener(event -> {
+            //按 Enter 等同点 Search 按钮
             if ("Enter".equals(event.getKey())) {
                 onSearch.run();
             }
@@ -96,6 +105,7 @@ public class AdditiveShowingFilterPanel extends Div {
         refreshActiveFilters();
     }
 
+    //获取当前筛选条件，结果显示，把 UI 收成 DTO
     public ShowingListingFilter getFilter() {
         Long cityId = city.getValue() == null ? null : city.getValue().cityId();
         Long cinemaId = cinema.getValue() == null ? null : cinema.getValue().cinemaId();
@@ -109,6 +119,7 @@ public class AdditiveShowingFilterPanel extends Div {
         browseSummary.setText(filmCount + (filmCount == 1 ? " film" : " films") + scope);
     }
 
+    //清空并通知父页面
     public void clearFilters() {
         city.clear();
         cinema.setItems(searchService.listCinemas(null));
@@ -139,7 +150,7 @@ public class AdditiveShowingFilterPanel extends Div {
             activeFilters.setText("Active filters: " + String.join(" · ", parts));
         }
     }
-
+//从 URL / DTO 回填面板
     public void applyFilter(ShowingListingFilter filter) {
         if (filter == null) {
             return;

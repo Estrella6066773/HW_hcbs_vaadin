@@ -17,8 +17,9 @@ import java.util.List;
 /**
  * Unified search entry point for catalog and showing listing filters.
  */
-@Service
+@Service//@Service tells Spring Boot: this class handles business logic and should be managed by the application.
 public class HcbsSearchService {
+    //home（以及详情页）在业务层用的统一入口，本身不直接写 SQL，而是转发到下面两个服务
 
     private final FilmCatalogService filmCatalogService;
     private final FilmListingService filmListingService;

@@ -30,19 +30,20 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Route(value = "", layout = MainLayout.class)
+@Route(value = "", layout = MainLayout.class)//
 @PageTitle("Home")//浏览器标签标题
 @AnonymousAllowed//未登录也能浏览
 public class FilmRecommendView extends VerticalLayout implements BeforeEnterObserver {
-    //BeforeEnterObserver: 在进入页面之前执行
+    //BeforeEnterObserver: 在进入页面之前执行，extends VerticalLayout = 页面根布局是 Vaadin 组件。
+
+
 
     private final HcbsSearchService searchService;//搜索服务
     private final PosterResourceService posterResources;//海报资源服务
     private final AdditiveShowingFilterPanel filterPanel;//筛选面板，城市、影院、日期、片名等筛选 UI
+    //vaadin组件：Div，用于容器布局
     private final Div featureCarousel = new Div();
-    //featureCarousel: 精选影片轮播（Banner 图）
     private final Div posterGrid = new Div();
-    //posterGrid: 影片海报卡片网格
     private boolean filteredBrowse;//是否筛选
 //private final = 仅本类使用，且初始化后不再换绑定的字段。
 
@@ -110,6 +111,7 @@ public class FilmRecommendView extends VerticalLayout implements BeforeEnterObse
     
     //精选轮播：按场次筛选
     private void displayFilteredFilms(ShowingListingFilter filter) {
+        // 页面（Vaadin）只调 Service；Service 再调数据库层 — Spring Boot 把这条链串好。
         List<FilmCardDto> films = searchService.searchFilmsByShowings(filter);
         renderFeatureCarousel(searchService.searchFilms(FilmCatalogFilter.of("")));
         renderPosters(films);

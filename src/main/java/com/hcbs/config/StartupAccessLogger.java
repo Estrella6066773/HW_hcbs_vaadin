@@ -31,9 +31,7 @@ public class StartupAccessLogger implements ApplicationListener<ApplicationReady
         log.info("  {}", webUiUrl);
         log.info("  H2 console (Ctrl+Click):");
         log.info("  {}", h2ConsoleUrl);
-        String jdbcUrl = env.getProperty("spring.datasource.url", "jdbc:h2:file:./data/hcbs");
-        int semi = jdbcUrl.indexOf(';');
-        log.info("  H2 JDBC: {}", semi > 0 ? jdbcUrl.substring(0, semi) : jdbcUrl);
+        log.info("  H2 JDBC: {}", H2ConsoleLoginCustomizer.LOGIN_JDBC_URL);
         log.info("  H2 user: sa   password: (empty)");
         if ("fallback".equals(strategy) || "hash-fallback".equals(strategy)) {
             int requested = env.getProperty("hcbs.server.port.requested", Integer.class, HcbsPortAllocator.DEFAULT_PORT);

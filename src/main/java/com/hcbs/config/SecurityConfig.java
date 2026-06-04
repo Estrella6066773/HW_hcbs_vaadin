@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * <p>
  * 继承 {@link VaadinWebSecurity}：未标注 {@code @AnonymousAllowed} 的视图需登录；
  * 登录页指向 {@link com.hcbs.web.auth.LoginView}，拒绝访问时重定向到 {@code /} 再由 Vaadin 转发登录。
- * 静态图片 {@code /images/**} 允许匿名访问。
+ * 静态图片 {@code /images/**}、开发用 H2 控制台 {@code /h2-console/**} 允许匿名访问。
  */
 @EnableWebSecurity
 @Configuration
@@ -23,7 +23,9 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/images/**").permitAll());
+                        .requestMatchers("/images/**", "/h2-console/**").permitAll())
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
         // 仅受保护视图（订票、员工工具等）要求登录；公开首页等带 @AnonymousAllowed 的页面可匿名访问
         setLoginView(http, LoginView.class, "/");
         super.configure(http);
